@@ -1,0 +1,32 @@
+.main {
+    grid-area: content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction:column;
+    height: calc(100vh - 90px);
+}
+
+.qr {
+    font-family: 'Montserrat';
+    font-size: 16px;
+    font-weight: 700;
+
+}
+
+.img {
+    margin-top: 25px;
+
+}
+
+.link {
+    font-family: 'Montserrat';
+    color:#005475;
+    font-size: 16px;
+    font-style: italic;
+    font-weight: 600;
+    margin-top: 25px;
+    text-decoration: underline;
+}
+
+

@@ -1,0 +1,30 @@
+* {
+  box-sizing: border-box;
+ }
+html,body{
+  margin:0;
+  padding:0;
+  background-color:#005475;
+  height: 100%;
+  font-family: 'Montserrat';
+  overflow: hidden;
+  
+}
+.app-wrapper {
+  width: auto;
+  display: grid;
+  grid-template-rows: 0.2fr 0.8fr;
+  grid-template-columns: 240px 1fr;
+  grid-template-areas:
+  "nav header"
+  "nav content";
+  height: 100vh;
+  }
+
+  .app-wrapper-content {
+    grid-area: content;
+    height: calc(100vh - 60px);
+    border-top-left-radius: 15px;
+    background-color: #F1F5F9;
+    }
+    

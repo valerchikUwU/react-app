@@ -1,0 +1,10 @@
+.header{
+    grid-area:header;
+    width:100%;
+    height: 60px;  
+}
+.exit{
+    float: right;
+    margin-top: 15px;
+    margin-right: 15px;
+}
