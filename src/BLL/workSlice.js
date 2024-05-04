@@ -1,0 +1,215 @@
+import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import instance from "./api.js";
+
+
+export const getWork = createAsyncThunk(
+  "work/getWork",
+  async (accountId, { rejectWithValue }) => {
+
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.get(
+        `${accountId}/orders`
+      );
+
+      console.log(response.data);
+      return {orders_list: response.data.orders_list, organizationList: response.data.organizationList};
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const getWorkModal = createAsyncThunk(
+  "work/getWorkModal",
+  async ({accountId, orderId}, { rejectWithValue }) => {
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.get(
+        `/${accountId}/orders/${orderId}`
+      );
+      console.log(response.data.products);
+      return {order: response.data.order, titles: response.data.titles, products: response.data.products};
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const putOrders = createAsyncThunk(
+  "work/putOrders",
+  async ({ accountId, productData }, { rejectWithValue }) => {
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.post(
+        `/${accountId}/orders/newOrder`, productData
+      );
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const updateDraft = createAsyncThunk(
+  "work/updateDraft",
+  async ({ accountId, orderId, organizationName}, { rejectWithValue }) => {
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.put(
+        `/${accountId}/orders/${orderId}/update`, {organizationName}
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const updateRecieved = createAsyncThunk(
+  "work/updateRecieved",
+  async ({ accountId, orderId}, { rejectWithValue }) => {
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.put(
+        `/${accountId}/orders/${orderId}/recieved`
+      );
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+
+export const updateTitleOrder = createAsyncThunk(
+  "work/updateTitleOrder",
+  async ({ accountId, orderId, titlesToUpdate}, { rejectWithValue }) => {
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.put(
+        `/${accountId}/orders/${orderId}/update`,{titlesToUpdate}
+      );
+      return response.data.titlesToUpdate;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+const workSlice = createSlice({
+  name: "work",
+  initialState: {
+    drafts: [],
+    work: [],
+    organizationList:[],
+    workModalOrder:[],
+    workModalTitles:[],
+    products:[],
+    status: null,
+    error: null,
+
+  },
+  reducers: {
+    addWork(state, action) {
+      state.work = [
+         ...state.work,
+         {
+           productId: action.payload.productId,
+           accessType: action.payload.accessType,
+           generation: action.payload.generation,
+           addBooklet: action.payload.addBooklet,
+           quantity: action.payload.quantity
+         }
+      ];
+     }, 
+  },
+  extraReducers: (builder) => {
+    builder
+    //getWork
+      .addCase(getWork.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(getWork.fulfilled, (state, action) => {
+        state.status = 'resolved';
+        state.work = action.payload.orders_list;
+        state.organizationList = action.payload.organizationList;
+      })
+      .addCase(getWork.rejected, (state, action) => {
+        state.status = 'rejected';
+        state.error = action.payload;
+      })
+      //getWorkModal
+      .addCase(getWorkModal.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(getWorkModal.fulfilled, (state, action) => {
+        state.status = 'resolved';
+        state.workModalOrder = action.payload.order;
+        state.workModalTitles = action.payload.titles;
+        state.products = action.payload.products;
+      })
+      .addCase(getWorkModal.rejected, (state, action) => {
+        state.status = 'rejected';
+        state.error = action.payload;
+      })
+  //updateDraft
+      .addCase(updateDraft.pending, (state) => {
+        console.log('updateDraft pending');
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(updateDraft.fulfilled, (state, action) => {
+        console.log('updateDraft fulfilled', action.payload);
+        state.status = 'resolved';
+        state.drafts = action.payload;
+      })
+      .addCase(updateDraft.rejected, (state, action) => {
+        console.log('updateDraft rejected', action.payload);
+        state.status = 'rejected';
+        state.error = action.payload;
+      })
+    //updateRecieved
+     .addCase(updateRecieved.pending, (state) => {
+      console.log('updateResieved pending');
+      state.status = 'loading';
+      state.error = null;
+    })
+   .addCase(updateRecieved.fulfilled, (state, action) => {
+      console.log('updateResieved fulfilled', action.payload);
+      state.status = 'resolved';
+      // Здесь вы можете обновить состояние в зависимости от ответа сервера
+      // Например, если сервер возвращает обновленные данные заказа:
+      // state.work = action.payload; // Пример обновления списка работ
+    })
+   .addCase(updateRecieved.rejected, (state, action) => {
+      console.log('updateResieved rejected', action.payload);
+      state.status = 'rejected';
+      state.error = action.payload;
+    })
+     //updateTitleOrder
+     .addCase(updateTitleOrder.pending, (state) => {
+      console.log('updateTitleOrder pending');
+      state.status = 'loading';
+      state.error = null;
+    })
+    .addCase(updateTitleOrder.fulfilled, (state, action) => {
+      console.log('updateTitleOrder fulfilled', action.payload);
+      state.status = 'resolved';
+      state.drafts = action.payload;
+    })
+    .addCase(updateTitleOrder.rejected, (state, action) => {
+      console.log('updateTitleOrder rejected', action.payload);
+      state.status = 'rejected';
+      state.error = action.payload;
+    });
+ },
+});
+
+export const {actions, addWork} = workSlice.actions;
+
+export default workSlice.reducer;

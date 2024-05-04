@@ -12,6 +12,15 @@
     font-family: "Montserrat";
     font-size: 16px;
     font-weight: 600;
+    color: black;
+    text-align: center;
+
+}
+
+.textBodyDraft {
+    font-family: "Montserrat";
+    font-size: 16px;
+    font-weight: 600;
     color: #999999;
     text-align: center;
 
@@ -50,7 +59,7 @@
 .modalIcon {
     grid-area: icon;
     position: absolute; /* Изменено на абсолютное позиционирование */
-    margin-left: 850px;
+    margin-left: 900px;
 }
 
 .modalWindow {
@@ -77,3 +86,10 @@
     margin-right: 15px;
     margin-bottom: 15px;
 }
+
+/* Style.module.css */
+.highlightedField {
+    border: 1px solid red; /* Пример стиля подсветки */
+  }
+  
+  

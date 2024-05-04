@@ -5,10 +5,23 @@ import { NavLink } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import classNames from "classnames";
 import { Badge } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from 'react-router-dom';
+import { useEffect } from "react";
+import { getWork } from "../../BLL/workSlice";
 
 
 export default function Nav() {
   const location = useLocation();
+
+  const dispatch = useDispatch();
+  const { accountId } = useParams(); // Извлекаем accountId из URL
+ 
+  useEffect(() => {
+     dispatch(getWork(accountId)); // Передаем accountId в getCompleted
+  }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
+
+  const list = useSelector((state) => state.work.work);
 
   return (
     <div className={classes.nav}>
@@ -118,7 +131,7 @@ export default function Nav() {
               В работе
             </span>
             
-            <Badge  badgeContent={1}    
+            <Badge  badgeContent={list.length}    
             sx={{
               "& .MuiBadge-badge": {
                 backgroundColor:"#005475", // Установка фона в синий или #005475 в зависимости от условия
@@ -173,25 +186,3 @@ export default function Nav() {
     </div>
   );
 }
-
-
-
-            // <svg
-            //   width="20"
-            //   height="20"
-            //   viewBox="0 0 20 20"
-            //   fill="none"
-            //   xmlns="http://www.w3.org/2000/svg"
-            //   className={classes.vector}
-            // >
-            //   <path
-            //     d="M13 13C13 13.5304 12.7893 14.0391 12.4142 14.4142C12.0391 14.7893 11.5304 15 11 15H7V13H11V11H9V9H11V7H7V5H11C11.5304 5 12.0391 5.21071 12.4142 5.58579C12.7893 5.96086 13 6.46957 13 7V8.5C13 8.89782 12.842 9.27936 12.5607 9.56066C12.2794 9.84196 11.8978 10 11.5 10C11.8978 10 12.2794 10.158 12.5607 10.4393C12.842 10.7206 13 11.1022 13 11.5V13ZM10 0C11.3132 0 12.6136 0.258658 13.8268 0.761205C15.0401 1.26375 16.1425 2.00035 17.0711 2.92893C17.9997 3.85752 18.7362 4.95991 19.2388 6.17317C19.7413 7.38642 20 8.68678 20 10C20 12.6522 18.9464 15.1957 17.0711 17.0711C15.1957 18.9464 12.6522 20 10 20C8.68678 20 7.38642 19.7413 6.17317 19.2388C4.95991 18.7362 3.85752 17.9997 2.92893 17.0711C1.05357 15.1957 0 12.6522 0 10C0 7.34784 1.05357 4.8043 2.92893 2.92893C4.8043 1.05357 7.34784 0 10 0ZM10 2C7.87827 2 5.84344 2.84285 4.34315 4.34315C2.84285 5.84344 2 7.87827 2 10C2 12.1217 2.84285 14.1566 4.34315 15.6569C5.84344 17.1571 7.87827 18 10 18C12.1217 18 14.1566 17.1571 15.6569 15.6569C17.1571 14.1566 18 12.1217 18 10C18 7.87827 17.1571 5.84344 15.6569 4.34315C14.1566 2.84285 12.1217 2 10 2Z"
-            //     fill="white"
-            //     fill-opacity="0.5"
-            //     className={classNames(
-            //       location.pathname.includes("/work")
-            //         ? classes.activeLinkIcon
-            //         : ""
-            //     )}
-            //   />
-            // </svg>
