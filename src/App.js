@@ -21,23 +21,23 @@ function App() {
       <Routes>
         <Route path="/*" element={<NavMain></NavMain>}></Route>
 
-        <Route path="/user/*" element={<Nav></Nav> }></Route>
+        <Route path=":accountId/user/*" element={<Nav></Nav> }></Route>
 
-        <Route path="/admin/*" element={<Nav></Nav>}></Route>
+        <Route path=":accountId/admin/*" element={<Nav></Nav>}></Route>
 
-        <Route path="/superAdmin/*" element={<Nav></Nav>}></Route>
+        <Route path=":accountId/superAdmin/*" element={<Nav></Nav>}></Route>
       </Routes>
 
       <div className="app-wrapper-content">
         <Routes>
           <Route path="/" element={<Main></Main>}></Route>
 
-          <Route path="/user" element={<Navigate replace to="new/start" />}></Route>
+          <Route path=":accountId/user" element={<Navigate replace to="new/start" />}></Route>
 
-          <Route path="/user/new" element={<Navigate replace to="start" />}></Route>
+          <Route path=":accountId/user/new" element={<Navigate replace to="start" />}></Route>
           
           <Route
-            path="user/new/*"
+            path=":accountId/user/new/*"
             element={
               <Content>
                 <New>
@@ -53,7 +53,7 @@ function App() {
           ></Route>
 
           <Route
-            path="user/work"
+            path="/:accountId/user/work"
             element={
               <Content>
                 <Work></Work>
@@ -62,7 +62,7 @@ function App() {
           ></Route>
 
           <Route
-            path="user/completed"
+            path="/:accountId/user/completed"
             element={
               <Content>
                 <Completed></Completed>
