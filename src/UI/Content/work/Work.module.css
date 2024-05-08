@@ -87,9 +87,16 @@
     margin-bottom: 15px;
 }
 
-/* Style.module.css */
-.highlightedField {
-    border: 1px solid red; /* Пример стиля подсветки */
+
+  
+  /* styles.css */
+.errorField {
+    border-color: rgb(0, 255, 38)!important;
+    animation: blink 1s infinite;
   }
   
+  @keyframes blink {
+    0%, 100% { border-color: rgb(0, 255, 251); }
+    50% { border-color: transparent; }
+  }
   

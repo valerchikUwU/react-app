@@ -1,7 +1,6 @@
 import React from "react";
 import classes from "./Work.module.css";
 import FormHelperText from "@mui/material/FormHelperText";
-
 import {
   Table,
   TableBody,
@@ -23,11 +22,13 @@ import Modal from "@mui/material/Modal";
 import { useState } from "react";
 import exit from "./image/exit.svg";
 import cursor from "./image/cursor-click.svg";
+import deleteBlue from "./image/deleteBlue.svg";
+import deleteGrey from "./image/deleteGrey.svg";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Checkbox from "@mui/material/Checkbox";
 import { TextField } from "@mui/material";
 import {
+  deleteTitleOrder,
   getWork,
   getWorkModal,
   updateDraft,
@@ -35,10 +36,11 @@ import {
   updateTitleOrder,
 } from "../../../BLL/workSlice";
 import { useParams } from "react-router-dom";
-
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import CustomStyledCheckbox from "./CustomStyledCheckbox";
+import { updateSaveButtonState } from "../../../BLL/productSlice";
 
 export default function Work() {
   const dispatch = useDispatch();
@@ -53,18 +55,34 @@ export default function Work() {
   const handleCloseModal = (id) =>
     setOpenStates({ ...openStates, [id]: false });
 
+  const [isDeleteClicked, setIsDeleteClicked] = useState(false);
+  const handleDeleteOrder = (orderId, titleId, productId) => {
+    dispatch(
+      deleteTitleOrder({
+        accountId: accountId,
+        orderId: orderId,
+        titleId: titleId,
+      })
+    );
+    setIsDeleteClicked(true);
+    dispatch(updateSaveButtonState({ productId, active: false }));
+    // Удаление сохраненного состояния
+  localStorage.removeItem('saveButtonActive');
+
+  };
   useEffect(() => {
     // Find the first open modal
     const openModalId = Object.keys(openStates).find((id) => openStates[id]);
     if (openModalId) {
       // Assuming you have the accountId available, replace "1" with the actual accountId
       dispatch(getWorkModal({ accountId: accountId, orderId: openModalId }));
+      setIsDeleteClicked(false);
     }
-  }, [openStates, dispatch]);
+  }, [isDeleteClicked, openStates, dispatch]);
 
-  const [isTextBlack, setIsTextBlack] = useState(false);
-  const [isIconVisibleSend, setIsIconVisibleSend] = useState(true);
-  const [isSelectDisabled, setIsSelectDisabled] = useState(false);
+  const [isTextBlack, setIsTextBlack] = useState({});
+  const [isIconVisibleSend, setIsIconVisibleSend] = useState({});
+  const [isSelectDisabled, setIsSelectDisabled] = useState({});
 
   const handleIconClick = (orderId, organizationName) => {
     dispatch(
@@ -75,9 +93,19 @@ export default function Work() {
       })
     );
     setDummyKey((prevKey) => prevKey + 1);
-    setIsTextBlack(true);
-    setIsIconVisibleSend(false);
-    setIsSelectDisabled(true);
+  setIsIconVisibleSend((prevState) => ({
+    ...prevState,
+     [orderId]: true,
+   }));
+
+   setIsTextBlack((prevState) => ({
+    ...prevState,
+     [orderId]: true,
+   }));
+   setIsSelectDisabled((prevState) => ({
+    ...prevState,
+     [orderId]: true,
+   }));
   };
 
   const handleIconClickResieved = (orderId) => {
@@ -266,7 +294,7 @@ export default function Work() {
       const isSelectEmpty1 = !row.accessType;
 
       if (!isChecked && isSelectEmpty && isSelectEmpty1) {
-        newErrors[row.id] = "Обязательно"; // Сообщение об ошибке
+        newErrors[row.id] = "Заполните"; // Сообщение об ошибке
       } else {
         // Удаляем ошибку, если условия не выполняются
         newErrors[row.id] = null;
@@ -296,12 +324,12 @@ export default function Work() {
 
   const handleSave = () => {
     // Проверяем, есть ли хотя бы одна ошибка в массиве errors
-    const hasErrors = Object.values(errors).some(error => error!== null);
-  
+    const hasErrors = Object.values(errors).some((error) => error !== null);
+
     if (!hasErrors) {
       // Создаем пустой массив для titlesToUpdate
       const titlesToUpdate = [];
-  
+
       // Проходим по listModalTitles и проверяем условия для каждого элемента
       listModalTitles.forEach((row) => {
         // Проверяем, существует ли значение для данного id в selectedCheck
@@ -309,16 +337,16 @@ export default function Work() {
           id: row.id,
           productId: row.productId,
           accessType: selectedAccessType[row.id]
-          ? selectedAccessType[row.id]
+            ? selectedAccessType[row.id]
             : row.accessType,
           generation: selectedGeneration[row.id]
-          ? selectedGeneration[row.id]
+            ? selectedGeneration[row.id]
             : row.generation,
           quantity: selectedInput[row.id],
           addBooklet: selectedCheck[row.id],
         });
       });
-  
+
       // Теперь titlesToUpdate - это массив объектов, который можно использовать в вашем запросе
       // Проверяем, что titlesToUpdate не пуст, перед тем как вызывать dispatch
       if (titlesToUpdate.length > 0) {
@@ -338,8 +366,50 @@ export default function Work() {
       console.log("Есть ошибки, сохранение не производится");
     }
   };
-  
-  
+
+  // Функция для сброса состояний
+  const resetStates = () => {
+    // Сброс selectedAbbr
+    const initialSelectedAbbr = listModalTitles.reduce((acc, row) => {
+      acc[row.id] = row.abbr;
+      return acc;
+    }, {});
+
+    setSelectedAbbr(initialSelectedAbbr);
+
+    // Сброс selectedCheck
+    const initialSelectedCheck = listModalTitles.reduce((acc, row) => {
+      acc[row.id] = row.addBooklet;
+      return acc;
+    }, {});
+
+    setSelectedCheck(initialSelectedCheck);
+
+    // Сброс selectedAccessType
+    const initialSelectedAccessType = listModalTitles.reduce((acc, row) => {
+      acc[row.id] = row.accessType;
+      return acc;
+    }, {});
+
+    setSelectedAccessType(initialSelectedAccessType);
+
+    // Сброс selectedGeneration
+    const initialSelectedGeneration = listModalTitles.reduce((acc, row) => {
+      acc[row.id] = row.generation;
+      return acc;
+    }, {});
+
+    setSelectedGeneration(initialSelectedGeneration);
+
+    // Сброс selectedInput
+    const initialSelectedInput = listModalTitles.reduce((acc, row) => {
+      acc[row.id] = row.quantity;
+      return acc;
+    }, {});
+
+    setSelectedInput(initialSelectedInput);
+  };
+
 
   return (
     <Box>
@@ -350,19 +420,19 @@ export default function Work() {
           overflow: "auto",
           scrollbarWidth: "thin",
           scrollbarColor: "#005475 #FFFFFF",
-         
-          '&::-webkit-scrollbar': {
-            width: '10px', // Ширина скроллбара
+
+          "&::-webkit-scrollbar": {
+            width: "10px", // Ширина скроллбара
           },
-          '&::-webkit-scrollbar-track': {
-            borderRadius: '100px', // Радиус скругления трека скроллбара
-            backgroundColor: '#f1f1f1', // Цвет трека
+          "&::-webkit-scrollbar-track": {
+            borderRadius: "100px", // Радиус скругления трека скроллбара
+            backgroundColor: "#f1f1f1", // Цвет трека
           },
-          '&::-webkit-scrollbar-thumb': {
-            borderRadius: '100px', // Радиус скругления области управления
-            backgroundColor: '#888', // Цвет области управления
-            ':hover': {
-              backgroundColor: '#555', // Цвет при наведении
+          "&::-webkit-scrollbar-thumb": {
+            borderRadius: "100px", // Радиус скругления области управления
+            backgroundColor: "#888", // Цвет области управления
+            ":hover": {
+              backgroundColor: "#555", // Цвет при наведении
             },
           },
         }}
@@ -457,7 +527,7 @@ export default function Work() {
             </TableRow>
           </TableHead>
 
-          <TableBody  >
+          <TableBody>
             {sortedList.map((element) =>
               element.status === "Черновик" ||
               element.status === "Черновик депозита" ? (
@@ -466,8 +536,9 @@ export default function Work() {
                     onClick={() => handleOpenModal(element.id)}
                     style={{ cursor: "pointer" }}
                     className={`${classes.textBodyDraft} ${
-                      isTextBlack ? classes.transitionText : ""
+                      isTextBlack[element.id] ? classes.transitionText : ""
                     } ${openStates[element.id] ? classes.modalRow : ""}`}
+                    
                   >
                     {element.orderNumber}
                   </TableCell>
@@ -475,21 +546,24 @@ export default function Work() {
                   <TableCell
                     style={{ cursor: "pointer" }}
                     className={`${classes.textBodyDraft} ${
-                      isTextBlack ? classes.transitionText : ""
+                      isTextBlack[element.id] ? classes.transitionText : ""
                     } ${openStates[element.id] ? classes.modalRow : ""}`}
                   >
                     <FormControl variant="standard">
                       <Select
+                     className={`${classes.textBodyDraft} ${
+                      isTextBlack[element.id] ? classes.transitionText : ""
+                    } ${openStates[element.id] ? classes.modalRow : ""}`}
                         label="Организация"
                         sx={{ width: "100px" }}
                         value={
                           selectedValues[element.id] || element.organizationName
                         }
                         onChange={(e) => handleChangeSelect(e, element.id)}
-                        disabled={isSelectDisabled}
+                        disabled={isSelectDisabled[element.id]}
                       >
                         {organizationList.map((item) => (
-                          <MenuItem key={item} value={item}>
+                          <MenuItem key={item} value={item} className={classes.textBodyDraft}>
                             {item}
                           </MenuItem>
                         ))}
@@ -501,7 +575,7 @@ export default function Work() {
                     onClick={() => handleOpenModal(element.id)}
                     style={{ cursor: "pointer" }}
                     className={`${classes.textBodyDraft} ${
-                      isTextBlack ? classes.transitionText : ""
+                      isTextBlack[element.id] ? classes.transitionText : ""
                     } ${openStates[element.id] ? classes.modalRow : ""}`}
                   >
                     {element.formattedDispatchDate}
@@ -510,7 +584,7 @@ export default function Work() {
                     onClick={() => handleOpenModal(element.id)}
                     style={{ cursor: "pointer" }}
                     className={`${classes.textBodyDraft} ${
-                      isTextBlack ? classes.transitionText : ""
+                      isTextBlack[element.id] ? classes.transitionText : ""
                     } ${openStates[element.id] ? classes.modalRow : ""}`}
                   >
                     {element.SUM} &#x20bd;
@@ -519,16 +593,16 @@ export default function Work() {
                     onClick={() => handleOpenModal(element.id)}
                     style={{ cursor: "pointer" }}
                     className={`${classes.textBodyDraft} ${
-                      isTextBlack ? classes.transitionText : ""
+                      isTextBlack[element.id] ? classes.transitionText : ""
                     } ${openStates[element.id] ? classes.modalRow : ""}`}
                   >
-                    {isTextBlack ? "Активный" : element.status}
+                    {isTextBlack[element.id] ? "Активный" : element.status}
                   </TableCell>
                   <TableCell
                     onClick={() => handleOpenModal(element.id)}
                     style={{ cursor: "pointer" }}
                     className={`${classes.textBodyDraft} ${
-                      isTextBlack ? classes.transitionText : ""
+                      isTextBlack[element.id] ? classes.transitionText : ""
                     } ${openStates[element.id] ? classes.modalRow : ""}`}
                   >
                     {element.billNumber}
@@ -544,12 +618,12 @@ export default function Work() {
                       <img src={cursor} alt="курсор" />
                     ) : (
                       <Tooltip title="Заказать" arrow>
-                        <Fade in={isIconVisibleSend}>
+                        <Fade in={!isIconVisibleSend[element.id]}>
                           <IconButton
                             onClick={() =>
                               handleIconClick(
                                 element.id,
-                                selectedValues[element.id]
+                                selectedValues[element.id] || element.organizationName
                               )
                             }
                           >
@@ -560,7 +634,7 @@ export default function Work() {
                     )}
                   </TableCell>
                 </TableRow>
-              ) : element.status == "Отправлен" ? (
+              ) : element.status === "Отправлен" ? (
                 <TableRow key={element.id} style={{ cursor: "pointer" }}>
                   <TableCell
                     onClick={() => handleOpenModal(element.id)}
@@ -680,7 +754,161 @@ export default function Work() {
                 }}
               >
                 <Table stickyHeader>
-                  <TableHead>
+                  {element.status === "Черновик" ? (
+                    <TableHead>
+                      <TableRow>
+                        <TableCell
+                          className={classes.textHeader}
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Курс
+                        </TableCell>
+                        <TableCell
+                          className={classes.textHeader}
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Доступ
+                        </TableCell>
+                        <TableCell
+                          className={classes.textHeader}
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Поколение
+                        </TableCell>
+                        <TableCell
+                          className={classes.textHeader}
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Доп. буклет
+                        </TableCell>
+                        <TableCell
+                          className={classes.textHeader}
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Количество
+                        </TableCell>
+                        <TableCell
+                          className={classes.textHeader}
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Цена
+                        </TableCell>
+                        <TableCell
+                          className={classes.textHeader}
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Сумма
+                        </TableCell>
+                          <TableCell
+                            className={classes.textHeader}
+                            sx={{
+                              paddingY: 1,
+                              position: "sticky",
+
+                              zIndex: 100,
+                              background: "#fff",
+                            }}
+                          >
+                            <img src={deleteBlue} alt="удалить" />
+                          </TableCell>
+                      </TableRow>
+                    </TableHead>
+                  ) : element.status === "Черновик депозита" ? (
+                    <TableHead>
+                      <TableRow>
+                        <TableCell
+                          className={classes.textHeader}
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Количество
+                        </TableCell>
+                        <TableCell
+                          className={classes.textHeader}
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Цена
+                        </TableCell>
+                        <TableCell
+                          className={classes.textHeader}
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Сумма
+                        </TableCell>
+                          <TableCell
+                            className={classes.textHeader}
+                            sx={{
+                              paddingY: 1,
+                              position: "sticky",
+                              zIndex: 100,
+                              background: "#fff",
+                            }}
+                          >
+                            <img src={deleteBlue} alt="удалить" />
+                          </TableCell>
+                      </TableRow>
+                    </TableHead>
+                  ) :(
+                    <TableHead>
                     <TableRow>
                       <TableCell
                         className={classes.textHeader}
@@ -768,12 +996,15 @@ export default function Work() {
                       </TableCell>
                     </TableRow>
                   </TableHead>
+                  )}
+
                   {element.status === "Черновик" ? (
                     <TableBody>
                       {listModalTitles.map((row) => (
                         <TableRow key={row.id}>
                           <TableCell className={classes.ModaltextBody}>
                             <Select
+                            className={classes.ModaltextBody}
                               variant="standard"
                               sx={{ width: "100px" }}
                               value={
@@ -784,7 +1015,7 @@ export default function Work() {
                               }
                             >
                               {productsModal.map((product) => (
-                                <MenuItem
+                                <MenuItem className={classes.textBodyDraft}
                                   key={product.id}
                                   value={product.abbreviation}
                                 >
@@ -798,6 +1029,7 @@ export default function Work() {
                             {selectedCheck[row.id] ? (
                               <FormControl error={!!errors[row.id]} fullWidth>
                                 <Select
+                                 className={classes.ModaltextBody}
                                   variant="standard"
                                   sx={{ width: "100px" }}
                                   value={
@@ -807,14 +1039,21 @@ export default function Work() {
                                     handleChangeAccessType(e, row.id)
                                   }
                                   disabled={selectedCheck[row.id] || false} // Добавляем условие для отключения
-                                ></Select>
-                                <FormHelperText error>
+                                  displayEmpty
+                                  renderValue={(selected) =>
+                                    selected === null ? null : selected
+                                  }
+                                >
+                                  <MenuItem value={null} disabled></MenuItem>
+                                </Select>
+                                <FormHelperText error className={classes.ModaltextBody}>
                                   {errors[row.id]}
                                 </FormHelperText>
                               </FormControl>
                             ) : (
-                              <FormControl error={!!errors[row.id]} fullWidth>
+                              <FormControl error={!!errors[row.id]}  fullWidth>
                                 <Select
+                                 className={classes.ModaltextBody}
                                   variant="standard"
                                   sx={{ width: "100px" }}
                                   value={
@@ -824,13 +1063,19 @@ export default function Work() {
                                     handleChangeAccessType(e, row.id)
                                   }
                                   disabled={selectedCheck[row.id] || false} // Добавляем условие для отключения
+                                  displayEmpty
+                                  renderValue={(selected) =>
+                                    selected === null ? null : selected
+                                  }
                                 >
-                                  <MenuItem value="Электронный">
+                                  <MenuItem value={null} disabled></MenuItem>
+
+                                  <MenuItem value="Электронный" className={classes.textBodyDraft}>
                                     Электронный
                                   </MenuItem>
-                                  <MenuItem value="Бумажный">Бумажный</MenuItem>
+                                  <MenuItem value="Бумажный" className={classes.textBodyDraft}>Бумажный</MenuItem>
                                 </Select>
-                                <FormHelperText error>
+                                <FormHelperText error className={classes.ModaltextBody}>
                                   {errors[row.id]}
                                 </FormHelperText>
                               </FormControl>
@@ -839,6 +1084,7 @@ export default function Work() {
 
                           <TableCell className={classes.ModaltextBody}>
                             <Select
+                            className={classes.ModaltextBody}
                               variant="standard"
                               sx={{ width: "100px" }}
                               value={
@@ -848,22 +1094,30 @@ export default function Work() {
                                 handleChangeGeneration(e, row.id)
                               }
                             >
-                              <MenuItem value="Первое поколение">
+                              <MenuItem value="Первое поколение" className={classes.textBodyDraft}>
                                 Первое поколение
                               </MenuItem>
-                              <MenuItem value="Второе поколение">
+                              <MenuItem value="Второе поколение" className={classes.textBodyDraft}>
                                 Второе поколение
                               </MenuItem>
                             </Select>
                           </TableCell>
 
                           <TableCell className={classes.ModaltextBody}>
-                            <Checkbox
+                            {/* <Checkbox
                               checked={selectedCheck[row.id] || false} // Используйте false для неотмеченных чекбоксов
                               onChange={(event) =>
                                 handleCheckboxChange(event, row.id)
                               }
-                            />
+                            /> */}
+
+                            <CustomStyledCheckbox
+                              checked={selectedCheck[row.id] || false} // Используйте false для неотмеченных чекбоксов
+                              onChange={(event) =>
+                                handleCheckboxChange(event, row.id)
+                              }
+                              size={1}
+                            ></CustomStyledCheckbox>
                           </TableCell>
 
                           <TableCell className={classes.ModaltextBody}>
@@ -892,8 +1146,66 @@ export default function Work() {
                               : row.price.priceAccess}
                             &#x20bd;
                           </TableCell>
+
                           <TableCell className={classes.ModaltextBody}>
                             {sumForOneTitle[row.id]} &#x20bd;
+                          </TableCell>
+
+                          <TableCell className={classes.ModaltextBody}>
+                            <IconButton
+                              onClick={() =>
+                                handleDeleteOrder(element.id, row.id, productsModal[0].id)
+                              }
+                            >
+                              <img src={deleteGrey} alt="удалить" />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  ) : element.status === "Черновик депозита" ? (
+                    <TableBody>
+                      {listModalTitles.map((row) => (
+                        <TableRow key={row.id}>
+                          <TableCell className={classes.ModaltextBody}>
+                            <TextField
+                              sx={{ width: "70px" }}
+                              variant="standard"
+                              value={
+                                selectedInput[row.id] ||
+                                (isFieldCleared[row.id] ? "" : row.quantity)
+                              }
+                              onChange={(e) =>
+                                handleChangeInput(
+                                  e,
+                                  row.id,
+                                  selectedCheck[row.id]
+                                    ? row.price.priceBooklet
+                                    : row.price.priceAccess
+                                )
+                              }
+                            />
+                          </TableCell>
+
+                          <TableCell className={classes.ModaltextBody}>
+                            {selectedCheck[row.id]
+                              ? row.price.priceBooklet
+                              : row.price.priceAccess}
+                            &#x20bd;
+                          </TableCell>
+
+                          <TableCell className={classes.ModaltextBody}>
+                            {sumForOneTitle[row.id]} &#x20bd;
+                          </TableCell>
+
+                          <TableCell className={classes.ModaltextBody}>
+                            <IconButton
+                              onClick={() =>
+                                handleDeleteOrder(element.id, row.id)
+                              }
+                            >
+                              <img src={deleteGrey} alt="удалить" />
+                            </IconButton>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -967,6 +1279,56 @@ export default function Work() {
                   </Button>
                   <Button
                     variant="outlined"
+                    onClick={resetStates}
+                    sx={{
+                      textTransform: "none",
+                      backgroundColor: "#CCCCCC",
+                      color: "#000000",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      fontFamily: "Montserrat",
+                      border: 0,
+                      "&:hover": {
+                        backgroundColor: "#8E8E8E",
+                        border: 0,
+                      },
+                    }}
+                  >
+                    Отменить
+                  </Button>
+                </Box>
+              )}
+
+              {element.status === "Черновик депозита" && (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end", // Плавное выравнивание кнопок справа
+                    marginTop: "60px",
+                    marginRight: "10px",
+                    gap: "15px",
+                  }}
+                >
+                  <Button
+                    variant="contained"
+                    onClick={handleSave}
+                    sx={{
+                      textTransform: "none",
+                      backgroundColor: "#005475",
+                      color: "#FFFFFF",
+                      fontFamily: "Montserrat",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      "&:hover": {
+                        backgroundColor: "#00435d",
+                      },
+                    }}
+                  >
+                    Сохранить
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={resetStates}
                     sx={{
                       textTransform: "none",
                       backgroundColor: "#CCCCCC",
