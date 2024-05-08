@@ -59,7 +59,7 @@ export const updateDraft = createAsyncThunk(
     try {
       // Используем шаблонные строки для динамического формирования URL
       const response = await instance.put(
-        `/${accountId}/orders/${orderId}/update`, {organizationName}
+        `/${accountId}/orders/${orderId}/active`, {organizationName}
       );
       return response.data;
     } catch (error) {
@@ -93,6 +93,22 @@ export const updateTitleOrder = createAsyncThunk(
         `/${accountId}/orders/${orderId}/update`,{titlesToUpdate}
       );
       return response.data.titlesToUpdate;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+
+export const deleteTitleOrder = createAsyncThunk(
+  "work/deleteTitleOrder",
+  async ({ accountId, orderId, titleId}, { rejectWithValue }) => {
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.delete(
+        `/${accountId}/orders/${orderId}/delete/${titleId}`
+      );
+      return response;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -182,9 +198,6 @@ const workSlice = createSlice({
    .addCase(updateRecieved.fulfilled, (state, action) => {
       console.log('updateResieved fulfilled', action.payload);
       state.status = 'resolved';
-      // Здесь вы можете обновить состояние в зависимости от ответа сервера
-      // Например, если сервер возвращает обновленные данные заказа:
-      // state.work = action.payload; // Пример обновления списка работ
     })
    .addCase(updateRecieved.rejected, (state, action) => {
       console.log('updateResieved rejected', action.payload);
@@ -204,6 +217,21 @@ const workSlice = createSlice({
     })
     .addCase(updateTitleOrder.rejected, (state, action) => {
       console.log('updateTitleOrder rejected', action.payload);
+      state.status = 'rejected';
+      state.error = action.payload;
+    })
+     //deleteTitleOrder
+     .addCase(deleteTitleOrder.pending, (state) => {
+      console.log('deleteTitleOrder pending');
+      state.status = 'loading';
+      state.error = null;
+    })
+   .addCase(deleteTitleOrder.fulfilled, (state, action) => {
+      console.log('deleteTitleOrder fulfilled', action.payload);
+      state.status = 'resolved';
+    })
+   .addCase(deleteTitleOrder.rejected, (state, action) => {
+      console.log('deleteTitleOrder rejected', action.payload);
       state.status = 'rejected';
       state.error = action.payload;
     });

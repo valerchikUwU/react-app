@@ -24,8 +24,23 @@ const productSlice = createSlice({
     productsStart: [],
     status: null,
     error: null,
+    saveButtonActive: {},
  },
- reducers: {},
+ reducers: {
+  addNewFieldToAllProducts: (state, action) => {
+    state.productsStart = state.productsStart.map(product => ({
+     ...product,
+      button: false,
+
+    }));
+  },
+  updateSaveButtonState: (state, action) => {
+    const { productId, active } = action.payload;
+    state.saveButtonActive[productId] = active; // Обновляем состояние для конкретного productId
+    localStorage.setItem(`saveButtonActive-${productId}`, active);
+    console.log(`Saved state for product ${productId}: ${active}`); // Добавьте эту строку
+  },
+ },
  extraReducers: (builder) => {
     builder
       .addCase(getProducts.pending, (state) => {
@@ -43,6 +58,6 @@ const productSlice = createSlice({
  },
 });
 
-export const {} = productSlice.actions;
+export const {addNewFieldToAllProducts, updateSaveButtonState } = productSlice.actions;
 
 export default productSlice.reducer;

@@ -16,14 +16,14 @@ const CustomCheckbox = styled(Checkbox)({
   },
 });
 
-export default function CustomStyledCheckbox({ checked, onChange }) {
+export default function CustomStyledCheckbox({ checked, onChange}) {
   return (
     <CustomCheckbox
     checked={checked}
     onChange={onChange}
       sx={{
         "& .MuiSvgIcon-root": {
-          fontSize: "18px", // Изменение размера иконки до 18px
+          fontSize: '18px', // Изменение размера иконки до 18px
         },
       }}
     />

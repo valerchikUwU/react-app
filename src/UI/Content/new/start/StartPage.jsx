@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import classes from "./StartPage.module.css";
 import book from "../image/book.svg";
-import { MuiSwitchLarge } from "./MuiSwitch";
-import CustomStyledCheckbox from "./CustomStyledCheckbox";
+import { MuiSwitchLarge } from "../customUi/MuiSwitch";
+import CustomStyledCheckbox from "../customUi/CustomStyledCheckbox";
 import classNames from "classnames";
 import { Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { getProducts } from "../../../../BLL/productSlice";
+import { addNewFieldToAllProducts, getProducts, updateSaveButtonState } from "../../../../BLL/productSlice";
 import { addWork, putOrders } from "../../../../BLL/workSlice";
+
 
 export default function StartPage() {
   const [checkedStates, setCheckedStates] = useState({});
@@ -25,6 +26,9 @@ export default function StartPage() {
     setChecked1States({ ...checked1States, [orderId]: event.target.checked });
   };
 
+  const saveButtonActiveState = useSelector(state => state.products.saveButtonActive);
+
+
   const handleClick = (
     orderId,
     order,
@@ -36,6 +40,10 @@ export default function StartPage() {
   ) => {
     if (countStates[orderId] > 0) {
       setIsDisabledStates({ ...isDisabledStates, [orderId]: true });
+      console.log(saveButtonActiveState);
+
+      dispatch(updateSaveButtonState({ productId, active: true }));
+
       // dispatch(
       //   addWork({
       //     order: order,
@@ -57,6 +65,7 @@ export default function StartPage() {
           },
         })
       );
+    
     }
   };
 
@@ -91,7 +100,19 @@ export default function StartPage() {
   const dispatch = useDispatch();
   const { accountId } = useParams();
   useEffect(() => {
-    dispatch(getProducts({ accountId: accountId, typeId: "1" }));
+    // Загрузка сохраненного состояния при инициализации компонента
+    const savedState = localStorage.getItem('saveButtonActive');
+    if (savedState) {
+      const savedStateObj = JSON.parse(savedState);
+      Object.entries(savedStateObj).forEach(([productId, active]) => {
+        dispatch(updateSaveButtonState({ productId, active }));
+      });
+    }
+    
+    dispatch(getProducts({ accountId: accountId, typeId: "1" })) .then(() => {
+      // После успешного выполнения getProducts, вызываем addNewFieldToAllProducts
+      dispatch(addNewFieldToAllProducts());
+    });
   }, [accountId]);
 
   const orders = useSelector((state) => state.products.productsStart);
@@ -184,7 +205,7 @@ export default function StartPage() {
                 <span className={classes.booklet}>Доп. буклет</span>
                 <button
                   className={
-                    isDisabledStates[order.id]
+                    saveButtonActiveState[order.id]
                       ? classes.buttonCartDisabled
                       : classes.buttonCart
                   }
@@ -201,17 +222,19 @@ export default function StartPage() {
                       countStates[order.id]
                     )
                   }
-                  disabled={isDisabledStates[order.id]}
+                 
+                  // disabled={isDisabledStates[order.id] }
+                  disabled={saveButtonActiveState[order.id]}
                 >
-                  В корзину
+                  В корзину 
                 </button>
                 <button
                   className={classNames(
-                    isDisabledStates[order.id]
+                    saveButtonActiveState[order.id]
                       ? classes.arrowCartDisabled
                       : classes.arrowCart
                   )}
-                  disabled={isDisabledStates[order.id]}
+                  disabled={saveButtonActiveState[order.id]}
                 >
                   <span className={classes.count}>
                     {countStates[order.id] || 0}
