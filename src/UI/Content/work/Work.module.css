@@ -59,7 +59,7 @@
 .modalIcon {
     grid-area: icon;
     position: absolute; /* Изменено на абсолютное позиционирование */
-    margin-left: 900px;
+    margin-left: 990px;
 }
 
 .modalWindow {
@@ -100,3 +100,8 @@
     50% { border-color: transparent; }
   }
   
+
+  
+@media (max-width: 1440px) {
+
+}
