@@ -56,7 +56,20 @@ export default function Work() {
     setOpenStates({ ...openStates, [id]: false });
 
   const [isDeleteClicked, setIsDeleteClicked] = useState(false);
-  const handleDeleteOrder = (orderId, titleId, productId) => {
+  const handleDeleteOrder = (orderId, titleId, productId, productId1) => {
+    if (productId1) {
+      const newSelectedAbbr = productId1; 
+      const product = productsModal.find(p => p.abbreviation === newSelectedAbbr);
+      console.log(product);
+      setSelectedProduct(product); 
+      dispatch(updateSaveButtonState({ productId: product.id, active: false }));
+      localStorage.removeItem(`saveButtonActive-${product.id}`)
+    } 
+    if(productId){
+      console.log(productId);
+      dispatch(updateSaveButtonState({ productId, active: false }));
+      localStorage.removeItem(`saveButtonActive-${productId}`)
+    }
     dispatch(
       deleteTitleOrder({
         accountId: accountId,
@@ -65,10 +78,6 @@ export default function Work() {
       })
     );
     setIsDeleteClicked(true);
-    dispatch(updateSaveButtonState({ productId, active: false }));
-    // Удаление сохраненного состояния
-  localStorage.removeItem('saveButtonActive');
-
   };
   useEffect(() => {
     // Find the first open modal
@@ -322,6 +331,8 @@ export default function Work() {
     0
   );
 
+  const [productId, setProductId] = useState({});
+
   const handleSave = () => {
     // Проверяем, есть ли хотя бы одна ошибка в массиве errors
     const hasErrors = Object.values(errors).some((error) => error !== null);
@@ -333,9 +344,12 @@ export default function Work() {
       // Проходим по listModalTitles и проверяем условия для каждого элемента
       listModalTitles.forEach((row) => {
         // Проверяем, существует ли значение для данного id в selectedCheck
+        console.log('------------------------------------------');
+        console.log(row.productId);
+        console.log('------------------------------------------');
         titlesToUpdate.push({
           id: row.id,
-          productId: row.productId,
+          productId: productId[row.id] ? productId[row.id] : row.productId,
           accessType: selectedAccessType[row.id]
             ? selectedAccessType[row.id]
             : row.accessType,
@@ -409,6 +423,8 @@ export default function Work() {
 
     setSelectedInput(initialSelectedInput);
   };
+
+  const [selectedProduct, setSelectedProduct] = useState({});
 
 
   return (
@@ -747,7 +763,7 @@ export default function Work() {
               <TableContainer
                 component={Paper}
                 sx={{
-                  height: "calc(100vh - 150px)",
+                  maxHeight: 'calc(100vh - 200px)',
                   overflow: "auto",
                   scrollbarWidth: "thin",
                   scrollbarColor: "#005475 #FFFFFF",
@@ -1007,14 +1023,34 @@ export default function Work() {
                             className={classes.ModaltextBody}
                               variant="standard"
                               sx={{ width: "100px" }}
-                              value={
-                                selectedAbbr[row.id] || row.product.abbreviation
-                              }
-                              onChange={(event) =>
-                                handleChangeSelectAbbr(event, row.id)
-                              }
+                              value={selectedAbbr[row.id] || row.product.abbreviation}
+                              // onChange={(event) =>
+                              //   handleChangeSelectAbbr(event, row.id)
+                              // }
+
+                              onChange={(event) => {
+                                const newSelectedAbbr = event.target.value;
+                                const product = productsModal.find(p => p.abbreviation === newSelectedAbbr);
+                                
+                                setSelectedProduct(product); // Установите выбранный продукт
+                                
+                                handleChangeSelectAbbr(event, row.id);
+
+
+                                setProductId((prevState) => ({
+                                  ...prevState,
+                                  [row.id]: product.id, // Обновляем выбранное значение для данного элемента
+                                }));
+
+                                // Если вам нужно получить product.id, вы можете сделать это здесь
+                                // setProductId(product.id);
+                                console.log(product.id); // Выводит ID выбранного продукта в консоль
+                              }}  
+                                
                             >
+                             
                               {productsModal.map((product) => (
+                                 
                                 <MenuItem className={classes.textBodyDraft}
                                   key={product.id}
                                   value={product.abbreviation}
@@ -1146,6 +1182,20 @@ export default function Work() {
                               : row.price.priceAccess}
                             &#x20bd;
                           </TableCell>
+{/* 
+<TableCell className={classes.ModaltextBody}>
+  {selectedCheck[row.id]? (
+    selectedProduct[row.id] && selectedProduct[row.id].priceBooklet
+     ? selectedProduct[row.id].priceBooklet
+      : row.price.priceBooklet
+  ) : (
+    selectedProduct[row.id] && selectedProduct[row.id].priceAccess
+     ? selectedProduct[row.id].priceAccess
+      : row.price.priceAccess
+  )}
+  &#x20bd;
+</TableCell> */}
+
 
                           <TableCell className={classes.ModaltextBody}>
                             {sumForOneTitle[row.id]} &#x20bd;
@@ -1154,12 +1204,13 @@ export default function Work() {
                           <TableCell className={classes.ModaltextBody}>
                             <IconButton
                               onClick={() =>
-                                handleDeleteOrder(element.id, row.id, productsModal[0].id)
+                                handleDeleteOrder(element.id, row.id, selectedProduct.id, row.product.abbreviation) 
                               }
                             >
                               <img src={deleteGrey} alt="удалить" />
                             </IconButton>
                           </TableCell>
+                          
                         </TableRow>
                       ))}
                     </TableBody>
@@ -1201,7 +1252,7 @@ export default function Work() {
                           <TableCell className={classes.ModaltextBody}>
                             <IconButton
                               onClick={() =>
-                                handleDeleteOrder(element.id, row.id)
+                                handleDeleteOrder(element.id, row.id) //уточнить
                               }
                             >
                               <img src={deleteGrey} alt="удалить" />

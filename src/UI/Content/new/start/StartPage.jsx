@@ -29,6 +29,7 @@ export default function StartPage() {
   const saveButtonActiveState = useSelector(state => state.products.saveButtonActive);
 
 
+
   const handleClick = (
     orderId,
     order,
@@ -40,8 +41,8 @@ export default function StartPage() {
   ) => {
     if (countStates[orderId] > 0) {
       setIsDisabledStates({ ...isDisabledStates, [orderId]: true });
-      console.log(saveButtonActiveState);
 
+      
       dispatch(updateSaveButtonState({ productId, active: true }));
 
       // dispatch(
@@ -99,22 +100,15 @@ export default function StartPage() {
 
   const dispatch = useDispatch();
   const { accountId } = useParams();
+
   useEffect(() => {
-    // Загрузка сохраненного состояния при инициализации компонента
-    const savedState = localStorage.getItem('saveButtonActive');
-    if (savedState) {
-      const savedStateObj = JSON.parse(savedState);
-      Object.entries(savedStateObj).forEach(([productId, active]) => {
-        dispatch(updateSaveButtonState({ productId, active }));
-      });
-    }
     
     dispatch(getProducts({ accountId: accountId, typeId: "1" })) .then(() => {
       // После успешного выполнения getProducts, вызываем addNewFieldToAllProducts
       dispatch(addNewFieldToAllProducts());
     });
   }, [accountId]);
-
+  
   const orders = useSelector((state) => state.products.productsStart);
 
   return (
