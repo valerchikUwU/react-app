@@ -1,5 +1,5 @@
 import React from "react";
-import classes from "./Style.module.css";
+import classes from "./Work.module.css";
 import {
   Table,
   TableBody,
