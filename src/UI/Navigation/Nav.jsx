@@ -21,7 +21,11 @@ export default function Nav() {
      dispatch(getWork(accountId)); // Передаем accountId в getCompleted
   }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
 
-  const list = useSelector((state) => state.work.work);
+ 
+
+  const list = useSelector((state) => state.work.work.length);
+
+
 
   return (
     <div className={classes.nav}>
@@ -131,7 +135,7 @@ export default function Nav() {
               В работе
             </span>
             
-            <Badge  badgeContent={list.length}    
+            <Badge  badgeContent={list}    
             sx={{
               "& .MuiBadge-badge": {
                 backgroundColor:"#005475", // Установка фона в синий или #005475 в зависимости от условия

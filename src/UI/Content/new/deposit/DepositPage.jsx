@@ -4,24 +4,23 @@ import { InputAdornment } from "@mui/material";
 import Button from "@mui/material/Button";
 import classes from "./DepositPage.module.css";
 import logo from "./logo.svg";
-import { styled } from "@mui/system";
 import { useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Select, MenuItem, FormControl } from "@mui/material";
 import { getDeposit, putDeposit } from "../../../../BLL/depositSlice";
 
-// Создаем стилизованный компонент TextField
-const StyledTextField = styled(TextField)({
-  "& .MuiInputLabel-root": {
-    fontSize: "14px", // Измените размер шрифта метки
-    color: "#005475",
-  },
-  "& .MuiInputBase-input": {
-    fontSize: "14px", // Установите размер шрифта текста в поле ввода
-    color: "#005475",
-  },
-});
+// // Создаем стилизованный компонент TextField
+// const StyledTextField = styled(TextField)({
+//   "& .MuiInputLabel-root": {
+//     fontSize: "14px", // Измените размер шрифта метки
+//     color: "#005475",
+//   },
+//   "& .MuiInputBase-input": {
+//     fontSize: "14px", // Установите размер шрифта текста в поле ввода
+//     color: "#005475",
+//   },
+// });
 
 export default function DepositPage() {
   const [value, setValue] = useState("");
@@ -45,21 +44,25 @@ export default function DepositPage() {
   const organizations = useSelector((state) => state.deposit.organizations);
 
   const handleSubmit = (SUMDeposit, productId, organizationName) => {
-    console.log(`Submitting with accountId: ${accountId}, SUMDeposit: ${SUMDeposit}, productId: ${productId}, organizationName: ${organizationName}`);
-    dispatch(
-       putDeposit({
-         accountId: accountId,
-         productData: {
-           productId: productId, // Используем переданный productId
-           organizationName: organizationName, // Используем переданный organizationName
-           quantity: SUMDeposit,
-         },
-       })
+    console.log(
+      `Submitting with accountId: ${accountId}, SUMDeposit: ${SUMDeposit}, productId: ${productId}, organizationName: ${organizationName}`
     );
-    setSnackbarValue(SUMDeposit); // Устанавливаем значение для Snackbar
-    setSnackbarOpen(true); // Открываем Snackbar
-    setValue(""); // Очищаем значение в TextField сразу после нажатия кнопки
-   };
+
+    dispatch(
+      putDeposit({
+        accountId: accountId,
+        productData: {
+          productId: productId,
+          organizationName: organizationName,
+          quantity: SUMDeposit,
+        },
+      })
+    ).catch();
+    
+    setSnackbarValue(SUMDeposit);
+    setSnackbarOpen(true);
+    setValue("");
+  };
 
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -70,20 +73,24 @@ export default function DepositPage() {
 
   const [academy, setAcademy] = useState("");
 
-  const [selectedOrganization, setSelectedOrganization] = useState('');
+  const [selectedOrganization, setSelectedOrganization] = useState("");
 
   const handleAcademyChange = (event) => {
-     setAcademy(event.target.value);
-     const organization = organizations.find(org => org.id === event.target.value);
-     setSelectedOrganization(organization);
+    setAcademy(event.target.value);
+    const organization = organizations.find(
+      (org) => org.id === event.target.value
+    );
+    setSelectedOrganization(organization);
   };
   // Предполагается, что organizations уже загружены и доступны
   useEffect(() => {
-     if (organizations.length > 0) {
-       setAcademy(organizations[0].id); // Устанавливаем первую организацию как выбранную по умолчанию
-       const organization = organizations.find(org => org.id === organizations[0].id);
-       setSelectedOrganization(organization); // Устанавливаем selectedOrganization на основе первой организации
-     }
+    if (organizations.length > 0) {
+      setAcademy(organizations[0].id); // Устанавливаем первую организацию как выбранную по умолчанию
+      const organization = organizations.find(
+        (org) => org.id === organizations[0].id
+      );
+      setSelectedOrganization(organization); // Устанавливаем selectedOrganization на основе первой организации
+    }
   }, [organizations]);
 
   return (
@@ -140,13 +147,13 @@ export default function DepositPage() {
                   </FormControl>
                 </div>
                 {selectedOrganization && (
-                <pre
-                 style={{ marginLeft: "70px" }}
-                 className={classes.nameParentText}
-                >
-                 {selectedOrganization.allDeposits} &#x20bd;
-                </pre>
-              )}
+                  <pre
+                    style={{ marginLeft: "70px" }}
+                    className={classes.nameParentText}
+                  >
+                    {selectedOrganization.allDeposits} &#x20bd;
+                  </pre>
+                )}
               </div>
 
               <hr style={{ borderTop: "2px solid #999999" }}></hr>
@@ -154,9 +161,13 @@ export default function DepositPage() {
                 className={classes.button}
                 onClick={() => {
                   if (selectedOrganization) {
-                    handleSubmit(value, deposit.id, selectedOrganization.organizationName);
+                    handleSubmit(
+                      value,
+                      deposit.id,
+                      selectedOrganization.organizationName
+                    );
                   }
-               }}
+                }}
                 disabled={!value}
                 sx={{ marginTop: "20px" }}
               >
@@ -196,7 +207,6 @@ export default function DepositPage() {
                     marginBottom: "-10px",
                   }}
                 >
-                  {" "}
                   {`Депозит на сумму ${snackbarValue} ₽`}
                 </Alert>
               </Snackbar>

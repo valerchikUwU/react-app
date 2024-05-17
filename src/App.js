@@ -5,7 +5,6 @@ import { Route, Routes } from "react-router-dom";
 import New from "./UI/Content/new/New.jsx";
 import Completed from "./UI/Content/completed/Completed.jsx";
 import Work from "./UI/Content/work/Work.jsx";
-import Worker from "./UI/Content/work/Worker.jsx";
 import Content from "./UI/Content/Content.jsx";
 import Main from "./UI/Main.jsx";
 import NavMain from "./UI/Navigation/NavMain.jsx";

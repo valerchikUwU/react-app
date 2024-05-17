@@ -42,156 +42,24 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import CustomStyledCheckbox from "./CustomStyledCheckbox";
 import { updateSaveButtonState } from "../../../BLL/productSlice";
-import { styled } from "@mui/system";
-
+import { styled} from "@mui/system";
 
 export default function Work() {
   const dispatch = useDispatch();
   const { accountId } = useParams();
   const [dummyKey, setDummyKey] = useState(0); // Dummy state to force re-render
-  const [openStates, setOpenStates] = useState({});
-  const [isTextBlack, setIsTextBlack] = useState({});
-  const [isIconVisibleSend, setIsIconVisibleSend] = useState({});
-  const [isSelectDisabled, setIsSelectDisabled] = useState({});
-  const [selectedValues, setSelectedValues] = useState({});
-  const [selectedAbbr, setSelectedAbbr] = useState({});
-  const [selectedGeneration, setSelectedGeneration] = useState("");
-  const [selectedInput, setSelectedInput] = useState({});
-  const [isFieldCleared, setIsFieldCleared] = useState({});
-  const [sumForOneTitle, setSumForOneTitle] = useState({});
-  const [selectedCheck, setSelectedCheck] = useState({});
-  const [selectedAccessType, setSelectedAccessType] = useState({});
-  const [errors, setErrors] = useState({});
-  const [selectedProduct, setSelectedProduct] = useState({});
-  const [productId, setProductId] = useState({});
-  const [isDeleteClicked, setIsDeleteClicked] = useState(false);
-
-  const list = useSelector((state) => state.work?.work || []);
-  const organizationList = useSelector((state) => state.work.organizationList);
-  const productsModal = useSelector((state) => state.work.products);
-  const listModalTitles = useSelector(
-    (state) => state.work?.workModalTitles || []
-  );
-  const listModalOrder = useSelector(
-    (state) => state.work?.workModalOrder || {}
-  );
-
-  const allIds = listModalTitles.map((row) => row.id);
-  const totalSum = allIds.reduce(
-    (acc, id) => acc + (sumForOneTitle[id] || 0),
-    0
-  );
-
-  // Функция сортировки
-  function sortElementsByStatus(a, b) {
-    if (a.status === "Черновик" && b.status !== "Черновик") {
-      return -1;
-    }
-    if (a.status !== "Черновик" && b.status === "Черновик") {
-      return 1;
-    }
-
-    if (a.status === "Черновик депозита" && b.status !== "Черновик депозита") {
-      return -1;
-    }
-    if (a.status !== "Черновик депозита" && b.status === "Черновик депозита") {
-      return 1;
-    }
-
-    return 0;
-  }
-
-  const sortedList = [...list].sort(sortElementsByStatus);
-
   useEffect(() => {
     dispatch(getWork(accountId));
   }, [accountId, dummyKey]);
 
-  useEffect(() => {
-    // Find the first open modal
-    const openModalId = Object.keys(openStates).find((id) => openStates[id]);
-    if (openModalId) {
-      // Assuming you have the accountId available, replace "1" with the actual accountId
-      dispatch(getWorkModal({ accountId: accountId, orderId: openModalId }));
-      setIsDeleteClicked(false);
-    }
-  }, [isDeleteClicked, openStates, dispatch]);
-
-  useEffect(() => {
-    if (listModalTitles) {
-      const initialSelectedInput = listModalTitles.reduce((acc, item) => {
-        acc[item.id] = item.quantity; // Предполагаем, что у вас есть начальное количество
-        return acc;
-      }, {});
-
-      setSelectedInput(initialSelectedInput);
-    }
-  }, [listModalTitles]); // Зависимость от listModalTitles
-
-  useEffect(() => {
-    // Принудительное обновление состояния чекбокса
-    listModalTitles.forEach((row) => {
-      // Проверяем, есть ли уже значение в selectedCheck для данного id
-      if (
-        selectedCheck[row.id] === undefined ||
-        selectedCheck[row.id] === null
-      ) {
-        // Если нет, проверяем, равно ли значение в row.addBooklet true
-        if (row.addBooklet === true) {
-          // Если да, устанавливаем selectedCheck[row.id] в true
-          setSelectedCheck((prevState) => ({
-            ...prevState,
-            [row.id]: true, // Используйте true для отмеченных чекбоксов
-          }));
-        } else {
-          // Если row.addBooklet не равно true, устанавливаем selectedCheck[row.id] в false
-          setSelectedCheck((prevState) => ({
-            ...prevState,
-            [row.id]: false, // Используйте false для неотмеченных чекбоксов
-          }));
-        }
-      }
-    });
-  }, [selectedCheck, listModalTitles]); // Зависимости хука
-
-  useEffect(() => {
-    // Обновляем ошибки для каждого элемента
-    const newErrors = {};
-    listModalTitles.forEach((row) => {
-      const isChecked = selectedCheck[row.id];
-      const isSelectEmpty = !selectedAccessType[row.id];
-      const isSelectEmpty1 = !row.accessType;
-
-      if (!isChecked && isSelectEmpty && isSelectEmpty1) {
-        newErrors[row.id] = "Заполните"; // Сообщение об ошибке
-      } else {
-        // Удаляем ошибку, если условия не выполняются
-        newErrors[row.id] = null;
-      }
-    });
-    setErrors(newErrors);
-  }, [selectedCheck, selectedAccessType, listModalTitles]);
-
-  useEffect(() => {
-    // Инициализация sumForOneTitle
-    const initialSumForOneTitle = listModalTitles.reduce((acc, row) => {
-      const price = selectedCheck[row.id]
-        ? selectedProduct[row.id]?.PriceDefinition?.priceBooklet ||
-          row.price.priceBooklet
-        : selectedProduct[row.id]?.PriceDefinition?.priceAccess ||
-          row.price.priceAccess;
-      acc[row.id] = parseFloat(selectedInput[row.id] || 0) * price;
-      return acc;
-    }, {});
-
-    setSumForOneTitle(initialSumForOneTitle);
-  }, [selectedCheck, selectedInput, listModalTitles, selectedProduct]);
+  const [openStates, setOpenStates] = useState({});
 
   const OpenModal = (id) => setOpenStates({ ...openStates, [id]: true });
 
   const handleCloseModal = (id) =>
     setOpenStates({ ...openStates, [id]: false });
 
+  const [isDeleteClicked, setIsDeleteClicked] = useState(false);
   const handleDeleteOrder = (orderId, titleId, productId, productId1) => {
     if (productId1) {
       const newSelectedAbbr = productId1;
@@ -217,6 +85,19 @@ export default function Work() {
     );
     setIsDeleteClicked(true);
   };
+  useEffect(() => {
+    // Find the first open modal
+    const openModalId = Object.keys(openStates).find((id) => openStates[id]);
+    if (openModalId) {
+      // Assuming you have the accountId available, replace "1" with the actual accountId
+      dispatch(getWorkModal({ accountId: accountId, orderId: openModalId }));
+      setIsDeleteClicked(false);
+    }
+  }, [isDeleteClicked, openStates, dispatch]);
+
+  const [isTextBlack, setIsTextBlack] = useState({});
+  const [isIconVisibleSend, setIsIconVisibleSend] = useState({});
+  const [isSelectDisabled, setIsSelectDisabled] = useState({});
 
   const handleIconClick = (orderId, organizationName) => {
     dispatch(
@@ -253,12 +134,27 @@ export default function Work() {
     setDummyKey((prevKey) => prevKey + 1);
   };
 
+  const list = useSelector((state) => state.work?.work || []);
+  const organizationList = useSelector((state) => state.work.organizationList);
+  const productsModal = useSelector((state) => state.work.products);
+  // console.log(productsModal[0].PriceDefinition.priceBooklet);
+  const listModalTitles = useSelector(
+    (state) => state.work?.workModalTitles || []
+  );
+  const listModalOrder = useSelector(
+    (state) => state.work?.workModalOrder || {}
+  );
+
+  const [selectedValues, setSelectedValues] = useState({});
+
   const handleChangeSelect = (e, id) => {
     setSelectedValues((prevState) => ({
       ...prevState,
       [id]: e.target.value,
     }));
   };
+
+  const [selectedAbbr, setSelectedAbbr] = useState({});
 
   // Функция для обработки изменения значения в Select
   const handleChangeSelectAbbr = (event, id) => {
@@ -268,12 +164,30 @@ export default function Work() {
     }));
   };
 
+  const [selectedGeneration, setSelectedGeneration] = useState("");
+
   const handleChangeGeneration = (event, id) => {
     setSelectedGeneration((prevState) => ({
       ...prevState,
       [id]: event.target.value, // Обновляем выбранное значение для данного элемента
     }));
   };
+
+  const [selectedInput, setSelectedInput] = useState({});
+
+  useEffect(() => {
+    if (listModalTitles) {
+      const initialSelectedInput = listModalTitles.reduce((acc, item) => {
+        acc[item.id] = item.quantity; // Предполагаем, что у вас есть начальное количество
+        return acc;
+      }, {});
+
+      setSelectedInput(initialSelectedInput);
+    }
+  }, [listModalTitles]); // Зависимость от listModalTitles
+
+  const [isFieldCleared, setIsFieldCleared] = useState({});
+  const [sumForOneTitle, setSumForOneTitle] = useState({});
 
   const handleChangeInput = (e, id, price) => {
     const newValue = e.target.value.replace(/[^0-9]/g, "");
@@ -305,6 +219,28 @@ export default function Work() {
     }
   };
 
+  // Функция сортировки
+  function sortElementsByStatus(a, b) {
+    if (a.status === "Черновик" && b.status !== "Черновик") {
+      return -1;
+    }
+    if (a.status !== "Черновик" && b.status === "Черновик") {
+      return 1;
+    }
+
+    if (a.status === "Черновик депозита" && b.status !== "Черновик депозита") {
+      return -1;
+    }
+    if (a.status !== "Черновик депозита" && b.status === "Черновик депозита") {
+      return 1;
+    }
+
+    return 0;
+  }
+
+  const sortedList = [...list].sort(sortElementsByStatus);
+
+  const [selectedCheck, setSelectedCheck] = useState({});
   const handleCheckboxChange = (event, id) => {
     setSelectedCheck((prevState) => ({
       ...prevState,
@@ -312,12 +248,85 @@ export default function Work() {
     }));
   };
 
+  useEffect(() => {
+    // Принудительное обновление состояния чекбокса
+    listModalTitles.forEach((row) => {
+      // Проверяем, есть ли уже значение в selectedCheck для данного id
+      if (
+        selectedCheck[row.id] === undefined ||
+        selectedCheck[row.id] === null
+      ) {
+        // Если нет, проверяем, равно ли значение в row.addBooklet true
+        if (row.addBooklet === true) {
+          // Если да, устанавливаем selectedCheck[row.id] в true
+          setSelectedCheck((prevState) => ({
+            ...prevState,
+            [row.id]: true, // Используйте true для отмеченных чекбоксов
+          }));
+        } else {
+          // Если row.addBooklet не равно true, устанавливаем selectedCheck[row.id] в false
+          setSelectedCheck((prevState) => ({
+            ...prevState,
+            [row.id]: false, // Используйте false для неотмеченных чекбоксов
+          }));
+        }
+      }
+    });
+  }, [selectedCheck, listModalTitles]); // Зависимости хука
+
+  const [selectedAccessType, setSelectedAccessType] = useState({});
+
+
+
+  const [errors, setErrors] = useState({});
+
   const handleChangeAccessType = (event, id) => {
     setSelectedAccessType((prevState) => ({
       ...prevState,
       [id]: event.target.value, // Обновляем выбранное значение для данного элемента
     }));
   };
+
+  useEffect(() => {
+    // Обновляем ошибки для каждого элемента
+    const newErrors = {};
+    listModalTitles.forEach((row) => {
+      const isChecked = selectedCheck[row.id];
+      const isSelectEmpty = !selectedAccessType[row.id];
+      const isSelectEmpty1 = !row.accessType;
+
+      if (!isChecked && isSelectEmpty && isSelectEmpty1) {
+        newErrors[row.id] = "Заполните"; // Сообщение об ошибке
+      } else {
+        // Удаляем ошибку, если условия не выполняются
+        newErrors[row.id] = null;
+      }
+    });
+    setErrors(newErrors);
+  }, [selectedCheck, selectedAccessType, listModalTitles]);
+
+  const [selectedProduct, setSelectedProduct] = useState({});
+
+  useEffect(() => {
+    // Инициализация sumForOneTitle
+    const initialSumForOneTitle = listModalTitles.reduce((acc, row) => {
+      const price = selectedCheck[row.id]
+        ? selectedProduct[row.id]?.PriceDefinition?.priceBooklet || row.price.priceBooklet
+        :  selectedProduct[row.id]?.PriceDefinition?.priceAccess || row.price.priceAccess;
+      acc[row.id] = parseFloat(selectedInput[row.id] || 0) * price;
+      return acc;
+    }, {});
+
+    setSumForOneTitle(initialSumForOneTitle);
+  }, [selectedCheck, selectedInput, listModalTitles, selectedProduct]);
+
+  const allIds = listModalTitles.map((row) => row.id);
+  const totalSum = allIds.reduce(
+    (acc, id) => acc + (sumForOneTitle[id] || 0),
+    0
+  );
+
+  const [productId, setProductId] = useState({});
 
   const handleSaveDraft = () => {
     // Проверяем, есть ли хотя бы одна ошибка в массиве errors
@@ -447,6 +456,8 @@ export default function Work() {
     setSelectedInput(initialSelectedInput);
   };
 
+  
+
   // Text Header
   const TextHeader = styled(TableCell)({
     fontFamily: "Montserrat",
@@ -458,13 +469,13 @@ export default function Work() {
   });
 
   // Text Body
-  // const TextBody = styled(TableCell)({
-  //   fontFamily: "Montserrat",
-  //   fontSize: "16px",
-  //   fontWeight: 600,
-  //   color: "black",
-  //   textAlign: "center",
-  // });
+  const TextBody = styled(TableCell)({
+    fontFamily: "Montserrat",
+    fontSize: "16px",
+    fontWeight: 600,
+    color: "black",
+    textAlign: "center",
+  });
 
   const TableCellModal = styled(TableCell)({
     fontFamily: "Montserrat",
@@ -486,28 +497,28 @@ export default function Work() {
     marginBottom: "15px",
   });
 
-  // const StyledTableCell = styled(TableCell)(({ isTextBlack, openStates }) => ({
-  //   fontFamily: "Montserrat",
-  //   fontSize: "16px",
-  //   fontWeight: 600,
-  //   color: isTextBlack ? "black" : "#999999",
-  //   textAlign: "center",
-  //   cursor: "pointer",
-  //   backgroundColor: openStates ? "#0031B01A" : "transparent",
-  //   transition: "color 0.5s ease",
-  // }));
+  const StyledTableCell = styled(TableCell)(({ isTextBlack, openStates }) => ({
+    fontFamily: "Montserrat",
+    fontSize: "16px",
+    fontWeight: 600,
+    color: isTextBlack ? "black" : "#999999",
+    textAlign: "center",
+    cursor: "pointer",
+    backgroundColor: openStates ? "#0031B01A" : "transparent",
+    transition: "color 0.5s ease",
+  }));
 
-  // const StyledTableCellActive = styled(TableCell)(
-  //   ({ onClick, openStates }) => ({
-  //     fontFamily: "Montserrat",
-  //     fontSize: "16px",
-  //     fontWeight: 600,
-  //     color: "#999999",
-  //     textAlign: "center",
-  //     cursor: "pointer",
-  //     backgroundColor: openStates ? "#0031B01A" : "",
-  //   })
-  // );
+  const StyledTableCellActive = styled(TableCell)(
+    ({ onClick, openStates }) => ({
+      fontFamily: "Montserrat",
+      fontSize: "16px",
+      fontWeight: 600,
+      color: "#999999",
+      textAlign: "center",
+      cursor: "pointer",
+      backgroundColor: openStates ? "#0031B01A" : "",
+    })
+  );
 
   // const TableRowActive = styled(TableRow)(({ openStates, onClick }) => ({
   //   fontFamily: "Montserrat",
@@ -780,12 +791,13 @@ export default function Work() {
                       <Tooltip title="Заказать" arrow>
                         <Fade in={!isIconVisibleSend[element.id]}>
                           <IconButton
-                           onClick={() => 
-                            handleIconClick(
-                              element.id,
-                              selectedValues[element.id] || element.organizationName
-                            )
-                          }
+                            onClick={() =>
+                              handleIconClick(
+                                element.id,
+                                selectedValues[element.id] ||
+                                  element.organizationName
+                              )
+                            }
                           >
                             <img src={send} alt="отправить" />
                           </IconButton>
@@ -1319,18 +1331,21 @@ export default function Work() {
                               value={
                                 selectedAbbr[row.id] || row.product.abbreviation
                               }
+                    
                               onChange={(event) => {
                                 const newSelectedAbbr = event.target.value;
                                 const product = productsModal.find(
                                   (p) => p.abbreviation === newSelectedAbbr
                                 );
 
-                                // setSelectedProduct(product);
+                                
+                                // setSelectedProduct(product); 
 
                                 setSelectedProduct((prevState) => ({
                                   ...prevState,
-                                  [row.id]: product,
+                                  [row.id]: product, 
                                 }));
+
 
                                 handleChangeSelectAbbr(event, row.id);
 
@@ -1338,6 +1353,8 @@ export default function Work() {
                                   ...prevState,
                                   [row.id]: product.id, // Обновляем выбранное значение для данного элемента
                                 }));
+
+
 
                                 // Если вам нужно получить product.id, вы можете сделать это здесь
                                 // setProductId(product.id);
@@ -1531,10 +1548,8 @@ export default function Work() {
                                   e,
                                   row.id,
                                   selectedCheck[row.id]
-                                    ? selectedProduct[row.id]?.PriceDefinition
-                                        ?.priceBooklet || row.price.priceBooklet
-                                    : selectedProduct[row.id]?.PriceDefinition
-                                        ?.priceAccess || row.price.priceAccess
+                                    ? selectedProduct[row.id]?.PriceDefinition?.priceBooklet || row.price.priceBooklet
+                                    : selectedProduct[row.id]?.PriceDefinition?.priceAccess || row.price.priceAccess
                                 )
                               }
                             />
@@ -1542,13 +1557,13 @@ export default function Work() {
 
                           <TableCellModal>
                             {selectedCheck[row.id]
-                              ? selectedProduct[row.id]?.PriceDefinition
-                                  ?.priceBooklet || row.price.priceBooklet
-                              : selectedProduct[row.id]?.PriceDefinition
-                                  ?.priceAccess || row.price.priceAccess}
-                            {/* {selectedCheck[row.id]
+                                ? selectedProduct[row.id]?.PriceDefinition?.priceBooklet || row.price.priceBooklet
+                                : selectedProduct[row.id]?.PriceDefinition?.priceAccess || row.price.priceAccess}
+
+                               {/* {selectedCheck[row.id]
                               ? row.price.priceBooklet
                               : row.price.priceAccess} */}
+                              
                             &#x20bd;
                           </TableCellModal>
 
@@ -1672,7 +1687,6 @@ export default function Work() {
                     marginTop: "60px",
                     marginRight: "10px",
                     gap: "15px",
-                    marginBottom:'20px'
                   }}
                 >
                   <Button
@@ -1722,7 +1736,6 @@ export default function Work() {
                     marginTop: "60px",
                     marginRight: "10px",
                     gap: "15px",
-                    marginBottom:'20px'
                   }}
                 >
                   <Button
