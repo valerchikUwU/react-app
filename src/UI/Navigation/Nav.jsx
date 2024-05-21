@@ -6,26 +6,25 @@ import { useLocation } from "react-router-dom";
 import classNames from "classnames";
 import { Badge } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from 'react-router-dom';
-import { useEffect } from "react";
 import { getWork } from "../../BLL/workSlice";
+import { useEffect } from "react";
+import { useParams } from "react-router-dom";
+
 
 
 export default function Nav() {
+  
   const location = useLocation();
-
+  const { accountId } = useParams();
   const dispatch = useDispatch();
-  const { accountId } = useParams(); // Извлекаем accountId из URL
- 
-  useEffect(() => {
-     dispatch(getWork(accountId)); // Передаем accountId в getCompleted
-  }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
 
- 
+  const list = useSelector((state) => state.work.work);
 
-  const list = useSelector((state) => state.work.work.length);
-
-
+// Отслеживаем изменения в accountId для обновления списка работ
+useEffect(() => {
+  dispatch(getWork(accountId));
+}, [accountId, dispatch]); // Используем accountId вместо list
+  
 
   return (
     <div className={classes.nav}>
@@ -135,7 +134,7 @@ export default function Nav() {
               В работе
             </span>
             
-            <Badge  badgeContent={list}    
+            <Badge  badgeContent={list.length ? list.length : "0" }    
             sx={{
               "& .MuiBadge-badge": {
                 backgroundColor:"#005475", // Установка фона в синий или #005475 в зависимости от условия

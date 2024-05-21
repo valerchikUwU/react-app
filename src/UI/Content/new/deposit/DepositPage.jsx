@@ -9,6 +9,7 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Select, MenuItem, FormControl } from "@mui/material";
 import { getDeposit, putDeposit } from "../../../../BLL/depositSlice";
+import { getWork } from "../../../../BLL/workSlice";
 
 // // Создаем стилизованный компонент TextField
 // const StyledTextField = styled(TextField)({
@@ -57,7 +58,9 @@ export default function DepositPage() {
           quantity: SUMDeposit,
         },
       })
-    ).catch();
+    ).then(()=>{
+      dispatch(getWork(accountId));
+    });
     
     setSnackbarValue(SUMDeposit);
     setSnackbarOpen(true);

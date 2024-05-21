@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getCompleted } from "../../../BLL/completedSlice";
 import { useParams } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import { styled } from '@mui/system';
+import { getDeposit } from "../../../../BLL/admin/depositAdminSlice";
 
 // Создаем стилизованные компоненты с помощью styled
 const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
@@ -13,7 +13,6 @@ const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
   color: '#005475',
   borderBottom: '3px solid #005475BF',
   textAlign: 'center',
-  opacity:'0.75'
 }));
 
 const StyledTableCellBody = styled(TableCell)(({ theme }) => ({
@@ -22,18 +21,17 @@ const StyledTableCellBody = styled(TableCell)(({ theme }) => ({
   fontWeight: 600,
   color: '#333333BF',
   textAlign: 'center',
-  opacity:'0.75'
 }));
 
-export default function Completed() {
+export default function Deposits() {
   const dispatch = useDispatch();
   const { accountId } = useParams(); // Извлекаем accountId из URL
 
   useEffect(() => {
-     dispatch(getCompleted(accountId)); // Передаем accountId в getCompleted
+     dispatch(getDeposit(accountId)); 
   }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
 
-  const list = useSelector((state) => state.completed.completed);
+  const deposits = useSelector((state) => state.adminDeposit.deposits);
 
   return (
     <div>
@@ -46,7 +44,7 @@ export default function Completed() {
           scrollbarColor: "#005475BF #FFFFFF",
         }}
       >
-        <Table stickyHeader sx={{ minWidth: 650 }} aria-label="simple table">
+        <Table stickyHeader sx={{  width:'50%'}} aria-label="simple table">
           <TableHead>
             <TableRow>
               <StyledTableCellHead
@@ -58,7 +56,7 @@ export default function Completed() {
                   background: "#fff",
                 }}
               >
-                №
+              Академии
               </StyledTableCellHead>
               <StyledTableCellHead
                 sx={{
@@ -69,60 +67,18 @@ export default function Completed() {
                   background: "#fff",
                 }}
               >
-                Академия
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Дата
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Сумма
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                № счета
+                Остаток
               </StyledTableCellHead>
             </TableRow>
           </TableHead>
           <TableBody>
-            {list.map((element) => (
+            {deposits.map((element) => (
               <TableRow key={element.id}>
-                <StyledTableCellBody>
-                  {element.orderNumber}
-                </StyledTableCellBody>
                 <StyledTableCellBody>
                   {element.organizationName}
                 </StyledTableCellBody>
                 <StyledTableCellBody>
-                  {element.dispatchDate}
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.SUM} &#x20bd;
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.billNumber}
+                  {element.allDeposits - element.SUM}
                 </StyledTableCellBody>
               </TableRow>
             ))}

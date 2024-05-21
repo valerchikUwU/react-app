@@ -8,7 +8,7 @@ import { Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { addNewFieldToAllProducts, getProducts, updateSaveButtonState } from "../../../../BLL/productSlice";
-import { putOrders } from "../../../../BLL/workSlice";
+import { getWork, putOrders } from "../../../../BLL/workSlice";
 
 
 export default function StartPage() {
@@ -48,7 +48,6 @@ export default function StartPage() {
     if (countStates[orderId] > 0) {
       setIsDisabledStates({ ...isDisabledStates, [orderId]: true });
 
-
       dispatch(updateSaveButtonState({ productId, active: true }));
 
       // dispatch(
@@ -71,7 +70,9 @@ export default function StartPage() {
             quantity: quantity,
           },
         })
-      );
+      ).then(()=>{
+        dispatch(getWork(accountId));
+      });
     
     }
   };

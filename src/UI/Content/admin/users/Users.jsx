@@ -1,39 +1,49 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getCompleted } from "../../../BLL/completedSlice";
-import { useParams } from 'react-router-dom';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
-import { styled } from '@mui/system';
+import { useParams } from "react-router-dom";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
+import { styled } from "@mui/system";
+import { getUser } from "../../../../BLL/admin/userSlice";
+import plus from "./image/add.svg";
+import check from "./image/checboxCheck.svg";
+import unCheck from "./image/checbox.svg";
+import IconButton from "@mui/material/IconButton";
 
 // Создаем стилизованные компоненты с помощью styled
 const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
   fontFamily: '"Montserrat"',
-  fontSize: '16px',
+  fontSize: "16px",
   fontWeight: 600,
-  color: '#005475',
-  borderBottom: '3px solid #005475BF',
-  textAlign: 'center',
-  opacity:'0.75'
+  color: "#005475",
+  borderBottom: "3px solid #005475BF",
+  textAlign: "center",
 }));
 
 const StyledTableCellBody = styled(TableCell)(({ theme }) => ({
   fontFamily: '"Montserrat"',
-  fontSize: '16px',
+  fontSize: "16px",
   fontWeight: 600,
-  color: '#333333BF',
-  textAlign: 'center',
-  opacity:'0.75'
+  color: "#333333BF",
+  textAlign: "center",
 }));
 
-export default function Completed() {
+export default function Users() {
   const dispatch = useDispatch();
   const { accountId } = useParams(); // Извлекаем accountId из URL
 
   useEffect(() => {
-     dispatch(getCompleted(accountId)); // Передаем accountId в getCompleted
+    dispatch(getUser(accountId));
   }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
 
-  const list = useSelector((state) => state.completed.completed);
+  const users = useSelector((state) => state.adminUser.users);
 
   return (
     <div>
@@ -69,7 +79,7 @@ export default function Completed() {
                   background: "#fff",
                 }}
               >
-                Академия
+                Имя
               </StyledTableCellHead>
               <StyledTableCellHead
                 sx={{
@@ -80,7 +90,7 @@ export default function Completed() {
                   background: "#fff",
                 }}
               >
-                Дата
+                Академии
               </StyledTableCellHead>
               <StyledTableCellHead
                 sx={{
@@ -91,7 +101,7 @@ export default function Completed() {
                   background: "#fff",
                 }}
               >
-                Сумма
+                Был
               </StyledTableCellHead>
               <StyledTableCellHead
                 sx={{
@@ -102,28 +112,62 @@ export default function Completed() {
                   background: "#fff",
                 }}
               >
-                № счета
+                Телефон
+              </StyledTableCellHead>
+
+              <StyledTableCellHead
+                sx={{
+                  paddingY: 1,
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 100,
+                  background: "#fff",
+                }}
+              >
+                Теллеграм
+              </StyledTableCellHead>
+              <StyledTableCellHead
+                sx={{
+                  paddingY: 1,
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 100,
+                  background: "#fff",
+                }}
+              >
+                <IconButton>
+                  <img src={plus} alt="плюс" />
+                </IconButton>
               </StyledTableCellHead>
             </TableRow>
           </TableHead>
           <TableBody>
-            {list.map((element) => (
+            {users.map((element) => (
               <TableRow key={element.id}>
                 <StyledTableCellBody>
-                  {element.orderNumber}
+                  {element.accountNumber}
+                </StyledTableCellBody>
+                <StyledTableCellBody>{element.firstName + ' ' + element.lastName}</StyledTableCellBody>
+                <StyledTableCellBody>
+                  {element.organizationList.map((organization, index, array) =>
+                    index === array.length - 1
+                      ? organization
+                      : `${organization}, `
+                  )}
+                </StyledTableCellBody>
+                <StyledTableCellBody>{element.formattedLastSeen}</StyledTableCellBody>
+                <StyledTableCellBody>
+                  {element.telephoneNumber}
                 </StyledTableCellBody>
                 <StyledTableCellBody>
-                  {element.organizationName}
+                  {element.telegramId ? (
+                    <img src={check} alt="есть" />
+                  ) : (
+                    <img src={unCheck} alt="нету" />
+                  )}
                 </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.dispatchDate}
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.SUM} &#x20bd;
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.billNumber}
-                </StyledTableCellBody>
+
+                <StyledTableCellBody></StyledTableCellBody>
               </TableRow>
             ))}
           </TableBody>
