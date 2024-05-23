@@ -118,10 +118,10 @@ export const deleteTitleOrder = createAsyncThunk(
 const workSlice = createSlice({
   name: "work",
   initialState: {
-    drafts: [],
+    // drafts: [],
     work: [],
     organizationList:[],
-    workModalOrder:[],
+    workModalOrder:{},
     workModalTitles:[],
     products:[],
     status: null,
@@ -182,7 +182,7 @@ const workSlice = createSlice({
       .addCase(updateDraft.fulfilled, (state, action) => {
         console.log('updateDraft fulfilled', action.payload);
         state.status = 'resolved';
-        state.drafts = action.payload;
+        // state.drafts = action.payload;
       })
       .addCase(updateDraft.rejected, (state, action) => {
         console.log('updateDraft rejected', action.payload);
@@ -213,7 +213,7 @@ const workSlice = createSlice({
     .addCase(updateTitleOrder.fulfilled, (state, action) => {
       console.log('updateTitleOrder fulfilled', action.payload);
       state.status = 'resolved';
-      state.drafts = action.payload;
+      // state.drafts = action.payload;
     })
     .addCase(updateTitleOrder.rejected, (state, action) => {
       console.log('updateTitleOrder rejected', action.payload);

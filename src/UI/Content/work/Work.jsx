@@ -43,6 +43,7 @@ import MenuItem from "@mui/material/MenuItem";
 import CustomStyledCheckbox from "../styledComponents/CustomStyledCheckbox.jsx";
 import { updateSaveButtonState } from "../../../BLL/productSlice";
 import { styled } from "@mui/system";
+import classes from './Work.module.css'
 
 
 export default function Work() {
@@ -72,7 +73,7 @@ export default function Work() {
   const listModalTitles = useSelector(
     (state) => state.work?.workModalTitles || []
   );
-  const listModalOrder = useSelector(
+  const ObjectModalOrder = useSelector(
     (state) => state.work?.workModalOrder || {}
   );
 
@@ -319,7 +320,7 @@ export default function Work() {
     }));
   };
 
-  const handleSaveDraft = () => {
+  const handleSave = () => {
     // Проверяем, есть ли хотя бы одна ошибка в массиве errors
     const hasErrors = Object.values(errors).some((error) => error !== null);
 
@@ -354,7 +355,7 @@ export default function Work() {
         dispatch(
           updateTitleOrder({
             accountId: accountId,
-            orderId: listModalOrder.id,
+            orderId: ObjectModalOrder.id,
             titlesToUpdate: titlesToUpdate, // titlesToUpdate теперь является массивом объектов
           })
         ).then(() => {
@@ -394,7 +395,7 @@ export default function Work() {
       dispatch(
         updateTitleOrder({
           accountId: accountId,
-          orderId: listModalOrder.id,
+          orderId: ObjectModalOrder.id,
           titlesToUpdate: titlesToUpdate, // titlesToUpdate теперь является массивом объектов
         })
       ).then(() => {
@@ -534,11 +535,11 @@ export default function Work() {
             width: "10px", // Ширина скроллбара
           },
           "&::-webkit-scrollbar-track": {
-            borderRadius: "100px", // Радиус скругления трека скроллбара
+            borderRadius: "10px", // Радиус скругления трека скроллбара
             backgroundColor: "#f1f1f1", // Цвет трека
           },
           "&::-webkit-scrollbar-thumb": {
-            borderRadius: "100px", // Радиус скругления области управления
+            borderRadius: "10px", // Радиус скругления области управления
             backgroundColor: "#888", // Цвет области управления
             ":hover": {
               backgroundColor: "#555", // Цвет при наведении
@@ -1003,7 +1004,7 @@ export default function Work() {
       </TableContainer>
 
       {list.map((element) => (
-        <Modal open={openStates[element.id] || false}>
+        <Modal open={openStates[element.id] || false} key={element.id}>
           <div
             style={{
               display: "grid",
@@ -1017,7 +1018,9 @@ export default function Work() {
               transform: "translate(-50%, -50%)",
               width: "100%",
               paddingTop: "5%",
+              
             }}
+           
           >
             {element.status === "Черновик депозита" ? (
               <IconButton
@@ -1064,6 +1067,7 @@ export default function Work() {
                 alignSelf: "center",
                 position: "relative",
               }}
+              className={classes.modal}
             >
               <TableContainer
                 component={Paper}
@@ -1677,7 +1681,7 @@ export default function Work() {
                 >
                   <Button
                     variant="contained"
-                    onClick={handleSaveDraft}
+                    onClick={handleSave}
                     sx={{
                       textTransform: "none",
                       backgroundColor: "#005475",
