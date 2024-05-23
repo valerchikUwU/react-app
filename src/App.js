@@ -8,11 +8,17 @@ import Work from "./UI/Content/work/Work.jsx";
 import Content from "./UI/Content/Content.jsx";
 import Main from "./UI/Main.jsx";
 import NavMain from "./UI/Navigation/NavMain.jsx";
+import NavAdmin from "./UI/Navigation/admin/NavAdmin.jsx";
 import { Navigate } from "react-router-dom";
 import StartPage from "./UI/Content/new/start/StartPage.jsx";
 import BasicPage from "./UI/Content/new/basic/BasicPage.jsx";
 import PersonalPage from "./UI/Content/new/personal/PersonalPage.jsx";
 import DepositPage from "./UI/Content/new/deposit/DepositPage.jsx";
+import Archive from "./UI/Content/admin/archive/Archive.jsx";
+import PriceList from "./UI/Content/admin/priceList/PriceList.jsx";
+import Users from "./UI/Content/admin/users/Users.jsx";
+import Deposits from "./UI/Content/admin/deposits/Deposits.jsx";
+import Orders from "./UI/Content/admin/orders/Orders.jsx";
 
 function App() {
   return (
@@ -23,7 +29,10 @@ function App() {
 
         <Route path=":accountId/user/*" element={<Nav></Nav>}></Route>
 
-        <Route path=":accountId/admin/*" element={<Nav></Nav>}></Route>
+        <Route
+          path=":accountId/admin/*"
+          element={<NavAdmin></NavAdmin>}
+        ></Route>
 
         <Route path=":accountId/superAdmin/*" element={<Nav></Nav>}></Route>
       </Routes>
@@ -84,6 +93,36 @@ function App() {
             element={
               <Content>
                 <Completed></Completed>
+              </Content>
+            }
+          ></Route>
+
+          <Route
+            path="/:accountId/admin/*"
+            element={
+              <Content>
+                <Routes>
+                <Route
+                    path="orders"
+                    element={<Orders></Orders>}
+                  ></Route>
+                  <Route
+                    path="archive"
+                    element={<Archive></Archive>}
+                  ></Route>
+                  <Route
+                    path="priceList"
+                    element={<PriceList></PriceList>}
+                  ></Route>
+                  <Route
+                    path="users"
+                    element={<Users></Users>}
+                  ></Route>
+                  <Route
+                    path="deposits"
+                    element={<Deposits></Deposits>}
+                  ></Route>
+                </Routes>
               </Content>
             }
           ></Route>

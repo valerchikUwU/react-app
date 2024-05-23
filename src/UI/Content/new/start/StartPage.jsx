@@ -8,15 +8,21 @@ import { Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { addNewFieldToAllProducts, getProducts, updateSaveButtonState } from "../../../../BLL/productSlice";
-import { addWork, putOrders } from "../../../../BLL/workSlice";
+import { getWork, putOrders } from "../../../../BLL/workSlice";
 
 
 export default function StartPage() {
+
   const [checkedStates, setCheckedStates] = useState({});
   const [checked1States, setChecked1States] = useState({});
   const [isDisabledStates, setIsDisabledStates] = useState({});
   const [countStates, setCountStates] = useState({});
   const [isCheckedBoxStates, setIsCheckedBoxStates] = useState({});
+
+  const dispatch = useDispatch();
+  const { accountId } = useParams();
+
+
 
   const handleChange = (orderId, event) => {
     setCheckedStates({ ...checkedStates, [orderId]: event.target.checked });
@@ -42,7 +48,6 @@ export default function StartPage() {
     if (countStates[orderId] > 0) {
       setIsDisabledStates({ ...isDisabledStates, [orderId]: true });
 
-      
       dispatch(updateSaveButtonState({ productId, active: true }));
 
       // dispatch(
@@ -65,7 +70,9 @@ export default function StartPage() {
             quantity: quantity,
           },
         })
-      );
+      ).then(()=>{
+        dispatch(getWork(accountId));
+      });
     
     }
   };
@@ -98,8 +105,7 @@ export default function StartPage() {
     });
   };
 
-  const dispatch = useDispatch();
-  const { accountId } = useParams();
+
 
   useEffect(() => {
     

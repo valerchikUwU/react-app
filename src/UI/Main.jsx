@@ -1,49 +1,84 @@
-import React, { useEffect, useState } from 'react';
-import QR from './qr.png';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import classes from "./Main.module.css";
-import axios from 'axios';
+import QRCode from "qrcode.react"; // Импортируем QRCode
 
 export default function Main() {
-  const [isChecking, setIsChecking] = useState(false);
-  const [success, setSuccess] = useState(false);
-
-  const checkAuthStatus = () => {
-    console.log("111111111111111111111111111111111111111111111");
-    axios.get(`http://localhost:3000/api/auth-status`)
-     .then(response => {
-        if (response.data.success) {
-          const id = response.data.id;
-          console.log("ID:", id);
-          window.location.href = `/#/${id}/user/new/start`;
-          setSuccess(true); // Установка success в true после успешного ответа
-          console.log("11111111111111111111111111");
-        }
-      })
-     .catch(error => {
-        console.error('Error fetching auth status:', error);
-      });
-  };
+  const [data, setData] = useState({ token: "", sessionId: "" });
+  const [ws, setWs] = useState(null); // Добавляем состояние для WebSocket соединения
 
   useEffect(() => {
-    console.log("hfhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-    if (!success && isChecking) {
-      const intervalId = setInterval(checkAuthStatus, 1); // Вызов каждую миллисекунду
-      console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-      return () => clearInterval(intervalId); // Очистка интервала при размонтировании компонента или изменении isChecking
+    // Функция для выполнения GET запроса
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/homepage"
+        );
+        // Обновляем состояние с полученными данными
+        setData(response.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    // Вызываем функцию fetchData при монтировании компонента
+    fetchData();
+  }, []); // Убрано зависимость от data.sessionId, так как fetchData вызывается один раз при монтировании
+
+  useEffect(() => {
+    // Устанавливаем WebSocket соединение после получения данных
+    if (data.sessionId) {
+      const wsUrl = `ws://localhost:8080?sessionId=${data.sessionId}`;
+      const wsConnection = new WebSocket(wsUrl);
+
+      setWs(wsConnection); // Сохраняем WebSocket соединение в состоянии
+
+      // Обработка событий WebSocket соединения
+      wsConnection.onopen = () => {
+        console.log("WebSocket соединение открыто");
+      };
+
+      wsConnection.onmessage = (event) => {
+        console.log("Получено сообщение:", event.data);
+        // Анализируем полученное сообщение
+        const message = JSON.parse(event.data);
+
+        console.log(message.message);
+        if (message !== "false") {
+          // Если сообщение не равно 'false', выполняем редирект
+          window.location.href = `#/${message.message}/user/new/start`;
+        } else {
+          // Если сообщение равно 'false', выводим ошибку
+          alert("Ошибка аутентификации");
+        }
+      };
+
+      wsConnection.onclose = () => {
+        console.log("WebSocket соединение закрыто");
+      };
+
+      // Очистка при размонтировании компонента
+      return () => {
+        wsConnection.close();
+      };
     }
-  }, [isChecking, success]); // Добавляем success в зависимости useEffect
+  }, [data.sessionId]); // Зависимость от sessionId, чтобы обновлять соединение при изменении sessionId
 
-  const handleLinkClick = () => {
-    setIsChecking(true);
-  };
-
+  const qrUrl = `https://t.me/AcademyStrategBot?start=${data.token}-${data.sessionId}`;
   return (
     <div className={classes.main}>
-        <div className={classes.qr}>Для входа отсканируйте QR-код</div>
-        <img src={QR} alt="QR code" className={classes.img}/>
-        <div className={classes.link}>
-          <a href="https://t.me/AcademyStrategBot" onClick={handleLinkClick}>Или перейдите по ссылке</a>
-        </div> 
+      <div className={classes.qr}>Для входа отсканируйте QR-код</div>
+      {/* Используем QRCode вместо статической картинки */}
+      <QRCode value={qrUrl}  style={{marginTop:'25px'}}/>
+      <div className={classes.link}>
+        <a href={qrUrl} target="_blank">
+          Или перейдите по ссылке
+        </a>
+      </div>
+
+      {/* Отображаем полученные данные */}
+      <div>Token: {data.token}</div>
+      <div>Session ID: {data.sessionId}</div>
     </div>
-  )
+  );
 }

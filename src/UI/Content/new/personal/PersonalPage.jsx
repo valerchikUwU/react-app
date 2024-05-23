@@ -8,7 +8,7 @@ import { Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { getProducts } from "../../../../BLL/productSlice";
-import { addWork, putOrders } from "../../../../BLL/workSlice";
+import { getWork, putOrders } from "../../../../BLL/workSlice";
 
 export default function PersonalPage() {
   const [checkedStates, setCheckedStates] = useState({});
@@ -36,6 +36,7 @@ export default function PersonalPage() {
   ) => {
     if (countStates[orderId] > 0) {
       setIsDisabledStates({ ...isDisabledStates, [orderId]: true });
+
       // dispatch(
       //   addWork({
       //     order: order,
@@ -56,7 +57,9 @@ export default function PersonalPage() {
             quantity: quantity,
           },
         })
-      );
+      ).then(()=>{
+        dispatch(getWork(accountId));
+      });
     }
   };
 

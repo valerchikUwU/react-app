@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getCompleted } from "../../../BLL/completedSlice";
 import { useParams } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
 import { styled } from '@mui/system';
+import { getArchive } from '../../../../BLL/admin/archiveSlice';
 
 // Создаем стилизованные компоненты с помощью styled
 const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
@@ -25,15 +25,16 @@ const StyledTableCellBody = styled(TableCell)(({ theme }) => ({
   opacity:'0.75'
 }));
 
-export default function Completed() {
+export default function Archive() {
   const dispatch = useDispatch();
   const { accountId } = useParams(); // Извлекаем accountId из URL
 
   useEffect(() => {
-     dispatch(getCompleted(accountId)); // Передаем accountId в getCompleted
+     dispatch(getArchive(accountId)); 
+     
   }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
 
-  const list = useSelector((state) => state.completed.completed);
+  const archive = useSelector((state) => state.adminArchive.archive);
 
   return (
     <div>
@@ -69,6 +70,17 @@ export default function Completed() {
                   background: "#fff",
                 }}
               >
+                Заказчик
+              </StyledTableCellHead>
+              <StyledTableCellHead
+                sx={{
+                  paddingY: 1,
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 100,
+                  background: "#fff",
+                }}
+              >
                 Академия
               </StyledTableCellHead>
               <StyledTableCellHead
@@ -93,6 +105,7 @@ export default function Completed() {
               >
                 Сумма
               </StyledTableCellHead>
+
               <StyledTableCellHead
                 sx={{
                   paddingY: 1,
@@ -102,15 +115,18 @@ export default function Completed() {
                   background: "#fff",
                 }}
               >
-                № счета
+                № Счета
               </StyledTableCellHead>
             </TableRow>
           </TableHead>
           <TableBody>
-            {list.map((element) => (
+            {archive.map((element) => (
               <TableRow key={element.id}>
                 <StyledTableCellBody>
                   {element.orderNumber}
+                </StyledTableCellBody>
+                <StyledTableCellBody>
+                  {element.fullName}
                 </StyledTableCellBody>
                 <StyledTableCellBody>
                   {element.organizationName}

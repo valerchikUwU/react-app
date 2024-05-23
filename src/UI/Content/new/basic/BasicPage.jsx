@@ -8,7 +8,7 @@ import { Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { getProducts } from "../../../../BLL/productSlice";
-import { addWork, putOrders } from "../../../../BLL/workSlice";
+import { addWork, getWork, putOrders } from "../../../../BLL/workSlice";
 
 export default function BasicPage() {
   const [checkedStates, setCheckedStates] = useState({});
@@ -56,7 +56,9 @@ export default function BasicPage() {
             quantity: quantity,
           },
         })
-      );
+      ).then(()=>{
+        dispatch(getWork(accountId));
+      });
     }
   };
 
