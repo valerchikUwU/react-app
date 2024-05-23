@@ -34,7 +34,7 @@ export default function Nav() {
 
         
         <NavLink to="orders">
-          <div className={classes.item}>
+          <div className={`${classes.item} ${classes.hoverEffect}`}>
             <span
               className={
                 location.pathname.includes("/orders")
@@ -65,7 +65,7 @@ export default function Nav() {
         </NavLink>
 
         <NavLink to="archive">
-          <div className={classes.item}>
+          <div className={`${classes.item} ${classes.hoverEffect}`}>
             <span
               className={
                 location.pathname.includes("/archive")
@@ -99,7 +99,7 @@ export default function Nav() {
         </NavLink>
 
         <NavLink to="priceList">
-          <div className={classes.item}>
+          <div className={`${classes.item} ${classes.hoverEffect}`}>
             <span
               className={
                 location.pathname.includes("/priceList")
@@ -132,7 +132,7 @@ export default function Nav() {
         </NavLink>
 
         <NavLink to="users">
-          <div className={classes.item}>
+          <div className={`${classes.item} ${classes.hoverEffect}`}>
             <span
               className={
                 location.pathname.includes("/users")
@@ -165,7 +165,7 @@ export default function Nav() {
         </NavLink>
 
         <NavLink to="deposits">
-          <div className={classes.item}>
+          <div className={`${classes.item} ${classes.hoverEffect}`}>
             <span
               className={
                 location.pathname.includes("/deposits")

@@ -30,10 +30,10 @@ a {
     font-size: 16px;
     font-weight: 700;
     width: 240px;
-    height: 30px;
+    height: 50px;
     color: #FFFFFF80;
-    margin-left: 45px;
-    margin-top: 13px;
+    padding-left: 45px;
+    padding-top: 5px;
     opacity: 1;  
 }
 
@@ -53,6 +53,11 @@ a {
     fill-opacity:1;
    }
 
-   .icon{
    
-   }
+   .hoverEffect {
+    transition: background-color 0.3s ease;
+  }
+  
+  .hoverEffect:hover {
+    background-color: #00405A; /* Более темный оттенок #005475 */
+  }

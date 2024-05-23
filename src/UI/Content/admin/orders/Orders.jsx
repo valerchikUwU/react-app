@@ -9,13 +9,9 @@ import {
   TableRow,
   Paper,
   Box,
-  Fade,
   Typography,
   Button,
 } from "@mui/material";
-import send from "./image/send.svg";
-import done from "./image/done.svg";
-import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import Modal from "@mui/material/Modal";
 import { useState } from "react";
@@ -31,11 +27,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { TextField } from "@mui/material";
 import {
   deleteTitleOrder,
-  getWork,
-  getWorkModal,
-  updateDraft,
-  updateRecieved,
-  updateTitleOrder,
 } from "../../../../BLL/workSlice.js";
 import { useParams } from "react-router-dom";
 import FormControl from "@mui/material/FormControl";
@@ -44,7 +35,7 @@ import MenuItem from "@mui/material/MenuItem";
 import CustomStyledCheckbox from "../../styledComponents/CustomStyledCheckbox.jsx";
 
 import { styled } from "@mui/system";
-import { getOrder, getOrderModal } from "../../../../BLL/admin/orderSlice.js";
+import { getOrder, getOrderModal, updateTitleOrderAdmin } from "../../../../BLL/admin/orderSlice.js";
 
 export default function Orders() {
   const dispatch = useDispatch();
@@ -185,28 +176,8 @@ export default function Orders() {
     setIsDeleteClicked(true);
   };
 
-  const handleIconClick = (orderId, organizationName) => {
-    dispatch(
-      updateDraft({
-        accountId: accountId,
-        orderId: orderId,
-        organizationName: organizationName,
-      })
-    );
-    setDummyKey((prevKey) => prevKey + 1);
 
-    dispatch(getWork(accountId));
-  };
 
-  const handleIconClickResieved = (orderId) => {
-    dispatch(
-      updateRecieved({
-        accountId: accountId,
-        orderId: orderId,
-      })
-    );
-    setDummyKey((prevKey) => prevKey + 1);
-  };
 
   // Функция для обработки изменения значения в Select
   const handleChangeSelectAbbr = (event, id) => {
@@ -267,7 +238,7 @@ export default function Orders() {
     }));
   };
 
-  const handleSaveDraft = () => {
+  const handleSave = () => {
     // Проверяем, есть ли хотя бы одна ошибка в массиве errors
     const hasErrors = Object.values(errors).some((error) => error !== null);
 
@@ -299,15 +270,20 @@ export default function Orders() {
       // Проверяем, что titlesToUpdate не пуст, перед тем как вызывать dispatch
       if (titlesToUpdate.length > 0) {
         // Предполагается, что updateTitleOrder возвращает промис
+        console.log(selectOrganization[ObjectModalOrder.id]);
+        console.log(ObjectModalOrder.organizationName);
         dispatch(
-          updateTitleOrder({
+          updateTitleOrderAdmin({
             accountId: accountId,
             orderId: ObjectModalOrder.id,
+            organizationName: selectOrganization[ObjectModalOrder.id] ? selectOrganization[ObjectModalOrder.id] : ObjectModalOrder.organizationName ,
+            status: selectStatus[ObjectModalOrder.id] ?selectStatus[ObjectModalOrder.id] :  ObjectModalOrder.status,
+            billNumber: inputAccountNumber[ObjectModalOrder.id] ? inputAccountNumber[ObjectModalOrder.id] : ObjectModalOrder.billNumber,
+            payeeId: ObjectModalOrder.payeeId,
             titlesToUpdate: titlesToUpdate, // titlesToUpdate теперь является массивом объектов
           })
         ).then(() => {
-          // После успешного выполнения updateTitleOrder вызываем getWork
-          dispatch(getWork(accountId));
+          dispatch(getOrder(accountId)); // для обновления Суммы и Состояния моментально при нажатии на кнопку сохранить в модальном окне
         });
       } else {
         // Выводим сообщение или выполняем другую логику, если titlesToUpdate пуст
@@ -316,39 +292,6 @@ export default function Orders() {
     } else {
       // Если есть хотя бы одна ошибка, выводим сообщение или выполняем другую логику
       console.log("Есть ошибки, сохранение не производится");
-    }
-  };
-
-  const handleSaveDeposit = () => {
-    // Создаем пустой массив для titlesToUpdate
-    const titlesToUpdate = [];
-
-    // Проходим по listModalTitles и проверяем условия для каждого элемента
-    listModalTitles.forEach((row) => {
-      titlesToUpdate.push({
-        id: row.id,
-        productId: productId[row.id] ? productId[row.id] : row.productId,
-        accessType: null,
-        generation: null,
-        quantity: selectedInput[row.id],
-        addBooklet: false,
-      });
-    });
-
-    // Теперь titlesToUpdate - это массив объектов, который можно использовать в вашем запросе
-    // Проверяем, что titlesToUpdate не пуст, перед тем как вызывать dispatch
-    if (titlesToUpdate.length > 0) {
-      // Предполагается, что updateTitleOrder возвращает промис
-      dispatch(
-        updateTitleOrder({
-          accountId: accountId,
-          orderId: ObjectModalOrder.id,
-          titlesToUpdate: titlesToUpdate, // titlesToUpdate теперь является массивом объектов
-        })
-      ).then(() => {
-        // После успешного выполнения updateTitleOrder вызываем getWork
-        dispatch(getWork(accountId));
-      });
     }
   };
 
@@ -393,6 +336,20 @@ export default function Orders() {
     }, {});
 
     setSelectedInput(initialSelectedInput);
+
+    //Первая таблица
+    setSelectOrganization(() => ({
+      [ObjectModalOrder.id]: ObjectModalOrder.organizationName, // Обновляем выбранное значение для данного элемента
+    }), {});
+    setPayeeName(() => ({
+      [ObjectModalOrder.id]: ObjectModalOrder.payeeName, // Обновляем выбранное значение для данного элемента
+    }), {});
+    setSelectStatus(() => ({
+      [ObjectModalOrder.id]: ObjectModalOrder.status, // Обновляем выбранное значение для данного элемента
+    }), {});
+    setInputAccountNumber(() => ({
+      [ObjectModalOrder.id]: ObjectModalOrder.billNumber, // Обновляем выбранное значение для данного элемента
+    }), {});
   };
 
   const handleChangeSelectOrganization = (event, id) => {
@@ -1462,7 +1419,7 @@ const handleChangeInputAccountNumber = (event, id) => {
                 >
                   <Button
                     variant="contained"
-                    onClick={handleSaveDeposit}
+                    onClick={handleSave}
                     sx={{
                       textTransform: "none",
                       backgroundColor: "#005475",

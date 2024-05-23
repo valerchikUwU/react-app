@@ -1,5 +1,5 @@
 import classes from "./Nav.module.css";
-import React from "react";
+import React, {useState} from "react";
 import Logo from "./logo.svg";
 import { NavLink } from "react-router-dom";
 import { useLocation } from "react-router-dom";
@@ -19,6 +19,7 @@ export default function Nav() {
   const dispatch = useDispatch();
 
   const list = useSelector((state) => state.work.work);
+  const [isHovered, setIsHovered] = useState(false);
 
 // Отслеживаем изменения в accountId для обновления списка работ
 useEffect(() => {
@@ -92,7 +93,7 @@ useEffect(() => {
           </div>
 
         <NavLink to="new">
-          <div className={classes.item}>
+          <div className={`${classes.item} ${classes.hoverEffect}`}>
             <span
               className={
                 location.pathname.includes("/new") ? classes.activeLinkText : ""
@@ -123,7 +124,7 @@ useEffect(() => {
         </NavLink>
 
         <NavLink to="work">
-          <div className={classes.item}>
+          <div className={`${classes.item} ${classes.hoverEffect}`}>
             <span
               className={
                 location.pathname.includes("/work")
@@ -154,7 +155,7 @@ useEffect(() => {
         </NavLink>
 
         <NavLink to="completed">
-          <div className={classes.item}>
+          <div className={`${classes.item} ${classes.hoverEffect}`}>
             <span
               className={
                 location.pathname.includes("/completed")
