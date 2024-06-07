@@ -17,6 +17,21 @@ export const getOrder = createAsyncThunk(
   }
 );
 
+export const getNewOrder = createAsyncThunk(
+  "order/getNewOrder",
+  async (accountId, { rejectWithValue }) => {
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.get(`${accountId}/orders/admin/newOrder`);
+
+      console.log(response.data);
+      return { allProducts: response.data.allProducts, allOrganizations: response.data.allOrganizations, allPayees: response.data.allPayees};
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 export const getOrderModal = createAsyncThunk(
   "order/getOrderModal",
   async ({ accountId, orderId }, { rejectWithValue }) => {
@@ -38,9 +53,34 @@ export const getOrderModal = createAsyncThunk(
   }
 );
 
+export const putNewOrder = createAsyncThunk(
+  "order/putNewOrder",
+  async ({ accountId,organizationCustomerId, status, billNumber, payeeId, isFromDeposit, titlesToCreate }, { rejectWithValue }) => {
+    try {
+      const response = await instance.post(
+        `/${accountId}/orders/admin/newOrder`,{ organizationCustomerId,status,billNumber,payeeId,isFromDeposit,titlesToCreate}
+      );
+    return response.data
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 export const updateTitleOrderAdmin = createAsyncThunk(
   "order/updateTitleOrderAdmin",
-  async ({ accountId, orderId, organizationName, status, billNumber, payeeId, titlesToUpdate}, { rejectWithValue }) => {
+  async (
+    {
+      accountId,
+      orderId,
+      organizationName,
+      status,
+      billNumber,
+      payeeId,
+      titlesToUpdate,
+    },
+    { rejectWithValue }
+  ) => {
     try {
       // Используем шаблонные строки для динамического формирования URL
       const response = await instance.put(
@@ -66,6 +106,9 @@ const orderSlice = createSlice({
     modalTitles: [],
     products: [],
     payees: [],
+    allProducts: [],
+    allOrganizations: [],
+    allPayees: [],
     status: null,
     error: null,
   },
@@ -82,6 +125,21 @@ const orderSlice = createSlice({
         state.orders = action.payload.orders_list;
       })
       .addCase(getOrder.rejected, (state, action) => {
+        state.status = "rejected";
+        state.error = action.payload;
+      })
+      //getNewOrder
+      .addCase(getNewOrder.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getNewOrder.fulfilled, (state, action) => {
+        state.status = "resolved";
+        state.allProducts = action.payload.allProducts;
+        state.allOrganizations = action.payload.allOrganizations;
+        state.allPayees = action.payload.allPayees;
+      })
+      .addCase(getNewOrder.rejected, (state, action) => {
         state.status = "rejected";
         state.error = action.payload;
       })

@@ -36,15 +36,7 @@ export default function BasicPage() {
   ) => {
     if (countStates[orderId] > 0) {
       setIsDisabledStates({ ...isDisabledStates, [orderId]: true });
-      // dispatch(
-      //   addWork({
-      //     order: order,
-      //     accessType: accessType,
-      //     generation: generation,
-      //     addBooklet: addBooklet,
-      //     quantity: quantity,
-      //   })
-      // );
+ 
       dispatch(
         putOrders({
           accountId: accountId,
@@ -56,9 +48,7 @@ export default function BasicPage() {
             quantity: quantity,
           },
         })
-      ).then(()=>{
-        dispatch(getWork(accountId));
-      });
+      )
     }
   };
 

@@ -19,7 +19,7 @@ export default function Nav() {
   const dispatch = useDispatch();
 
   const list = useSelector((state) => state.work.work);
-  const [isHovered, setIsHovered] = useState(false);
+  // const [isHovered, setIsHovered] = useState(false);
 
 // Отслеживаем изменения в accountId для обновления списка работ
 useEffect(() => {

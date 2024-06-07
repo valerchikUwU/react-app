@@ -16,11 +16,12 @@ const CustomCheckbox = styled(Checkbox)({
   },
 });
 
-export default function CustomStyledCheckbox({ checked, onChange}) {
+export default function CustomStyledCheckbox({ checked, onChange, disabled}) {
   return (
     <CustomCheckbox
     checked={checked}
     onChange={onChange}
+    disabled={disabled}
     />
   );
 }

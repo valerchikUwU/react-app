@@ -17,10 +17,45 @@ export const getUser = createAsyncThunk(
   }
 );
 
+export const getOrganizationList = createAsyncThunk(
+  "order/getOrganizationList",
+  async (accountId, { rejectWithValue }) => {
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.get(`${accountId}/newAccount`);
+
+      console.log(response.data);
+      return {organizations: response.data.organizations};
+    } catch (error) {
+      console.log('Пиздец');
+      return rejectWithValue(error.message);
+     
+    }
+  }
+);
+export const postAccount = createAsyncThunk(
+  "order/putAccount",
+  async ({accountId, firstName, lastName, telephoneNumber, organizationList }, { rejectWithValue }) => {
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.post(`${accountId}/newAccount`,  {firstName, lastName, telephoneNumber, organizationList} );
+
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      console.log('Пиздец');
+      return rejectWithValue(error.message);
+     
+    }
+  }
+);
+
+
 const userSlice = createSlice({
   name: "user",
   initialState: {
     users: [],
+    organizations: [],
     status: null,
     error: null,
   },
@@ -39,7 +74,20 @@ const userSlice = createSlice({
       .addCase(getUser.rejected, (state, action) => {
         state.status = "rejected";
         state.error = action.payload;
-      });
+      })
+      //getOrganizationList
+      .addCase(getOrganizationList.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getOrganizationList.fulfilled, (state, action) => {
+        state.status = "resolved";
+        state.organizations = action.payload.organizations;
+      })
+      .addCase(getOrganizationList.rejected, (state, action) => {
+        state.status = "rejected";
+        state.error = action.payload;
+      });   
   },
 });
 

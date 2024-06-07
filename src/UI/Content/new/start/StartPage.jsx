@@ -7,7 +7,7 @@ import classNames from "classnames";
 import { Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { addNewFieldToAllProducts, getProducts, updateSaveButtonState } from "../../../../BLL/productSlice";
+import { getProducts } from "../../../../BLL/productSlice";
 import { getWork, putOrders } from "../../../../BLL/workSlice";
 
 
@@ -15,7 +15,6 @@ export default function StartPage() {
 
   const [checkedStates, setCheckedStates] = useState({});
   const [checked1States, setChecked1States] = useState({});
-  const [isDisabledStates, setIsDisabledStates] = useState({});
   const [countStates, setCountStates] = useState({});
   const [isCheckedBoxStates, setIsCheckedBoxStates] = useState({});
 
@@ -32,13 +31,10 @@ export default function StartPage() {
     setChecked1States({ ...checked1States, [orderId]: event.target.checked });
   };
 
-  const saveButtonActiveState = useSelector(state => state.products.saveButtonActive);
-
 
 
   const handleClick = (
     orderId,
-    order,
     productId,
     accessType,
     generation,
@@ -46,19 +42,6 @@ export default function StartPage() {
     quantity
   ) => {
     if (countStates[orderId] > 0) {
-      setIsDisabledStates({ ...isDisabledStates, [orderId]: true });
-
-      dispatch(updateSaveButtonState({ productId, active: true }));
-
-      // dispatch(
-      //   addWork({
-      //     order: order,
-      //     accessType: accessType,
-      //     generation: generation,
-      //     addBooklet: addBooklet,
-      //     quantity: quantity,
-      //   })
-      // );
       dispatch(
         putOrders({
           accountId: accountId,
@@ -70,10 +53,7 @@ export default function StartPage() {
             quantity: quantity,
           },
         })
-      ).then(()=>{
-        dispatch(getWork(accountId));
-      });
-    
+      ).then(() => dispatch(getWork(accountId))) // для обновления BadgeContent при добавлении в корзину товара
     }
   };
 
@@ -108,11 +88,7 @@ export default function StartPage() {
 
 
   useEffect(() => {
-    
-    dispatch(getProducts({ accountId: accountId, typeId: "1" })) .then(() => {
-      // После успешного выполнения getProducts, вызываем addNewFieldToAllProducts
-      dispatch(addNewFieldToAllProducts());
-    });
+    dispatch(getProducts({ accountId: accountId, typeId: "1" }))
   }, [accountId]);
   
   const orders = useSelector((state) => state.products.productsStart);
@@ -205,14 +181,11 @@ export default function StartPage() {
                 <span className={classes.booklet}>Доп. буклет</span>
                 <button
                   className={
-                    saveButtonActiveState[order.id]
-                      ? classes.buttonCartDisabled
-                      : classes.buttonCart
+                   classes.buttonCart
                   }
                   onClick={() =>
                     handleClick(
                       order.id,
-                      order,
                       order.id,
                       checkedStates[order.id] ? "Электронный" : "Бумажный",
                       checked1States[order.id]
@@ -223,18 +196,14 @@ export default function StartPage() {
                     )
                   }
                  
-                  // disabled={isDisabledStates[order.id] }
-                  disabled={saveButtonActiveState[order.id]}
                 >
                   В корзину 
                 </button>
                 <button
                   className={classNames(
-                    saveButtonActiveState[order.id]
-                      ? classes.arrowCartDisabled
-                      : classes.arrowCart
+                    classes.arrowCart
                   )}
-                  disabled={saveButtonActiveState[order.id]}
+             
                 >
                   <span className={classes.count}>
                     {countStates[order.id] || 0}
