@@ -26,9 +26,13 @@ export default function Main() {
   }, []); // Убрано зависимость от data.sessionId, так как fetchData вызывается один раз при монтировании
 
   useEffect(() => {
+    if(data.isLogged === true){
+      window.location.href = `#/${data.accountId}/user/new/start`;
+    }
     // Устанавливаем WebSocket соединение после получения данных
     if (data.sessionId) {
-      const wsUrl = `ws://localhost:8080?sessionId=${data.sessionId}`;
+      const wsUrl = `ws://localhost:3002?sessionId=${data.sessionId}`;
+      // const wsUrl = `ws://localhost:8080?sessionId=${data.sessionId}`;
       const wsConnection = new WebSocket(wsUrl);
 
       setWs(wsConnection); // Сохраняем WebSocket соединение в состоянии
@@ -64,7 +68,8 @@ export default function Main() {
     }
   }, [data.sessionId]); // Зависимость от sessionId, чтобы обновлять соединение при изменении sessionId
 
-  const qrUrl = `https://t.me/AcademyStrategBot?start=${data.token}-${data.sessionId}`;
+  // const qrUrl = `https://t.me/AcademyStrategBot?start=${data.token}-${data.sessionId}`;
+  const qrUrl = `tg://resolve?domain=AcademyStrategBot&start=${encodeURIComponent(data.token)}-${encodeURIComponent(data.sessionId)}`;
   return (
     <div className={classes.main}>
       <div className={classes.qr}>Для входа отсканируйте QR-код</div>

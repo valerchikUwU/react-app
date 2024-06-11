@@ -11,6 +11,8 @@ import priceListReducer from './admin/priceListSlice';
 import statisticsReducer from './superAdmin/statisticsSlice';
 import commissionReducer from './superAdmin/comissionSlice';
 import payeeReducer from './superAdmin/payeeSlice';
+import reviewReducer from './superAdmin/reviewSlice';
+
 
 export default configureStore({
   reducer: {
@@ -26,5 +28,6 @@ export default configureStore({
     superAdminStatistics: statisticsReducer,
     superAdminCommision: commissionReducer,
     superAdminPayee: payeeReducer,
+    superAdminReview: reviewReducer,
   },
 });

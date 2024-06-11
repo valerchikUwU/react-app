@@ -18,13 +18,15 @@ import {
   Modal,
 } from "@mui/material";
 import { styled } from "@mui/system";
-import add from "./image/add.svg";
-import exit from "./image/exit.svg";
 import plus from "./image/add.svg";
 import Add from "./Add.jsx";
 import ModalRules from "./ModalRules.jsx";
 import ModalRemains from "./ModalRemains.jsx";
-import { getComission, getRules } from "../../../../BLL/superAdmin/comissionSlice.js";
+import {
+  getBalance,
+  getComission,
+  getRules,
+} from "../../../../BLL/superAdmin/comissionSlice.js";
 
 // Создаем стилизованные компоненты с помощью styled
 const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
@@ -55,34 +57,60 @@ export default function Commission() {
   const { accountId } = useParams(); // Извлекаем accountId из URL
   const [openDialog, setOpenDialog] = useState(false);
   const [openStates, setOpenStates] = useState({});
+  const [openStatesRemains, setOpenStatesRemains] = useState({});
+  const [modal, setModal] = useState();
 
- const handleOpenDialog = () => {
+  const handleOpenDialog = () => {
     setOpenDialog(true);
   };
- const commision = useSelector(
+  const commision = useSelector(
     (state) => state.superAdminCommision?.commision
   );
-
+  const dummyKey = useSelector((state) => state.superAdminCommision?.dummyKey);
 
   useEffect(() => {
     dispatch(getComission(accountId));
-  }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
+  }, [dispatch, accountId, dummyKey]); // Добавляем accountId в список зависимостей
 
   useEffect(() => {
     // Find the first open modal
     let openModalId = Object.keys(openStates).find((id) => openStates[id]);
     if (openModalId) {
       // Assuming you have the accountId available, replace "1" with the actual accountId
-      dispatch(getRules({ accountId: accountId, commisionRecieverId: openModalId }));
-    
+
+      dispatch(
+        getRules({ accountId: accountId, commisionRecieverId: openModalId })
+      );
     }
-  }, [openStates, dispatch]);
-  
+  }, [openStates, dispatch, dummyKey]);
+
+  useEffect(() => {
+    // Find the first open modal
+    let openModalId = Object.keys(openStatesRemains).find((id) => openStatesRemains[id]);
+    if (openModalId) {
+      // Assuming you have the accountId available, replace "1" with the actual accountId
+      dispatch(
+        getBalance({ accountId: accountId, commisionRecieverId: openModalId })
+      );
+    }
+  }, [openStatesRemains, dispatch, dummyKey]);
+
   const OpenModalRules = (id) => {
-    return setOpenStates({ ...openStates, [id]: true });}
-  
+    setModal("rules");
+    return setOpenStates({ ...openStates, [id]: true });
+  };
+
   const handleCloseModalRules = (id) =>
     setOpenStates({ ...openStates, [id]: false });
+
+  
+  const OpenModalRemains = (id) => {
+    setModal("remains");
+    return setOpenStatesRemains({ ...openStatesRemains, [id]: true });
+  };
+
+  const handleCloseModalRemains = (id) =>
+    setOpenStatesRemains({ ...openStatesRemains, [id]: false });
 
   return (
     <div>
@@ -169,19 +197,20 @@ export default function Commission() {
                     fontWeight: 600,
                     color: "black",
                     textAlign: "center",
-                    cursor:'pointer'
+                    cursor: "pointer",
                   }}
                 >
                   {element.rulesQuantity}
                 </TableCell>
                 <TableCell
+                  onClick={() => OpenModalRemains(element.id)}
                   sx={{
                     fontFamily: "Montserrat",
                     fontSize: "16px",
                     fontWeight: 600,
                     color: "black",
                     textAlign: "center",
-                    cursor:'pointer'
+                    cursor: "pointer",
                   }}
                 >
                   Остаток
@@ -189,15 +218,20 @@ export default function Commission() {
               </TableRow>
             ))}
           </TableBody>
-
-         
         </Table>
       </TableContainer>
 
       <Add isOpen={openDialog} close={setOpenDialog}></Add>
-      <ModalRules openStates={openStates} close={handleCloseModalRules} commision={commision}></ModalRules>
-
-      {/* <ModalRemains isOpen={openRemains} close={setOpenRemains}></ModalRemains> */}
+      <ModalRules
+        openStates={openStates}
+        close={handleCloseModalRules}
+        commision={commision}
+      ></ModalRules>
+      <ModalRemains
+        openStates={openStatesRemains}
+        close={handleCloseModalRemains}
+        commision={commision}
+      ></ModalRemains>
     </div>
   );
 }

@@ -50,7 +50,7 @@ export default function Statistics() {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DesktopDatePicker
           label="Дата"
-          inputFormat="DD-MM-YYYY" // Измененный формат даты
+          format="DD/MM/YYYY"
           value={date}
           onChange={setDate}
         />
@@ -58,12 +58,12 @@ export default function Statistics() {
 
       <LineChart
         width={1600} // Увеличьте ширину
-        height={350} // Увеличьте высоту
+        height={450} // Увеличьте высоту
         data={transformedData}
-        margin={{ top: 10, right: 40, left: 50, bottom: 60 }} // Уменьшите отступы
+        margin={{ top: 10, right: 40, left: 50, bottom: 80 }} // Уменьшите отступы
       >
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey={"date"} angle={-45} textAnchor="end" />
+        <XAxis dataKey={"date"} angle={-90} textAnchor="end" />
         <YAxis domain={[0, maxSum]} /> 
         <Tooltip />
         <Line

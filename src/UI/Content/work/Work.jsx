@@ -43,6 +43,7 @@ import MenuItem from "@mui/material/MenuItem";
 import CustomStyledCheckbox from "../styledComponents/CustomStyledCheckbox.jsx";
 import { styled } from "@mui/system";
 import classes from './Work.module.css'
+import { deletePress } from "../../../BLL/productSlice.js";
 
 
 export default function Work() {
@@ -196,7 +197,7 @@ export default function Work() {
   const handleCloseModal = (id) =>
     setOpenStates({ ...openStates, [id]: false });
 
-  const handleDeleteOrder = (orderId, titleId) => {
+  const handleDeleteOrder = (orderId, titleId, productId) => {
     dispatch(
       deleteTitleOrder({
         accountId: accountId,
@@ -204,6 +205,8 @@ export default function Work() {
         titleId: titleId,
       })
     ).then(() => {
+      dispatch(deletePress({id: productId}))
+      console.log(productId);
       // После успешного выполнения deleteTitleOrder вызываем getWork
       dispatch(getWork(accountId));// для обновления полей когда еще пользователь находится в модальном окне на самой странице уже меняется
       setIsDeleteClicked(true);
@@ -1492,6 +1495,7 @@ export default function Work() {
                                 handleDeleteOrder(
                                   element.id,
                                   row.id,
+                                  productId[element.id] || row.productId,
                                 )
                               }
                             >

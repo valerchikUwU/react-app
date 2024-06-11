@@ -14,16 +14,21 @@ import {
   Select,
   MenuItem,
   Modal,
+  Chip
 } from "@mui/material";
 import exit from "./image/exit.svg";
 import { styled } from "@mui/system";
 import { useState, useEffect } from "react";
-import CustomStyledCheckbox from "../../styledComponents/CustomStyledCheckbox";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import add from "./image/add.svg";
 import del from "./image/delete.svg";
-import { createProducts } from "../../../../BLL/superAdmin/comissionSlice";
+
+import Checkbox from "@mui/material/Checkbox";
+import Autocomplete from "@mui/material/Autocomplete";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import { deleteRule, incrementDummyKey, putAccrualRule } from "../../../../BLL/superAdmin/comissionSlice";
 
 // Text Header
 const TextHeader = styled(TableCell)({
@@ -36,10 +41,13 @@ const TextHeader = styled(TableCell)({
 });
 export default function ModalRules({ openStates, close, commision }) {
   const dispatch = useDispatch();
-  const handleSave = () => {};
+  const { accountId } = useParams();
+  const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+  const checkedIcon = <CheckBoxIcon fontSize="small" />;
   const resetStates = () => {};
   const [groupProducts, setGroupProducts] = useState({});
   const [products, setProducts] = useState({});
+  const [productsItem, setProductsItem] = useState({});
   const [selectedAccessType, setSelectedAccessType] = useState({});
   const [selectedGeneration, setSelectedGeneration] = useState({});
   const [accrual, setAccrual] = useState({});
@@ -47,22 +55,40 @@ export default function ModalRules({ openStates, close, commision }) {
   const [isFieldCleared, setIsFieldCleared] = useState({});
 
   const rules = useSelector((state) => state.superAdminCommision?.rules || []);
-
-  const newRules = useSelector(
-    (state) => state.superAdminCommision?.newRules || []
+  const allProducts = useSelector(
+    (state) => state.superAdminCommision?.allProducts || []
   );
 
+  const [newProducts, setNewProducts] = useState([]);
   const addProducts = () => {
-    dispatch(
-      createProducts({
+    setNewProducts([
+      ...newProducts,
+      {
+        id: new Date().toISOString(),
         groupProducts: null,
-        products: null,
+        products: "Все",
         generation: null,
-        accessType: null,
+        accessType: "Бумажный",
         accrual: null,
-      })
-    );
+      },
+    ]);
   };
+
+  const deleteNew = (id) => {
+    setNewProducts(newProducts.filter((product) => product.id !== id));
+    console.log(id);
+  };
+  const deleteOld = (commisionRecieverId, ruleId) => {
+    dispatch(deleteRule(
+      {
+        accountId: accountId, 
+        commisionRecieverId: commisionRecieverId, 
+        ruleId: ruleId
+      }
+    )).then(() => {
+      dispatch(incrementDummyKey()) 
+    });
+  }
 
   const handleChangeGroupProducts = (event, id) => {
     setGroupProducts((prevState) => ({
@@ -70,12 +96,28 @@ export default function ModalRules({ openStates, close, commision }) {
       [id]: event.target.value, // Обновляем выбранное значение для данного элемента
     }));
   };
-  const handleChangeProducts = (event, id) => {
+
+  const handleChangeProducts = (id, newValue, oldValue) => {
+    const idsOfSelectedProducts = newValue.map(
+      (selectedOption) => selectedOption.id
+    );
+
+    const productAbbreviation = newValue.map(
+      (selectedOption) => selectedOption.abbreviation
+    );
+
     setProducts((prevState) => ({
       ...prevState,
-      [id]: event.target.value, // Обновляем выбранное значение для данного элемента
+      [id]: idsOfSelectedProducts, // Обновляем выбранное значение для данного элемента
     }));
+
+    setProductsItem((prevState) => ({
+      ...prevState,
+      [id]:  [...new Set([...productAbbreviation,...oldValue])], // Обновляем выбранное значение для данного элемента
+    }));
+    console.log(productsItem);
   };
+
   const handleChangeAccrual = (e, id) => {
     const newValue = e.target.value.replace(/[^0-9]/g, "");
     if (newValue === "") {
@@ -111,6 +153,47 @@ export default function ModalRules({ openStates, close, commision }) {
       ...prevState,
       [id]: event.target.value, // Обновляем выбранное значение для данного элемента
     }));
+  };
+
+  const handleSave = () => {
+    const rulesToUpdate = [];
+    const array = Object.values(products);
+    console.log(array);
+    
+    array[0].forEach((item) => {
+      rules.forEach((element) => {
+        rulesToUpdate.push({
+          // productTypeId: groupProducts[element.id],
+          productTypeId: null,
+          productId: item,
+          accessType: selectedAccessType[element.id],
+          generation: selectedGeneration[element.id],
+          commision: accrual[element.id],
+        });
+      });
+    });
+
+    // newProducts.forEach((element) => {
+    //   rulesToUpdate.push({
+    //     productTypeId: groupProducts[element.id],
+    //     productId: null,
+    //     accessType: selectedAccessType[element.id],
+    //     generation: selectedGeneration[element.id],
+    //     commision: accrual[element.id],
+    //   });
+    // });
+
+    dispatch(
+      putAccrualRule({
+        accountId: accountId,
+        commisionRecieverId: rules[0].commisionRecieverId,
+        rulesToUpdate: rulesToUpdate,
+      })
+    ).then(() => {
+      dispatch(incrementDummyKey()) 
+    });
+
+    console.log(rulesToUpdate[0].commisionRecieverId);
   };
 
   return (
@@ -237,7 +320,7 @@ export default function ModalRules({ openStates, close, commision }) {
                           background: "#fff",
                         }}
                       >
-                        <IconButton onClick={addProducts()}>
+                        <IconButton onClick={addProducts}>
                           <img src={add} alt="плюс" />
                         </IconButton>
                       </TextHeader>
@@ -245,7 +328,7 @@ export default function ModalRules({ openStates, close, commision }) {
                   </TableHead>
 
                   <TableBody>
-                    {rules?.map((element, index) => (
+                    {rules?.map((item, index) => (
                       <TableRow>
                         <TableCell
                           sx={{
@@ -281,11 +364,12 @@ export default function ModalRules({ openStates, close, commision }) {
                               width: "150px",
                             }}
                             value={
-                              groupProducts[element.id] || element.productTypeId
+                              groupProducts[item.id] || item.productTypeId
                             }
                             onChange={(e) =>
-                              handleChangeGroupProducts(e, element.id)
+                              handleChangeGroupProducts(e, item.id)
                             }
+                            // disabled={}
                           >
                             <MenuItem
                               value="1"
@@ -338,7 +422,50 @@ export default function ModalRules({ openStates, close, commision }) {
                             textAlign: "center",
                           }}
                         >
-                          {element.productId}
+                          {/* { groupProducts[element.id] || element.productTypeId ? 'Все' : "Выбор"} */}
+                          <Autocomplete
+                            multiple
+                            options={allProducts}
+                            disableCloseOnSelect
+
+
+                            value={ productsItem[item.id] || [allProducts.find((product) => product.id === item.productId)?.abbreviation || "Все"]}
+
+                              
+                            onChange={(event, newValue) => {
+                              handleChangeProducts(item.id, newValue, [allProducts.find((product) => product.id === item.productId)?.abbreviation])
+                            }}
+
+                            renderTags={(value, getTagProps) =>
+                              value.map((option, index) => {
+                                const { key,...tagProps } = getTagProps({ index });
+                                return (
+                                  <Chip variant="outlined" label={option} key={key} {...tagProps} />
+                                );
+                              })
+                            }
+    
+                            getOptionLabel={(option) => option.abbreviation}
+                            renderOption={(props, option, { selected }) => (
+                              <li {...props}>
+                                <Checkbox
+                                  icon={icon}
+                                  checkedIcon={checkedIcon}
+                                  style={{ marginRight: 8 }}
+                                  checked={selected}
+                                />
+                                {option.abbreviation}
+                              </li>
+                            )}
+                            style={{ width: 350 }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Товары"
+                                variant="standard"
+                              />
+                            )}
+                          />
                         </TableCell>
 
                         <TableCell>
@@ -354,11 +481,11 @@ export default function ModalRules({ openStates, close, commision }) {
                               width: "200px",
                             }}
                             value={
-                              selectedGeneration[element.id] ||
-                              element.generation
+                              selectedGeneration[item.id] ||
+                              item.generation
                             }
                             onChange={(e) =>
-                              handleChangeGeneration(e, element.id)
+                              handleChangeGeneration(e, item.id)
                             }
                           >
                             <MenuItem
@@ -411,11 +538,11 @@ export default function ModalRules({ openStates, close, commision }) {
                               width: "150px",
                             }}
                             value={
-                              selectedAccessType[element.id] ||
-                              element.accessType
+                              selectedAccessType[item.id] ||
+                              item.accessType
                             }
                             onChange={(e) =>
-                              handleChangeAccessType(e, element.id)
+                              handleChangeAccessType(e, item.id)
                             }
                           >
                             <MenuItem
@@ -462,12 +589,12 @@ export default function ModalRules({ openStates, close, commision }) {
                               width: "80px",
                             }}
                             value={
-                              accrual[element.id] ||
-                              (isFieldCleared[element.id]
+                              accrual[item.id] ||
+                              (isFieldCleared[item.id]
                                 ? ""
-                                : element.commision)
+                                : item.commision)
                             }
-                            onChange={(e) => handleChangeAccrual(e, element.id)}
+                            onChange={(e) => handleChangeAccrual(e, item.id)}
                           />
                         </TableCell>
 
@@ -479,7 +606,7 @@ export default function ModalRules({ openStates, close, commision }) {
                             textAlign: "center",
                           }}
                         >
-                          <IconButton>
+                          <IconButton onClick={() => deleteOld(item.commisionRecieverId, item.id)}>
                             <img src={del} alt="удалить" />
                           </IconButton>
                         </TableCell>
@@ -488,19 +615,19 @@ export default function ModalRules({ openStates, close, commision }) {
                   </TableBody>
 
                   <TableBody>
-                    {newRules?.map((element, index) => (
+                    {newProducts?.map((item, index) => (
                       <TableRow>
                         <TableCell
                           sx={{
                             fontFamily: "Montserrat",
                             fontSize: "16px",
                             fontWeight: 600,
-                            color: "#333333",
+                            color: "#999999",
                             textAlign: "center",
                           }}
                         >
                           {" "}
-                          {++index}
+                          {++index + rules.length}
                         </TableCell>
 
                         <TableCell
@@ -508,7 +635,7 @@ export default function ModalRules({ openStates, close, commision }) {
                             fontFamily: "Montserrat",
                             fontSize: "16px",
                             fontWeight: 600,
-                            color: "#333333",
+                            color: "#999999",
                             textAlign: "center",
                           }}
                         >
@@ -518,16 +645,16 @@ export default function ModalRules({ openStates, close, commision }) {
                               fontFamily: "Montserrat",
                               fontSize: "16px",
                               fontWeight: 600,
-                              color: "black",
+                              color: "#999999",
                               textAlign: "center",
                               cursor: "pointer",
                               width: "150px",
                             }}
                             value={
-                              groupProducts[element.id] || element.productTypeId
+                              groupProducts[item.id] || item.productTypeId
                             }
                             onChange={(e) =>
-                              handleChangeGroupProducts(e, element.id)
+                              handleChangeGroupProducts(e, item.id)
                             }
                           >
                             <MenuItem
@@ -567,7 +694,7 @@ export default function ModalRules({ openStates, close, commision }) {
                                 cursor: "pointer",
                               }}
                             >
-                              Дя персонала
+                              Для персонала
                             </MenuItem>
                           </Select>
                         </TableCell>
@@ -581,7 +708,34 @@ export default function ModalRules({ openStates, close, commision }) {
                             textAlign: "center",
                           }}
                         >
-                          {element.productId}
+                          <Autocomplete
+                            multiple
+                            options={allProducts}
+                            disableCloseOnSelect
+                            onChange={(event, newValue) =>
+                              handleChangeProducts(item.id, newValue)
+                            }
+                            getOptionLabel={(option) => option.abbreviation}
+                            renderOption={(props, option, { selected }) => (
+                              <li {...props}>
+                                <Checkbox
+                                  icon={icon}
+                                  checkedIcon={checkedIcon}
+                                  style={{ marginRight: 8 }}
+                                  checked={selected}
+                                />
+                                {option.abbreviation}
+                              </li>
+                            )}
+                            style={{ width: 350 }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Товары"
+                                variant="standard"
+                              />
+                            )}
+                          />
                         </TableCell>
 
                         <TableCell>
@@ -591,17 +745,17 @@ export default function ModalRules({ openStates, close, commision }) {
                               fontFamily: "Montserrat",
                               fontSize: "16px",
                               fontWeight: 600,
-                              color: "black",
+                              color: "#999999",
                               textAlign: "center",
                               cursor: "pointer",
                               width: "200px",
                             }}
                             value={
-                              selectedGeneration[element.id] ||
-                              element.generation
+                              selectedGeneration[item.id] ||
+                              item.generation
                             }
                             onChange={(e) =>
-                              handleChangeGeneration(e, element.id)
+                              handleChangeGeneration(e, item.id)
                             }
                           >
                             <MenuItem
@@ -638,7 +792,7 @@ export default function ModalRules({ openStates, close, commision }) {
                             fontFamily: "Montserrat",
                             fontSize: "16px",
                             fontWeight: 600,
-                            color: "#333333",
+                            color: "#999999",
                             textAlign: "center",
                           }}
                         >
@@ -648,17 +802,17 @@ export default function ModalRules({ openStates, close, commision }) {
                               fontFamily: "Montserrat",
                               fontSize: "16px",
                               fontWeight: 600,
-                              color: "black",
+                              color: "#999999",
                               textAlign: "center",
                               cursor: "pointer",
                               width: "150px",
                             }}
                             value={
-                              selectedAccessType[element.id] ||
-                              element.accessType
+                              selectedAccessType[item.id] ||
+                              item.accessType
                             }
                             onChange={(e) =>
-                              handleChangeAccessType(e, element.id)
+                              handleChangeAccessType(e, item.id)
                             }
                           >
                             <MenuItem
@@ -695,7 +849,7 @@ export default function ModalRules({ openStates, close, commision }) {
                             fontFamily: "Montserrat",
                             fontSize: "16px",
                             fontWeight: 600,
-                            color: "#333333",
+                            color: "#999999",
                             textAlign: "center",
                           }}
                         >
@@ -705,12 +859,12 @@ export default function ModalRules({ openStates, close, commision }) {
                               width: "80px",
                             }}
                             value={
-                              accrual[element.id] ||
-                              (isFieldCleared[element.id]
+                              accrual[item.id] ||
+                              (isFieldCleared[item.id]
                                 ? ""
-                                : element.commision)
+                                : item.commision)
                             }
-                            onChange={(e) => handleChangeAccrual(e, element.id)}
+                            onChange={(e) => handleChangeAccrual(e, item.id)}
                           />
                         </TableCell>
 
@@ -722,7 +876,7 @@ export default function ModalRules({ openStates, close, commision }) {
                             textAlign: "center",
                           }}
                         >
-                          <IconButton>
+                          <IconButton onClick={() => deleteNew(item.id)}>
                             <img src={del} alt="удалить" />
                           </IconButton>
                         </TableCell>

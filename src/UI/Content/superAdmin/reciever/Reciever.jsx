@@ -9,9 +9,13 @@ import {
   TableHead,
   TableRow,
   Paper,
+  IconButton,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { getPayee } from "../../../../BLL/superAdmin/payeeSlice";
+import AddReciever from './AddReciever.jsx'
+import add from './active.svg'
+
 // Создаем стилизованные компоненты с помощью styled
 const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
   fontFamily: '"Montserrat"',
@@ -33,9 +37,19 @@ export default function Reciever() {
   const payees = useSelector(
     (state) => state.superAdminPayee?.payees
   );
+  const dummyKey = useSelector(
+    (state) => state.superAdminPayee?.dummyKey
+  );
   useEffect(() => {
     dispatch(getPayee(accountId));
-  }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
+  }, [dispatch, accountId, dummyKey]); // Добавляем accountId в список зависимостей
+
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
   return (
     <div>
     <TableContainer
@@ -61,6 +75,19 @@ export default function Reciever() {
             >
               Получатель
             </StyledTableCellHead>
+            <StyledTableCellHead
+              sx={{
+                paddingY: 1,
+                position: "sticky",
+                top: 0,
+                zIndex: 100,
+                background: "#fff",
+              }}
+            >
+              <IconButton onClick={() => handleOpenDialog()}>
+                <img src={add} alt="добавить" />
+              </IconButton>
+            </StyledTableCellHead>
           </TableRow>
         </TableHead>
 
@@ -83,6 +110,8 @@ export default function Reciever() {
         </TableBody>
       </Table>
     </TableContainer>
+
+    <AddReciever isOpen={openDialog} close={setOpenDialog} ></AddReciever>
 
   </div>
   )

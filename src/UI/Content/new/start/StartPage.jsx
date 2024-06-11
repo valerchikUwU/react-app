@@ -7,21 +7,32 @@ import classNames from "classnames";
 import { Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { getProducts } from "../../../../BLL/productSlice";
+import { getProducts, isPress } from "../../../../BLL/productSlice";
 import { getWork, putOrders } from "../../../../BLL/workSlice";
 
-
-export default function StartPage() {
-
+export default function PersonalPage() {
   const [checkedStates, setCheckedStates] = useState({});
   const [checked1States, setChecked1States] = useState({});
+  const [isDisabledStates, setIsDisabledStates] = useState({});
   const [countStates, setCountStates] = useState({});
   const [isCheckedBoxStates, setIsCheckedBoxStates] = useState({});
+  const [dummyKey, setDummyKey] = useState(0);
 
-  const dispatch = useDispatch();
-  const { accountId } = useParams();
+  const isButton = useSelector((state) => state.products.isProduct);
 
-
+  useEffect(() => {
+    const updatedIsDisabledStates = isButton.reduce((acc, buttonState) => {
+      acc[buttonState.id] = {
+        id: buttonState.id,
+        isDisabled: buttonState.isBoolean,
+      };
+      return acc;
+    }, {});
+    console.log("useEffect");
+    console.log(updatedIsDisabledStates);
+    console.log("useEffect");
+    setIsDisabledStates(updatedIsDisabledStates);
+  }, [dummyKey]);
 
   const handleChange = (orderId, event) => {
     setCheckedStates({ ...checkedStates, [orderId]: event.target.checked });
@@ -31,10 +42,9 @@ export default function StartPage() {
     setChecked1States({ ...checked1States, [orderId]: event.target.checked });
   };
 
-
-
   const handleClick = (
     orderId,
+    order,
     productId,
     accessType,
     generation,
@@ -42,6 +52,17 @@ export default function StartPage() {
     quantity
   ) => {
     if (countStates[orderId] > 0) {
+      setDummyKey((prevState) => prevState + 1);
+      setIsDisabledStates((prevStates) => {
+        return {
+          ...prevStates,
+          [productId]: { ...prevStates[productId], isDisabled: true },
+        };
+      });
+      console.log("setIsDisabledStates");
+      console.log(isDisabledStates);
+      console.log("setIsDisabledStates");
+      dispatch(isPress({ id: productId }));
       dispatch(
         putOrders({
           accountId: accountId,
@@ -53,7 +74,7 @@ export default function StartPage() {
             quantity: quantity,
           },
         })
-      ).then(() => dispatch(getWork(accountId))) // для обновления BadgeContent при добавлении в корзину товара
+      ).then(() => dispatch(getWork(accountId)));
     }
   };
 
@@ -85,12 +106,12 @@ export default function StartPage() {
     });
   };
 
-
-
+  const dispatch = useDispatch();
+  const { accountId } = useParams();
   useEffect(() => {
-    dispatch(getProducts({ accountId: accountId, typeId: "1" }))
+    dispatch(getProducts({ accountId: accountId, typeId: "1" }));
   }, [accountId]);
-  
+
   const orders = useSelector((state) => state.products.productsStart);
 
   return (
@@ -135,9 +156,8 @@ export default function StartPage() {
                     classes.right,
                     checkedStates[order.id]
                       ? classes.typeBookPaperChange
-                      : classes.typeBookPaper,
+                      : classes.typeBookPaper
                   )}
-
                   style={{
                     opacity: isHidden[order.id] ? 0.5 : 1,
                   }}
@@ -181,11 +201,14 @@ export default function StartPage() {
                 <span className={classes.booklet}>Доп. буклет</span>
                 <button
                   className={
-                   classes.buttonCart
+                    isDisabledStates[order.id]?.isDisabled
+                      ? classes.buttonCartDisabled
+                      : classes.buttonCart
                   }
                   onClick={() =>
                     handleClick(
                       order.id,
+                      order,
                       order.id,
                       checkedStates[order.id] ? "Электронный" : "Бумажный",
                       checked1States[order.id]
@@ -195,15 +218,17 @@ export default function StartPage() {
                       countStates[order.id]
                     )
                   }
-                 
+                  disabled={!!isDisabledStates[order.id]?.isDisabled}
                 >
-                  В корзину 
+                  В корзину
                 </button>
                 <button
-                  className={classNames(
-                    classes.arrowCart
-                  )}
-             
+                  className={
+                    isDisabledStates[order.id]?.isDisabled
+                      ? classes.arrowCartDisabled
+                      : classes.arrowCart
+                  }
+                  disabled={!!isDisabledStates[order.id]?.isDisabled}
                 >
                   <span className={classes.count}>
                     {countStates[order.id] || 0}

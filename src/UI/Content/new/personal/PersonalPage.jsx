@@ -48,7 +48,7 @@ export default function PersonalPage() {
             quantity: quantity,
           },
         })
-      )
+      ).then(() => dispatch(getWork(accountId)))
     }
   };
 

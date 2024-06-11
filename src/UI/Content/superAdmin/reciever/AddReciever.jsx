@@ -9,18 +9,18 @@ import {
   DialogActions,
   TextField,
 } from "@mui/material";
-import { incrementDummyKey, postCommision } from "../../../../BLL/superAdmin/comissionSlice";
+import { incrementDummyKey, postPayee } from "../../../../BLL/superAdmin/payeeSlice";
 
-export default function Add({ isOpen, close }) {
+export default function AddReciever({ isOpen, close }) {
   const dispatch = useDispatch();
   const { accountId } = useParams(); // Извлекаем accountId из URL
   const [text, setText] = useState(); 
 
   const handleSave = () => {
     console.log(text);
-    dispatch(postCommision({accountId, commisionRecieverName: text })).then(() => {
+    dispatch(postPayee({accountId: accountId, name: text})).then(() => {
+      dispatch(incrementDummyKey());
       setText('');
-      dispatch(incrementDummyKey()); 
     });
   };
 
@@ -39,7 +39,7 @@ export default function Add({ isOpen, close }) {
         open={isOpen}
         onClose={() => close(false)}
         hideBackdrop // Добавлено свойство для улучшения доступности
-        sx={{ marginBottom: "calc(100vh - 350px)", marginRight: "calc(100vw - 130%)"}}
+        sx={{ marginBottom: "calc(100vh - 350px)", marginRight: "calc(100vh - 800px)"}}
       >
         <DialogContent>
           <DialogContentText
@@ -49,11 +49,11 @@ export default function Add({ isOpen, close }) {
               fontWeight: 600,
             }}
           >
-            Новый получатель комиссии
+            Новый получатель платежа
           </DialogContentText>
           <hr  style={{ borderTopWidth: '2px', color: '#005475' }}/>
           <TextField
-            placeholder="Введите название нового получателя"
+            placeholder="Новый получатель платежа"
             variant="standard"
             sx={{
               width: '300px',

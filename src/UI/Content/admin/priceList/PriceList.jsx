@@ -194,12 +194,19 @@ export default function PriceList() {
     setIsFormValid(false);
   };
 
+  // Функция для определения, должен ли день быть отключен
+  const disablePastDates = (date) => {
+    // Сравниваем дату с текущей датой
+    return date.isBefore(dayjs(), 'day'); // 'day' здесь означает сравнение по дню, без учета времени
+  };
+
+
   return (
     <div>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DesktopDatePicker
           label="Date"
-          inputFormat="DD-MM-YYYY" // Измененный формат даты
+          format="DD/MM/YYYY"
           value={date}
           onChange={setDate}
         />
@@ -480,9 +487,10 @@ export default function PriceList() {
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DesktopDatePicker
                           label="Дата"
-                          inputFormat="MM/DD/YYYY"
+                          format="DD/MM/YYYY"
                           value={modalDate}
                           onChange={setModalDate}
+                          shouldDisableDate={disablePastDates} 
                         />
                       </LocalizationProvider>
                     </TableCell>

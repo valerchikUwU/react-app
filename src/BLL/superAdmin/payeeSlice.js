@@ -16,14 +16,38 @@ export const getPayee = createAsyncThunk(
   }
 );
 
+export const postPayee = createAsyncThunk(
+  "payee/postPayee",
+  async ({accountId, name}, { rejectWithValue }) => {
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.post(
+        `${accountId}/payees/newPayee`,
+        {name}
+      );
+
+      console.log(response.data);
+      return response.data;
+    } catch (error) {
+      console.log("Пиздец");
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const payeeSlice = createSlice({
   name: "payee",
   initialState: {
     payees: [],
     status: null,
     error: null,
+    dummyKey: 0,
   },
-  reducers: {},
+  reducers: {
+    incrementDummyKey(state, action) {
+      state.dummyKey += 1;
+    },
+  },
   extraReducers: (builder) => {
     builder
       //getPayee
@@ -42,6 +66,6 @@ const payeeSlice = createSlice({
   },
 });
 
-export const {} = payeeSlice.actions;
+export const {incrementDummyKey} = payeeSlice.actions;
 
 export default payeeSlice.reducer;
