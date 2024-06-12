@@ -27,7 +27,18 @@ export default function Main() {
 
   useEffect(() => {
     if(data.isLogged === true){
-      window.location.href = `#/${data.accountId}/user/new/start`;
+      switch(data.accountRoleId){
+        case(1):
+        window.location.href = `#/${data.accountId}/superAdmin/new/start`;
+        break;
+        case(2):
+        window.location.href = `#/${data.accountId}/admin/orders`;
+        break;
+        case(3):
+        window.location.href = `#/${data.accountId}/user/new/start`;
+        break;
+        default: window.location.href = `#/`;
+      }
     }
     // Устанавливаем WebSocket соединение после получения данных
     if (data.sessionId) {
@@ -46,11 +57,20 @@ export default function Main() {
         console.log("Получено сообщение:", event.data);
         // Анализируем полученное сообщение
         const message = JSON.parse(event.data);
-
-        console.log(message.message);
         if (message !== "false") {
           // Если сообщение не равно 'false', выполняем редирект
-          window.location.href = `#/${message.message}/user/new/start`;
+          switch(data.accountRoleId){
+            case(1):
+            window.location.href = `#/${data.accountId}/superAdmin/new/start`;
+            break;
+            case(2):
+            window.location.href = `#/${data.accountId}/admin/orders`;
+            break;
+            case(3):
+            window.location.href = `#/${data.accountId}/user/new/start`;
+            break;
+            default: window.location.href = `#/`;
+          }
         } else {
           // Если сообщение равно 'false', выводим ошибку
           alert("Ошибка аутентификации");
