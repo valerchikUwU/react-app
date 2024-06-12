@@ -2,6 +2,7 @@
   "name": "react-app",
   "version": "0.1.0",
   "proxy": "http://localhost:3001",
+  "homepage": "./",
   "private": true,
   "dependencies": {
     "@date-io/dayjs": "^3.0.0",

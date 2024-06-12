@@ -3,6 +3,8 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import instance from "./api.js";
 
 
+
+
 export const getWork = createAsyncThunk(
   "work/getWork",
   async (accountId, { rejectWithValue }) => {
@@ -40,48 +42,75 @@ export const getWorkModal = createAsyncThunk(
 export const putOrders = createAsyncThunk(
   "work/putOrders",
   async ({ accountId, productData }, { rejectWithValue }) => {
-    try {
-      // Используем шаблонные строки для динамического формирования URL
-      const response = await instance.post(
-        `/${accountId}/orders/newOrder`, productData
-      );
-      console.log(response.data);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
+    // Функция для отложенного выполнения запроса
+    const delayedPost = async () => {
+      if (navigator.onLine) {
+        try {
+          const response = await instance.post(`/${accountId}/orders/newOrder`, productData);
+          console.log(response.data);
+          return response.data;
+        } catch (error) {
+          return rejectWithValue(error.message);
+        }
+      } else {
+        // Если устройство офлайн, отложить выполнение
+        setTimeout(delayedPost, 10000);
+        console.log('retry post') // Проверять каждые 5 секунд
+      }
+    };
+
+    // Начинаем процесс с проверкой статуса сети
+    delayedPost();
   }
 );
 
+
 export const updateDraft = createAsyncThunk(
   "work/updateDraft",
-  async ({ accountId, orderId, organizationName}, { rejectWithValue }) => {
-    try {
-      // Используем шаблонные строки для динамического формирования URL
-      const response = await instance.put(
-        `/${accountId}/orders/${orderId}/active`, {organizationName}
-      );
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
+  async ({ accountId, orderId, organizationName }, { rejectWithValue }) => {
+    // Функция для отложенного выполнения запроса
+    const delayedUpdate = async () => {
+      if (navigator.onLine) {
+        try {
+          const response = await instance.put(`/${accountId}/orders/${orderId}/active`, { organizationName });
+          return response.data;
+        } catch (error) {
+          return rejectWithValue(error.message);
+        }
+      } else {
+        // Если устройство офлайн, отложить выполнение
+        setTimeout(delayedUpdate, 10000); // Проверять каждые 5 секунд
+      }
+    };
+
+    // Начинаем процесс с проверкой статуса сети
+    delayedUpdate();
   }
 );
 
 export const updateRecieved = createAsyncThunk(
   "work/updateRecieved",
-  async ({ accountId, orderId}, { rejectWithValue }) => {
-    try {
-      // Используем шаблонные строки для динамического формирования URL
-      const response = await instance.put(
-        `/${accountId}/orders/${orderId}/recieved`
-      );
-      return response;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
+  async ({ accountId, orderId }, { rejectWithValue }) => {
+    // Функция для отложенного выполнения запроса
+    const delayedUpdate = async () => {
+      if (navigator.onLine) {
+        try {
+          const response = await instance.put(`/${accountId}/orders/${orderId}/recieved`);
+          return response;
+        } catch (error) {
+          return rejectWithValue(error.message);
+        }
+      } else {
+        // Если устройство офлайн, отложить выполнение
+        setTimeout(delayedUpdate, 10000); // Проверять каждые 5 секунд
+      }
+    };
+
+    // Начинаем процесс с проверкой статуса сети
+    delayedUpdate();
   }
 );
+
 
 
 export const updateTitleOrder = createAsyncThunk(
