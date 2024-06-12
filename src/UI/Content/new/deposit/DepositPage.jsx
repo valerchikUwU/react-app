@@ -38,14 +38,12 @@ export default function DepositPage() {
   const { accountId } = useParams();
 
   useEffect(() => {
-    dispatch(getDeposit({ accountId: accountId, typeId: 4 }));
+    dispatch(getDeposit({ accountId: accountId, typeId: "4" }));
   }, [accountId]);
 
   const deposit = useSelector((state) => state.deposit.deposit);
   const organizations = useSelector((state) => state.deposit.organizations);
-
   const errorDeposit = useSelector((state) => state.deposit.errorDeposit);
-  
 
   const handleSubmit = (SUMDeposit, productId, organizationName) => {
     console.log(
@@ -196,12 +194,14 @@ export default function DepositPage() {
                 className={classes.input}
                 sx={{ marginTop: "px" }}
               />
-              <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={2000}
-                onClose={handleClose}
-              >
-                {errorDeposit == 400 ? (
+
+              {errorDeposit === 200 && (
+                <Snackbar
+                  open={snackbarOpen}
+                  autoHideDuration={2000}
+                  onClose={handleClose}
+                >
+                  {/* {errorDeposit == 400 ? (
                   <Alert severity="error">Ошибка</Alert>
                 ) : (
                   <Alert
@@ -215,8 +215,31 @@ export default function DepositPage() {
                   >
                     {`Депозит на сумму ${snackbarValue} ₽`}
                   </Alert>
-                )}
-              </Snackbar>
+                )} */}
+
+                  <Alert
+                    severity="info"
+                    sx={{
+                      backgroundColor: "#005475",
+                      color: "white",
+                      marginLeft: "230px",
+                      marginBottom: "-10px",
+                    }}
+                  >
+                    {`Депозит на сумму ${snackbarValue} ₽`}
+                  </Alert>
+                </Snackbar>
+              )}
+
+              {errorDeposit === 400 && (
+                <Snackbar
+                  open={snackbarOpen}
+                  autoHideDuration={2000}
+                  onClose={handleClose}
+                >
+                  <Alert severity="error">Ошибка</Alert>
+                </Snackbar>
+              )}
             </div>
           </div>
         ))}

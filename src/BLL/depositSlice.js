@@ -66,6 +66,7 @@ const depositSlice = createSlice({
       .addCase(putDeposit.pending, (state, action) => {
         state.status = 'loading';
         state.error = null;
+        state.errorDeposit = null;
       })
       .addCase(putDeposit.fulfilled, (state, action) => {
         state.status = 'resolved'; 
