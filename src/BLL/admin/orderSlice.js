@@ -77,6 +77,7 @@ export const updateTitleOrderAdmin = createAsyncThunk(
       status,
       billNumber,
       payeeId,
+      isFromDeposit,
       titlesToUpdate,
     },
     { rejectWithValue }
@@ -85,12 +86,13 @@ export const updateTitleOrderAdmin = createAsyncThunk(
       // Используем шаблонные строки для динамического формирования URL
       const response = await instance.put(
         `/${accountId}/orders/admin/${orderId}/update`,
-        { organizationName, status, billNumber, payeeId, titlesToUpdate }
+        { organizationName, status, billNumber, payeeId, isFromDeposit, titlesToUpdate }
       );
       console.log(response.data.organizationName);
       console.log(response.data.status);
       console.log(response.data.billNumber);
       console.log(response.data.payeeId);
+      console.log(response.data.isFromDeposit);
       console.log(response.data.titlesToUpdate);
       return response.data.titlesToUpdate;
     } catch (error) {

@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import { Typography } from "@mui/material";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
@@ -17,7 +18,6 @@ import "dayjs/locale/ru";
 import { getStatistics } from "../../../../BLL/superAdmin/statisticsSlice";
 
 dayjs.locale("ru");
-
 
 export default function Statistics() {
   const dispatch = useDispatch();
@@ -28,7 +28,7 @@ export default function Statistics() {
   const [date, setDate] = useState(dayjs());
   const [maxSum, setMaxSum] = useState(0); // Добавляем состояние для хранения максимального значения SUM
   useEffect(() => {
-    dispatch(getStatistics({accountId, date: date}));
+    dispatch(getStatistics({ accountId, date: date }));
   }, [accountId, date]); // Убрано statistics из списка зависимостей
 
   useEffect(() => {
@@ -36,14 +36,12 @@ export default function Statistics() {
     setMaxSum(max);
   }, [accountId, statistics]); // Убрано statistics из списка зависимостей
 
-
   const transformedData = useMemo(() => {
     return statistics.map((stat, index) => ({
       date: `${dayjs(stat.dispatchDate).format("DD-MM-YYYY")}`,
-      SUM: stat.SUM
+      SUM: stat.SUM,
     }));
   }, [statistics]);
-
 
   return (
     <div>
@@ -56,6 +54,18 @@ export default function Statistics() {
         />
       </LocalizationProvider>
 
+      <Typography
+        sx={{
+          fontFamily: "Montserrat",
+          fontSize: "16px",
+          fontWeight: 600,
+          color: "black",
+          textAlign: "center",
+        }}
+      >
+        Все продажи
+      </Typography>
+
       <LineChart
         width={1600} // Увеличьте ширину
         height={450} // Увеличьте высоту
@@ -64,7 +74,7 @@ export default function Statistics() {
       >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey={"date"} angle={-90} textAnchor="end" />
-        <YAxis domain={[0, maxSum]} /> 
+        <YAxis domain={[0, maxSum]} />
         <Tooltip />
         <Line
           type="linear"

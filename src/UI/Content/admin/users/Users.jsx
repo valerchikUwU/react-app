@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import {
@@ -68,10 +68,22 @@ export default function Users() {
   const [telephone, setTelephone] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
 
+  const [boxSize, setBoxSize] = useState({ height: "auto", width: "auto" }); // Храним размеры <Box>
+  const boxRef = useRef(null);
+
+  useLayoutEffect(() => {
+    if (boxRef.current) {
+      const rect = boxRef.current.getBoundingClientRect();
+      setBoxSize({ height: rect.height, width: rect.width });
+      console.log(`rect.height - ${rect.height}`);
+      console.log(`rect.width - ${rect.width}`);
+    }
+    console.log(`boxRef.current - ${boxRef.current}`);
+  }, [organizations]);
 
   useEffect(() => {
     dispatch(getUser(accountId));
-    dispatch(getOrganizationList(accountId));
+    // dispatch(getOrganizationList(accountId));
   }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
 
   useEffect(() => {
@@ -84,6 +96,7 @@ export default function Users() {
   }, [name, lastName, telephone]); // Зависимость от telephone
 
   const openModal = () => {
+    dispatch(getOrganizationList(accountId));
     setIsOpen(true);
   };
 
@@ -351,13 +364,14 @@ const handleSelectionChange = (event, newValue) => {
             sx={{
               gridArea: "icon",
               position: "absolute", // Изменено на абсолютное позиционирование
-              marginLeft: "900px",
+               marginLeft: `${boxSize.width + 25}px`
             }}
           >
             <img src={exit} alt="закрыть" />
           </IconButton>
 
           <Box
+          ref={boxRef}
             sx={{
               backgroundColor: "white",
               boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
@@ -373,8 +387,6 @@ const handleSelectionChange = (event, newValue) => {
               scrollbarColor: "#005475 #FFFFFF",
             }}
           > 
-         
-
             <TableContainer
               component={Paper}
               sx={{

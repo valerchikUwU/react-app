@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import Modal from "@mui/material/Modal";
-import { useState,useRef } from "react";
+import { useState, useRef } from "react";
 import exit from "./image/exit.svg";
 import cursor from "./image/cursor-click.svg";
 import deleteBlue from "./image/deleteBlue.svg";
@@ -22,7 +22,7 @@ import deleteGrey from "./image/deleteGrey.svg";
 import check from "./image/check.svg";
 import checkbox from "./image/checkbox.svg";
 import plus from "./image/plus.svg";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { TextField } from "@mui/material";
 import { deleteTitleOrder } from "../../../../BLL/workSlice.js";
@@ -41,7 +41,6 @@ import {
   updateTitleOrderAdmin,
 } from "../../../../BLL/admin/orderSlice.js";
 import FloatingScrollToTopButton from "../../styledComponents/FloatingScrollToTopButton.jsx";
-
 
 export default function Orders() {
   const dispatch = useDispatch();
@@ -64,6 +63,7 @@ export default function Orders() {
   const [payeeName, setPayeeName] = useState({});
   const [inputAccountNumber, setInputAccountNumber] = useState({});
   const [isInputCleared, setIsInputCleared] = useState();
+  const [selectedCheckDeposit, setSelectedCheckDeposit] = useState();
 
   const orders = useSelector((state) => state.adminOrder.orders);
 
@@ -73,7 +73,9 @@ export default function Orders() {
   const listModalPayees = useSelector((state) => state.adminOrder?.payees);
 
   const allProducts = useSelector((state) => state.adminOrder?.allProducts);
-  const allOrganizations = useSelector((state) => state.adminOrder?.allOrganizations);
+  const allOrganizations = useSelector(
+    (state) => state.adminOrder?.allOrganizations
+  );
   const allPayees = useSelector((state) => state.adminOrder?.allPayees);
 
   const allIds = listModalTitles.map((row) => row.id);
@@ -239,6 +241,10 @@ export default function Orders() {
     }));
   };
 
+  const handleCheckboxChangeDeposit = (event) => {
+    setSelectedCheckDeposit(event.target.checked);
+  };
+
   const handleChangeAccessType = (event, id) => {
     setSelectedAccessType((prevState) => ({
       ...prevState,
@@ -263,9 +269,11 @@ export default function Orders() {
         titlesToUpdate.push({
           id: row.id,
           productId: productId[row.id] ? productId[row.id] : row.productId,
-          accessType: selectedCheck[row.id] 
-          ? null
-           : (selectedAccessType[row.id]? selectedAccessType[row.id] : row.accessType),       
+          accessType: selectedCheck[row.id]
+            ? null
+            : selectedAccessType[row.id]
+            ? selectedAccessType[row.id]
+            : row.accessType,
           generation: selectedGeneration[row.id]
             ? selectedGeneration[row.id]
             : row.generation,
@@ -294,6 +302,7 @@ export default function Orders() {
               ? inputAccountNumber[ObjectModalOrder.id]
               : ObjectModalOrder.billNumber,
             payeeId: ObjectModalOrder.payeeId,
+            isFromDeposit: ObjectModalOrder.selectedCheckDeposit || false,
             titlesToUpdate: titlesToUpdate, // titlesToUpdate теперь является массивом объектов
           })
         ).then(() => {
@@ -441,15 +450,19 @@ export default function Orders() {
     marginBottom: "15px",
   });
 
-  const [boxSize, setBoxSize] = useState({ height: 'auto', width: 'auto' }); // Храним размеры <Box>
+  const [boxSize, setBoxSize] = useState({ height: "auto", width: "auto" }); // Храним размеры <Box>
   const boxRef = useRef(null);
 
-  useEffect(() => {
+
+  useLayoutEffect(() => {
     if (boxRef.current) {
       const rect = boxRef.current.getBoundingClientRect();
       setBoxSize({ height: rect.height, width: rect.width });
+      console.log(`rect.height - ${rect.height}`);
+      console.log(`rect.width - ${rect.width}`);
     }
-  }, []);
+    console.log(`boxRef.current - ${boxRef.current}`);
+  }, [ObjectModalOrder]);
 
   return (
     <Box>
@@ -640,7 +653,7 @@ export default function Orders() {
                     textAlign: "center",
                   }}
                 >
-                  {order.dispatchDate}
+                  {order.formattedDispatchDate}
                 </TableCell>
                 <TableCell
                   onClick={() => OpenModal(order.id)}
@@ -702,7 +715,7 @@ export default function Orders() {
         </Table>
         <FloatingScrollToTopButton showOnPageScroll={true} />
       </TableContainer>
-
+      
       {orders.map((element) => (
         <Modal open={openStates[element.id] || false}>
           <div
@@ -725,14 +738,14 @@ export default function Orders() {
               sx={{
                 gridArea: "icon",
                 position: "absolute", // Изменено на абсолютное позиционирование
-                marginLeft: `${boxSize.width}px`,
+                marginLeft: `${boxSize.width + 25}px`
               }}
             >
               <img src={exit} alt="закрыть" />
             </IconButton>
 
             <Box
-               ref={boxRef}
+              ref={boxRef}
               sx={{
                 backgroundColor: "white",
                 boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
@@ -745,6 +758,7 @@ export default function Orders() {
                 overflow: "auto",
                 scrollbarWidth: "thin",
                 scrollbarColor: "#005475 #FFFFFF",
+                width: "auto",
               }}
             >
               <TableContainer component={Paper} sx={{ marginBottom: "50px" }}>
@@ -1030,39 +1044,44 @@ export default function Orders() {
                             textAlign: "center",
                           }}
                         >
-                          <CustomStyledCheckbox></CustomStyledCheckbox>
+                          <CustomStyledCheckbox
+                            sx={{ textAlign: "center" }}
+                            checked={selectedCheckDeposit} // Используйте false для неотмеченных чекбоксов
+                            onChange={(event) =>
+                              handleCheckboxChangeDeposit(event)
+                            }
+                            size={1}
+                          ></CustomStyledCheckbox>
                         </TableCell>
                       </TableRow>
                     </TableBody>
                   ) : (
                     <TableBody>
-                      {listModalTitles.map((row) => (
-                        <TableRow key={row.id}>
-                          <TableCellModal>
-                            {row.product.abbreviation}
-                          </TableCellModal>
-                          <TableCellModal>{row.accessType}</TableCellModal>
-                          <TableCellModal>{row.generation}</TableCellModal>
-                          <TableCellModal>
-                            {row.addBooklet ? (
-                              <img src={check} alt="галка" />
-                            ) : (
-                              <img
-                                src={checkbox}
-                                alt="галка"
-                                style={{ opacity: "0.6" }}
-                              />
-                            )}
-                          </TableCellModal>
-                          <TableCellModal>{row.quantity}</TableCellModal>
-                          <TableCellModal>
-                            {row.PriceForOneProduct} &#x20bd;
-                          </TableCellModal>
-                          <TableCellModal>
-                            {row.SumForOneTitle} &#x20bd;
-                          </TableCellModal>
-                        </TableRow>
-                      ))}
+                      <TableRow key={ObjectModalOrder.id}>
+                        <TableCellModal>
+                          {ObjectModalOrder.organizationName}
+                        </TableCellModal>
+                        <TableCellModal>
+                          {ObjectModalOrder.payeeName}
+                        </TableCellModal>
+                        <TableCellModal>
+                          {ObjectModalOrder.status}
+                        </TableCellModal>
+                        <TableCellModal>
+                          {ObjectModalOrder.billNumber}
+                        </TableCellModal>
+                        <TableCellModal>
+                          {ObjectModalOrder.isFromDeposit ? (
+                            <img src={check} alt="галка" />
+                          ) : (
+                            <img
+                              src={checkbox}
+                              alt="галка"
+                              style={{ opacity: "0.6" }}
+                            />
+                          )}
+                        </TableCellModal>
+                      </TableRow>
                     </TableBody>
                   )}
                 </Table>
@@ -1241,7 +1260,10 @@ export default function Orders() {
                                     width: "150px",
                                   }}
                                   value={
-                                    selectedCheck[row.id] ? null : (selectedAccessType[row.id] || row.accessType)
+                                    selectedCheck[row.id]
+                                      ? null
+                                      : selectedAccessType[row.id] ||
+                                        row.accessType
                                   }
                                   onChange={(e) =>
                                     handleChangeAccessType(e, row.id)
@@ -1524,8 +1546,15 @@ export default function Orders() {
           </div>
         </Modal>
       ))}
-        
-      <Add isOpen={isOpen} setIsOpen={setIsOpen} allPayees={allPayees} allOrganizations={allOrganizations}  allProducts={allProducts} ></Add>
+
+
+      <Add
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        allPayees={allPayees}
+        allOrganizations={allOrganizations}
+        allProducts={allProducts}
+      ></Add>
     </Box>
   );
 }

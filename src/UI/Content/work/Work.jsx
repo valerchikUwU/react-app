@@ -25,7 +25,7 @@ import deleteBlue from "./image/deleteBlue.svg";
 import deleteGrey from "./image/deleteGrey.svg";
 import check from "./image/check.svg";
 import checkbox from "./image/checkbox.svg";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { TextField } from "@mui/material";
 import {
@@ -84,6 +84,19 @@ export default function Work() {
     (acc, id) => acc + (sumForOneTitle[id] || 0),
     0
   );
+
+  const [boxSize, setBoxSize] = useState({ height: "auto", width: "auto" }); // Храним размеры <Box>
+  const boxRef = useRef(null);
+
+  useLayoutEffect(() => {
+    if (boxRef.current) {
+      const rect = boxRef.current.getBoundingClientRect();
+      setBoxSize({ height: rect.height, width: rect.width });
+      console.log(`rect.height - ${rect.height}`);
+      console.log(`rect.width - ${rect.width}`);
+    }
+    console.log(`boxRef.current - ${boxRef.current}`);
+  }, [ObjectModalOrder]);
 
   // Функция сортировки
   function sortElementsByStatus(a, b) {
@@ -206,6 +219,7 @@ export default function Work() {
       })
     ).then(() => {
       dispatch(deletePress({id: productId}))
+      console.log('productId');
       console.log(productId);
       // После успешного выполнения deleteTitleOrder вызываем getWork
       dispatch(getWork(accountId));// для обновления полей когда еще пользователь находится в модальном окне на самой странице уже меняется
@@ -318,7 +332,8 @@ export default function Work() {
       // Проходим по listModalTitles и проверяем условия для каждого элемента
       listModalTitles.forEach((row) => {
         // Проверяем, существует ли значение для данного id в selectedCheck
- 
+        console.log('Хуйня');
+        console.log(productId[row.id] ? productId[row.id] : row.productId);
         titlesToUpdate.push({
           id: row.id,
           productId: productId[row.id] ? productId[row.id] : row.productId,
@@ -964,42 +979,21 @@ export default function Work() {
             }}
            
           >
-            {element.status === "Черновик депозита" ? (
+          
               <IconButton
                 onClick={() => handleCloseModal(element.id)}
                 sx={{
                   gridArea: "icon",
                   position: "absolute", // Изменено на абсолютное позиционирование
-                  marginLeft: "410px",
+                   marginLeft: `${boxSize.width + 25}px`
                 }}
               >
                 <img src={exit} alt="закрыть" />
               </IconButton>
-            ) : element.status === "Черновик" ? (
-              <IconButton
-                onClick={() => handleCloseModal(element.id)}
-                sx={{
-                  gridArea: "icon",
-                  position: "absolute", // Изменено на абсолютное позиционирование
-                  marginLeft: "1100px",
-                }}
-              >
-                <img src={exit} alt="закрыть" />
-              </IconButton>
-            ) : (
-              <IconButton
-                onClick={() => handleCloseModal(element.id)}
-                sx={{
-                  gridArea: "icon",
-                  position: "absolute", // Изменено на абсолютное позиционирование
-                  marginLeft: "900px",
-                }}
-              >
-                <img src={exit} alt="закрыть" />
-              </IconButton>
-            )}
+          
 
             <Box
+            ref={boxRef}
               sx={{
                 backgroundColor: "white",
                 boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
@@ -1282,7 +1276,6 @@ export default function Work() {
                                   ...prevState,
                                   [row.id]: product.id, // Обновляем выбранное значение для данного элемента
                                 }));
-          
                               }}
                             >
                               {productsModal.map((product) => (
