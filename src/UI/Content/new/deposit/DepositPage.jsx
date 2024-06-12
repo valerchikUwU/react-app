@@ -58,9 +58,7 @@ export default function DepositPage() {
           quantity: SUMDeposit,
         },
       })
-    ).then(()=>{
-      dispatch(getWork(accountId));
-    });
+    )
     
     setSnackbarValue(SUMDeposit);
     setSnackbarOpen(true);
@@ -75,7 +73,6 @@ export default function DepositPage() {
   };
 
   const [academy, setAcademy] = useState("");
-
   const [selectedOrganization, setSelectedOrganization] = useState("");
 
   const handleAcademyChange = (event) => {

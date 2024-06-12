@@ -25,7 +25,7 @@ import deleteBlue from "./image/deleteBlue.svg";
 import deleteGrey from "./image/deleteGrey.svg";
 import check from "./image/check.svg";
 import checkbox from "./image/checkbox.svg";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { TextField } from "@mui/material";
 import {
@@ -41,9 +41,9 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import CustomStyledCheckbox from "../styledComponents/CustomStyledCheckbox.jsx";
-import { updateSaveButtonState } from "../../../BLL/productSlice";
 import { styled } from "@mui/system";
 import classes from './Work.module.css'
+import { deletePress } from "../../../BLL/productSlice.js";
 
 
 export default function Work() {
@@ -67,6 +67,8 @@ export default function Work() {
   const [productId, setProductId] = useState({});
   const [isDeleteClicked, setIsDeleteClicked] = useState(false);
 
+
+
   const list = useSelector((state) => state.work?.work || []);
   const organizationList = useSelector((state) => state.work.organizationList);
   const productsModal = useSelector((state) => state.work.products);
@@ -82,6 +84,19 @@ export default function Work() {
     (acc, id) => acc + (sumForOneTitle[id] || 0),
     0
   );
+
+  const [boxSize, setBoxSize] = useState({ height: "auto", width: "auto" }); // Храним размеры <Box>
+  const boxRef = useRef(null);
+
+  useLayoutEffect(() => {
+    if (boxRef.current) {
+      const rect = boxRef.current.getBoundingClientRect();
+      setBoxSize({ height: rect.height, width: rect.width });
+      console.log(`rect.height - ${rect.height}`);
+      console.log(`rect.width - ${rect.width}`);
+    }
+    console.log(`boxRef.current - ${boxRef.current}`);
+  }, [ObjectModalOrder]);
 
   // Функция сортировки
   function sortElementsByStatus(a, b) {
@@ -171,52 +186,45 @@ export default function Work() {
       }
     });
     setErrors(newErrors);
-  }, [selectedCheck, selectedAccessType, listModalTitles]);
+  }, [selectedProduct, selectedCheck, selectedAccessType, listModalTitles]);
 
   useEffect(() => {
     // Инициализация sumForOneTitle
-    const initialSumForOneTitle = listModalTitles.reduce((acc, row) => {
+
+    const initialSumForOneTitle = listModalTitles.reduce((acc, row) => {    
       const price = selectedCheck[row.id]
-        ? selectedProduct[row.id]?.PriceDefinition?.priceBooklet ||
+        ? selectedProduct[row.id]?.priceBooklet ||
           row.price.priceBooklet
-        : selectedProduct[row.id]?.PriceDefinition?.priceAccess ||
+        : selectedProduct[row.id]?.priceAccess ||
           row.price.priceAccess;
       acc[row.id] = parseFloat(selectedInput[row.id] || 0) * price;
       return acc;
     }, {});
 
     setSumForOneTitle(initialSumForOneTitle);
-  }, [selectedCheck, selectedInput, listModalTitles, selectedProduct]);
+  }, [selectedProduct, productId, selectedCheck, selectedInput, listModalTitles]);
+  
 
   const OpenModal = (id) => setOpenStates({ ...openStates, [id]: true });
 
   const handleCloseModal = (id) =>
     setOpenStates({ ...openStates, [id]: false });
 
-  const handleDeleteOrder = (orderId, titleId, productId, productId1) => {
-    if (productId1) {
-      const newSelectedAbbr = productId1;
-      const product = productsModal.find(
-        (p) => p.abbreviation === newSelectedAbbr
-      );
-      console.log(product);
-      setSelectedProduct(product);
-      dispatch(updateSaveButtonState({ productId: product.id, active: false }));
-      localStorage.removeItem(`saveButtonActive-${product.id}`);
-    }
-    if (productId) {
-      console.log(productId);
-      dispatch(updateSaveButtonState({ productId, active: false }));
-      localStorage.removeItem(`saveButtonActive-${productId}`);
-    }
+  const handleDeleteOrder = (orderId, titleId, productId) => {
     dispatch(
       deleteTitleOrder({
         accountId: accountId,
         orderId: orderId,
         titleId: titleId,
       })
-    );
-    setIsDeleteClicked(true);
+    ).then(() => {
+      dispatch(deletePress({id: productId}))
+      console.log('productId');
+      console.log(productId);
+      // После успешного выполнения deleteTitleOrder вызываем getWork
+      dispatch(getWork(accountId));// для обновления полей когда еще пользователь находится в модальном окне на самой странице уже меняется
+      setIsDeleteClicked(true);
+    });
   };
 
   const handleIconClick = (orderId, organizationName) => {
@@ -226,7 +234,7 @@ export default function Work() {
         orderId: orderId,
         organizationName: organizationName,
       })
-    );
+    ).then(() => { dispatch(getWork(accountId))});
     setDummyKey((prevKey) => prevKey + 1);
     setIsIconVisibleSend((prevState) => ({
       ...prevState,
@@ -241,7 +249,7 @@ export default function Work() {
       ...prevState,
       [orderId]: true,
     }));
-    dispatch(getWork(accountId));
+   
   };
 
   const handleIconClickResieved = (orderId) => {
@@ -296,13 +304,6 @@ export default function Work() {
         ...prevState,
         [id]: false,
       }));
-
-      // Вычисляем новую сумму и обновляем SumForOneTitle
-      const newSum = parseFloat(newValue) * price;
-      setSumForOneTitle((prevSums) => ({
-        ...prevSums,
-        [id]: newSum,
-      }));
     }
   };
 
@@ -331,15 +332,14 @@ export default function Work() {
       // Проходим по listModalTitles и проверяем условия для каждого элемента
       listModalTitles.forEach((row) => {
         // Проверяем, существует ли значение для данного id в selectedCheck
-        console.log("------------------------------------------");
-        console.log(row.productId);
-        console.log("------------------------------------------");
+        console.log('Хуйня');
+        console.log(productId[row.id] ? productId[row.id] : row.productId);
         titlesToUpdate.push({
           id: row.id,
           productId: productId[row.id] ? productId[row.id] : row.productId,
-          accessType: selectedAccessType[row.id]
+          accessType:selectedCheck[row.id] ? null : (selectedAccessType[row.id]
             ? selectedAccessType[row.id]
-            : row.accessType,
+            : row.accessType) ,
           generation: selectedGeneration[row.id]
             ? selectedGeneration[row.id]
             : row.generation,
@@ -458,15 +458,6 @@ export default function Work() {
     textAlign: "center",
   });
 
-  // Text Body
-  // const TextBody = styled(TableCell)({
-  //   fontFamily: "Montserrat",
-  //   fontSize: "16px",
-  //   fontWeight: 600,
-  //   color: "black",
-  //   textAlign: "center",
-  // });
-
   const TableCellModal = styled(TableCell)({
     fontFamily: "Montserrat",
     fontSize: "16px",
@@ -486,40 +477,6 @@ export default function Work() {
     marginRight: "15px",
     marginBottom: "15px",
   });
-
-  // const StyledTableCell = styled(TableCell)(({ isTextBlack, openStates }) => ({
-  //   fontFamily: "Montserrat",
-  //   fontSize: "16px",
-  //   fontWeight: 600,
-  //   color: isTextBlack ? "black" : "#999999",
-  //   textAlign: "center",
-  //   cursor: "pointer",
-  //   backgroundColor: openStates ? "#0031B01A" : "transparent",
-  //   transition: "color 0.5s ease",
-  // }));
-
-  // const StyledTableCellActive = styled(TableCell)(
-  //   ({ onClick, openStates }) => ({
-  //     fontFamily: "Montserrat",
-  //     fontSize: "16px",
-  //     fontWeight: 600,
-  //     color: "#999999",
-  //     textAlign: "center",
-  //     cursor: "pointer",
-  //     backgroundColor: openStates ? "#0031B01A" : "",
-  //   })
-  // );
-
-  // const TableRowActive = styled(TableRow)(({ openStates, onClick }) => ({
-  //   fontFamily: "Montserrat",
-  //   fontSize: "16px",
-  //   fontWeight: 600,
-  //   color: "#999999",
-  //   textAlign: "center",
-  //   cursor: "pointer",
-  //   backgroundColor: openStates ? "#0031B01A" : "",
-  //   onClick,
-  // }));
 
   return (
     <Box>
@@ -1022,42 +979,21 @@ export default function Work() {
             }}
            
           >
-            {element.status === "Черновик депозита" ? (
+          
               <IconButton
                 onClick={() => handleCloseModal(element.id)}
                 sx={{
                   gridArea: "icon",
                   position: "absolute", // Изменено на абсолютное позиционирование
-                  marginLeft: "410px",
+                   marginLeft: `${boxSize.width + 25}px`
                 }}
               >
                 <img src={exit} alt="закрыть" />
               </IconButton>
-            ) : element.status === "Черновик" ? (
-              <IconButton
-                onClick={() => handleCloseModal(element.id)}
-                sx={{
-                  gridArea: "icon",
-                  position: "absolute", // Изменено на абсолютное позиционирование
-                  marginLeft: "1100px",
-                }}
-              >
-                <img src={exit} alt="закрыть" />
-              </IconButton>
-            ) : (
-              <IconButton
-                onClick={() => handleCloseModal(element.id)}
-                sx={{
-                  gridArea: "icon",
-                  position: "absolute", // Изменено на абсолютное позиционирование
-                  marginLeft: "900px",
-                }}
-              >
-                <img src={exit} alt="закрыть" />
-              </IconButton>
-            )}
+          
 
             <Box
+            ref={boxRef}
               sx={{
                 backgroundColor: "white",
                 boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
@@ -1326,10 +1262,8 @@ export default function Work() {
                               onChange={(event) => {
                                 const newSelectedAbbr = event.target.value;
                                 const product = productsModal.find(
-                                  (p) => p.abbreviation === newSelectedAbbr
+                                  (p) => p.abbreviation == newSelectedAbbr
                                 );
-
-                                // setSelectedProduct(product);
 
                                 setSelectedProduct((prevState) => ({
                                   ...prevState,
@@ -1342,11 +1276,6 @@ export default function Work() {
                                   ...prevState,
                                   [row.id]: product.id, // Обновляем выбранное значение для данного элемента
                                 }));
-
-                                // Если вам нужно получить product.id, вы можете сделать это здесь
-                                // setProductId(product.id);
-
-                                console.log(product.id); // Выводит ID выбранного продукта в консоль
                               }}
                             >
                               {productsModal.map((product) => (
@@ -1383,7 +1312,7 @@ export default function Work() {
                                     width: "150px",
                                   }}
                                   value={
-                                    selectedAccessType[row.id] || row.accessType
+                                    selectedCheck[row.id] ? null : (selectedAccessType[row.id] || row.accessType)
                                   }
                                   onChange={(e) =>
                                     handleChangeAccessType(e, row.id)
@@ -1535,10 +1464,8 @@ export default function Work() {
                                   e,
                                   row.id,
                                   selectedCheck[row.id]
-                                    ? selectedProduct[row.id]?.PriceDefinition
-                                        ?.priceBooklet || row.price.priceBooklet
-                                    : selectedProduct[row.id]?.PriceDefinition
-                                        ?.priceAccess || row.price.priceAccess
+                                    ? selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet
+                                    : selectedProduct[row.id]?.priceAccess || row.price.priceAccess
                                 )
                               }
                             />
@@ -1546,13 +1473,8 @@ export default function Work() {
 
                           <TableCellModal>
                             {selectedCheck[row.id]
-                              ? selectedProduct[row.id]?.PriceDefinition
-                                  ?.priceBooklet || row.price.priceBooklet
-                              : selectedProduct[row.id]?.PriceDefinition
-                                  ?.priceAccess || row.price.priceAccess}
-                            {/* {selectedCheck[row.id]
-                              ? row.price.priceBooklet
-                              : row.price.priceAccess} */}
+                              ? selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet
+                              : selectedProduct[row.id]?.priceAccess || row.price.priceAccess}
                             &#x20bd;
                           </TableCellModal>
 
@@ -1566,8 +1488,7 @@ export default function Work() {
                                 handleDeleteOrder(
                                   element.id,
                                   row.id,
-                                  selectedProduct[row.id]?.id,
-                                  row.product.abbreviation
+                                  productId[element.id] || row.productId,
                                 )
                               }
                             >

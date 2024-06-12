@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import Modal from "@mui/material/Modal";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import exit from "./image/exit.svg";
 import cursor from "./image/cursor-click.svg";
 import deleteBlue from "./image/deleteBlue.svg";
@@ -22,25 +22,29 @@ import deleteGrey from "./image/deleteGrey.svg";
 import check from "./image/check.svg";
 import checkbox from "./image/checkbox.svg";
 import plus from "./image/plus.svg";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { TextField } from "@mui/material";
-import {
-  deleteTitleOrder,
-} from "../../../../BLL/workSlice.js";
+import { deleteTitleOrder } from "../../../../BLL/workSlice.js";
 import { useParams } from "react-router-dom";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import Add from "./Add.jsx";
 import CustomStyledCheckbox from "../../styledComponents/CustomStyledCheckbox.jsx";
 
 import { styled } from "@mui/system";
-import { getOrder, getOrderModal, updateTitleOrderAdmin } from "../../../../BLL/admin/orderSlice.js";
+import {
+  getNewOrder,
+  getOrder,
+  getOrderModal,
+  updateTitleOrderAdmin,
+} from "../../../../BLL/admin/orderSlice.js";
+import FloatingScrollToTopButton from "../../styledComponents/FloatingScrollToTopButton.jsx";
 
 export default function Orders() {
   const dispatch = useDispatch();
   const { accountId } = useParams();
-  const [dummyKey, setDummyKey] = useState(0); // Dummy state to force re-render
   const [openStates, setOpenStates] = useState({});
   const [selectedAbbr, setSelectedAbbr] = useState({});
   const [selectedGeneration, setSelectedGeneration] = useState("");
@@ -52,13 +56,14 @@ export default function Orders() {
   const [errors, setErrors] = useState({});
   const [selectedProduct, setSelectedProduct] = useState({});
   const [productId, setProductId] = useState({});
-  const [isDeleteClicked, setIsDeleteClicked] = useState(false);
-
+  const [isDeleteClicked, setIsDeleteClicked] = useState(false); // при удалении товара в модальном окне заново вызывался getOrderModal
+  const [isOpen, setIsOpen] = useState(false);
   const [selectOrganization, setSelectOrganization] = useState({});
   const [selectStatus, setSelectStatus] = useState({});
   const [payeeName, setPayeeName] = useState({});
   const [inputAccountNumber, setInputAccountNumber] = useState({});
   const [isInputCleared, setIsInputCleared] = useState();
+  const [selectedCheckDeposit, setSelectedCheckDeposit] = useState();
 
   const orders = useSelector((state) => state.adminOrder.orders);
 
@@ -66,6 +71,12 @@ export default function Orders() {
   const listModalTitles = useSelector((state) => state.adminOrder?.modalTitles);
   const ObjectModalOrder = useSelector((state) => state.adminOrder?.modalOrder);
   const listModalPayees = useSelector((state) => state.adminOrder?.payees);
+
+  const allProducts = useSelector((state) => state.adminOrder?.allProducts);
+  const allOrganizations = useSelector(
+    (state) => state.adminOrder?.allOrganizations
+  );
+  const allPayees = useSelector((state) => state.adminOrder?.allPayees);
 
   const allIds = listModalTitles.map((row) => row.id);
   const totalSum = allIds.reduce(
@@ -75,7 +86,7 @@ export default function Orders() {
 
   useEffect(() => {
     dispatch(getOrder(accountId));
-  }, [accountId, dummyKey]);
+  }, [accountId]);
 
   useEffect(() => {
     // Find the first open modal
@@ -159,11 +170,10 @@ export default function Orders() {
 
   const OpenModal = (id) => setOpenStates({ ...openStates, [id]: true });
 
-  const handleCloseModal = (id) =>{
+  const handleCloseModal = (id) => {
     setOpenStates({ ...openStates, [id]: false });
     setIsInputCleared(false);
-  }
-    
+  };
 
   const handleDeleteOrder = (orderId, titleId) => {
     dispatch(
@@ -172,12 +182,12 @@ export default function Orders() {
         orderId: orderId,
         titleId: titleId,
       })
-    );
-    setIsDeleteClicked(true);
+    ).then(() => {
+      // После успешного выполнения deleteTitleOrder вызываем getWork
+      dispatch(getOrder(accountId)); // для обновления полей когда еще пользователь находится в модальном окне на самой странице уже меняется
+      setIsDeleteClicked(true);
+    });
   };
-
-
-
 
   // Функция для обработки изменения значения в Select
   const handleChangeSelectAbbr = (event, id) => {
@@ -215,12 +225,12 @@ export default function Orders() {
         [id]: false,
       }));
 
-      // Вычисляем новую сумму и обновляем SumForOneTitle
-      const newSum = parseFloat(newValue) * price;
-      setSumForOneTitle((prevSums) => ({
-        ...prevSums,
-        [id]: newSum,
-      }));
+      // // Вычисляем новую сумму и обновляем SumForOneTitle
+      // const newSum = parseFloat(newValue) * price;
+      // setSumForOneTitle((prevSums) => ({
+      //   ...prevSums,
+      //   [id]: newSum,
+      // }));
     }
   };
 
@@ -229,6 +239,10 @@ export default function Orders() {
       ...prevState,
       [id]: event.target.checked,
     }));
+  };
+
+  const handleCheckboxChangeDeposit = (event) => {
+    setSelectedCheckDeposit(event.target.checked);
   };
 
   const handleChangeAccessType = (event, id) => {
@@ -255,7 +269,9 @@ export default function Orders() {
         titlesToUpdate.push({
           id: row.id,
           productId: productId[row.id] ? productId[row.id] : row.productId,
-          accessType: selectedAccessType[row.id]
+          accessType: selectedCheck[row.id]
+            ? null
+            : selectedAccessType[row.id]
             ? selectedAccessType[row.id]
             : row.accessType,
           generation: selectedGeneration[row.id]
@@ -276,10 +292,17 @@ export default function Orders() {
           updateTitleOrderAdmin({
             accountId: accountId,
             orderId: ObjectModalOrder.id,
-            organizationName: selectOrganization[ObjectModalOrder.id] ? selectOrganization[ObjectModalOrder.id] : ObjectModalOrder.organizationName ,
-            status: selectStatus[ObjectModalOrder.id] ?selectStatus[ObjectModalOrder.id] :  ObjectModalOrder.status,
-            billNumber: inputAccountNumber[ObjectModalOrder.id] ? inputAccountNumber[ObjectModalOrder.id] : ObjectModalOrder.billNumber,
+            organizationName: selectOrganization[ObjectModalOrder.id]
+              ? selectOrganization[ObjectModalOrder.id]
+              : ObjectModalOrder.organizationName,
+            status: selectStatus[ObjectModalOrder.id]
+              ? selectStatus[ObjectModalOrder.id]
+              : ObjectModalOrder.status,
+            billNumber: inputAccountNumber[ObjectModalOrder.id]
+              ? inputAccountNumber[ObjectModalOrder.id]
+              : ObjectModalOrder.billNumber,
             payeeId: ObjectModalOrder.payeeId,
+            isFromDeposit: ObjectModalOrder.selectedCheckDeposit || false,
             titlesToUpdate: titlesToUpdate, // titlesToUpdate теперь является массивом объектов
           })
         ).then(() => {
@@ -338,18 +361,30 @@ export default function Orders() {
     setSelectedInput(initialSelectedInput);
 
     //Первая таблица
-    setSelectOrganization(() => ({
-      [ObjectModalOrder.id]: ObjectModalOrder.organizationName, // Обновляем выбранное значение для данного элемента
-    }), {});
-    setPayeeName(() => ({
-      [ObjectModalOrder.id]: ObjectModalOrder.payeeName, // Обновляем выбранное значение для данного элемента
-    }), {});
-    setSelectStatus(() => ({
-      [ObjectModalOrder.id]: ObjectModalOrder.status, // Обновляем выбранное значение для данного элемента
-    }), {});
-    setInputAccountNumber(() => ({
-      [ObjectModalOrder.id]: ObjectModalOrder.billNumber, // Обновляем выбранное значение для данного элемента
-    }), {});
+    setSelectOrganization(
+      () => ({
+        [ObjectModalOrder.id]: ObjectModalOrder.organizationName, // Обновляем выбранное значение для данного элемента
+      }),
+      {}
+    );
+    setPayeeName(
+      () => ({
+        [ObjectModalOrder.id]: ObjectModalOrder.payeeName, // Обновляем выбранное значение для данного элемента
+      }),
+      {}
+    );
+    setSelectStatus(
+      () => ({
+        [ObjectModalOrder.id]: ObjectModalOrder.status, // Обновляем выбранное значение для данного элемента
+      }),
+      {}
+    );
+    setInputAccountNumber(
+      () => ({
+        [ObjectModalOrder.id]: ObjectModalOrder.billNumber, // Обновляем выбранное значение для данного элемента
+      }),
+      {}
+    );
   };
 
   const handleChangeSelectOrganization = (event, id) => {
@@ -363,23 +398,28 @@ export default function Orders() {
       [id]: event.target.value, // Обновляем выбранное значение для данного элемента
     }));
   };
-const handleChangePayeeName = (event, id) => {
-  setPayeeName(() => ({
-    [id]: event.target.value, // Обновляем выбранное значение для данного элемента
-  }));
-}
-const handleChangeInputAccountNumber = (event, id) => {
-  if(event.target.value === ""){
-    setIsInputCleared(true);
-  }else{
-    setIsInputCleared(false); 
-  }
+  const handleChangePayeeName = (event, id) => {
+    setPayeeName(() => ({
+      [id]: event.target.value, // Обновляем выбранное значение для данного элемента
+    }));
+  };
 
-  setInputAccountNumber(() => ({
-    [id]: event.target.value, // Обновляем выбранное значение для данного элемента
-  }));
-  
-}
+  const handleChangeInputAccountNumber = (event, id) => {
+    if (event.target.value === "") {
+      setIsInputCleared(true);
+    } else {
+      setIsInputCleared(false);
+    }
+
+    setInputAccountNumber(() => ({
+      [id]: event.target.value, // Обновляем выбранное значение для данного элемента
+    }));
+  };
+
+  const handleChangeModalAdd = () => {
+    dispatch(getNewOrder(accountId));
+    setIsOpen(true);
+  };
   // Text Header
   const TextHeader = styled(TableCell)({
     fontFamily: "Montserrat",
@@ -410,6 +450,20 @@ const handleChangeInputAccountNumber = (event, id) => {
     marginBottom: "15px",
   });
 
+  const [boxSize, setBoxSize] = useState({ height: "auto", width: "auto" }); // Храним размеры <Box>
+  const boxRef = useRef(null);
+
+
+  useLayoutEffect(() => {
+    if (boxRef.current) {
+      const rect = boxRef.current.getBoundingClientRect();
+      setBoxSize({ height: rect.height, width: rect.width });
+      console.log(`rect.height - ${rect.height}`);
+      console.log(`rect.width - ${rect.width}`);
+    }
+    console.log(`boxRef.current - ${boxRef.current}`);
+  }, [ObjectModalOrder]);
+
   return (
     <Box>
       <TableContainer
@@ -436,7 +490,7 @@ const handleChangeInputAccountNumber = (event, id) => {
           },
         }}
       >
-        <Table sx={{ minWidth: 650 }} stickyHeader aria-label="simple table">
+        <Table stickyHeader aria-label="simple table">
           <TableHead>
             <TableRow>
               <TextHeader
@@ -536,7 +590,7 @@ const handleChangeInputAccountNumber = (event, id) => {
                   background: "#fff",
                 }}
               >
-                <IconButton>
+                <IconButton onClick={() => handleChangeModalAdd()}>
                   <img src={plus} alt="плюс" />
                 </IconButton>
               </TextHeader>
@@ -599,7 +653,7 @@ const handleChangeInputAccountNumber = (event, id) => {
                     textAlign: "center",
                   }}
                 >
-                  {order.dispatchDate}
+                  {order.formattedDispatchDate}
                 </TableCell>
                 <TableCell
                   onClick={() => OpenModal(order.id)}
@@ -659,8 +713,9 @@ const handleChangeInputAccountNumber = (event, id) => {
             ))}
           </TableBody>
         </Table>
+        <FloatingScrollToTopButton showOnPageScroll={true} />
       </TableContainer>
-
+      
       {orders.map((element) => (
         <Modal open={openStates[element.id] || false}>
           <div
@@ -678,20 +733,19 @@ const handleChangeInputAccountNumber = (event, id) => {
               paddingTop: "5%",
             }}
           >
-           
-              <IconButton
-                onClick={() => handleCloseModal(element.id)}
-                sx={{
-                  gridArea: "icon",
-                  position: "absolute", // Изменено на абсолютное позиционирование
-                  marginLeft: "900px",
-                }}
-              >
-                <img src={exit} alt="закрыть" />
-              </IconButton>
-      
+            <IconButton
+              onClick={() => handleCloseModal(element.id)}
+              sx={{
+                gridArea: "icon",
+                position: "absolute", // Изменено на абсолютное позиционирование
+                marginLeft: `${boxSize.width + 25}px`
+              }}
+            >
+              <img src={exit} alt="закрыть" />
+            </IconButton>
 
             <Box
+              ref={boxRef}
               sx={{
                 backgroundColor: "white",
                 boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
@@ -704,6 +758,7 @@ const handleChangeInputAccountNumber = (event, id) => {
                 overflow: "auto",
                 scrollbarWidth: "thin",
                 scrollbarColor: "#005475 #FFFFFF",
+                width: "auto",
               }}
             >
               <TableContainer component={Paper} sx={{ marginBottom: "50px" }}>
@@ -769,7 +824,7 @@ const handleChangeInputAccountNumber = (event, id) => {
                   </TableHead>
 
                   {element.status === "Активный" ||
-                  element.status === "Выставлен счет" ? (
+                  element.status === "Выставлен счёт" ? (
                     <TableBody>
                       <TableRow key={ObjectModalOrder.id}>
                         <TableCell sx={{ textAlign: "center" }}>
@@ -817,7 +872,7 @@ const handleChangeInputAccountNumber = (event, id) => {
                         </TableCell>
 
                         <TableCell sx={{ textAlign: "center" }}>
-                        <Select
+                          <Select
                             variant="standard"
                             sx={{
                               fontFamily: "Montserrat",
@@ -828,30 +883,30 @@ const handleChangeInputAccountNumber = (event, id) => {
                               cursor: "pointer",
                               width: "150px",
                             }}
-                           
-                            value={payeeName[ObjectModalOrder.id] || ObjectModalOrder.payeeName}
-                            
-                           onChange={(event) => handleChangePayeeName(event, ObjectModalOrder.id)}
-                            
+                            value={
+                              payeeName[ObjectModalOrder.id] ||
+                              ObjectModalOrder.payeeName
+                            }
+                            onChange={(event) =>
+                              handleChangePayeeName(event, ObjectModalOrder.id)
+                            }
                           >
-                            {listModalPayees.map(
-                              (payee) => (
-                                <MenuItem
-                                  key={payee.id}
-                                  value={payee.name}
-                                  sx={{
-                                    fontFamily: "Montserrat",
-                                    fontSize: "16px",
-                                    fontWeight: 600,
-                                    color: "#999999",
-                                    textAlign: "center",
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  {payee.name}
-                                </MenuItem>
-                              )
-                            )}
+                            {listModalPayees.map((payee) => (
+                              <MenuItem
+                                key={payee.id}
+                                value={payee.name}
+                                sx={{
+                                  fontFamily: "Montserrat",
+                                  fontSize: "16px",
+                                  fontWeight: 600,
+                                  color: "#999999",
+                                  textAlign: "center",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                {payee.name}
+                              </MenuItem>
+                            ))}
                           </Select>
                         </TableCell>
 
@@ -872,7 +927,10 @@ const handleChangeInputAccountNumber = (event, id) => {
                               ObjectModalOrder.status
                             }
                             onChange={(event) =>
-                              handleChangeSelectStatus(event, ObjectModalOrder.id)
+                              handleChangeSelectStatus(
+                                event,
+                                ObjectModalOrder.id
+                              )
                             }
                           >
                             <MenuItem
@@ -957,50 +1015,73 @@ const handleChangeInputAccountNumber = (event, id) => {
                         </TableCell>
 
                         <TableCell sx={{ textAlign: "center" }}>
-                        <TextField
-                              variant="standard"
-                              sx={{
-                                width: "80px",
-                              }}
-                              value={inputAccountNumber[ObjectModalOrder.id] || (isInputCleared ? "" : ObjectModalOrder.billNumber) }
-                              onChange={(event) =>
-                                handleChangeInputAccountNumber(event, ObjectModalOrder.id)
-                              }
-                            />
+                          <TextField
+                            variant="standard"
+                            sx={{
+                              width: "80px",
+                            }}
+                            value={
+                              inputAccountNumber[ObjectModalOrder.id] ||
+                              (isInputCleared
+                                ? ""
+                                : ObjectModalOrder.billNumber)
+                            }
+                            onChange={(event) =>
+                              handleChangeInputAccountNumber(
+                                event,
+                                ObjectModalOrder.id
+                              )
+                            }
+                          />
                         </TableCell>
 
-                        <TableCell sx={{ textAlign: "center" }}></TableCell>
+                        <TableCell
+                          sx={{
+                            fontFamily: "Montserrat",
+                            fontSize: "16px",
+                            fontWeight: 600,
+                            color: "black",
+                            textAlign: "center",
+                          }}
+                        >
+                          <CustomStyledCheckbox
+                            sx={{ textAlign: "center" }}
+                            checked={selectedCheckDeposit} // Используйте false для неотмеченных чекбоксов
+                            onChange={(event) =>
+                              handleCheckboxChangeDeposit(event)
+                            }
+                            size={1}
+                          ></CustomStyledCheckbox>
+                        </TableCell>
                       </TableRow>
                     </TableBody>
                   ) : (
                     <TableBody>
-                      {listModalTitles.map((row) => (
-                        <TableRow key={row.id}>
-                          <TableCellModal>
-                            {row.product.abbreviation}
-                          </TableCellModal>
-                          <TableCellModal>{row.accessType}</TableCellModal>
-                          <TableCellModal>{row.generation}</TableCellModal>
-                          <TableCellModal>
-                            {row.addBooklet ? (
-                              <img src={check} alt="галка" />
-                            ) : (
-                              <img
-                                src={checkbox}
-                                alt="галка"
-                                style={{ opacity: "0.6" }}
-                              />
-                            )}
-                          </TableCellModal>
-                          <TableCellModal>{row.quantity}</TableCellModal>
-                          <TableCellModal>
-                            {row.PriceForOneProduct} &#x20bd;
-                          </TableCellModal>
-                          <TableCellModal>
-                            {row.SumForOneTitle} &#x20bd;
-                          </TableCellModal>
-                        </TableRow>
-                      ))}
+                      <TableRow key={ObjectModalOrder.id}>
+                        <TableCellModal>
+                          {ObjectModalOrder.organizationName}
+                        </TableCellModal>
+                        <TableCellModal>
+                          {ObjectModalOrder.payeeName}
+                        </TableCellModal>
+                        <TableCellModal>
+                          {ObjectModalOrder.status}
+                        </TableCellModal>
+                        <TableCellModal>
+                          {ObjectModalOrder.billNumber}
+                        </TableCellModal>
+                        <TableCellModal>
+                          {ObjectModalOrder.isFromDeposit ? (
+                            <img src={check} alt="галка" />
+                          ) : (
+                            <img
+                              src={checkbox}
+                              alt="галка"
+                              style={{ opacity: "0.6" }}
+                            />
+                          )}
+                        </TableCellModal>
+                      </TableRow>
                     </TableBody>
                   )}
                 </Table>
@@ -1088,7 +1169,7 @@ const handleChangeInputAccountNumber = (event, id) => {
                         Сумма
                       </TextHeader>
                       {element.status === "Активный" ||
-                      element.status === "Выставлен счет" ? (
+                      element.status === "Выставлен счёт" ? (
                         <TextHeader
                           sx={{
                             paddingY: 1,
@@ -1107,7 +1188,7 @@ const handleChangeInputAccountNumber = (event, id) => {
                   </TableHead>
 
                   {element.status === "Активный" ||
-                  element.status === "Выставлен счет" ? (
+                  element.status === "Выставлен счёт" ? (
                     <TableBody>
                       {listModalTitles.map((row) => (
                         <TableRow key={row.id}>
@@ -1179,7 +1260,10 @@ const handleChangeInputAccountNumber = (event, id) => {
                                     width: "150px",
                                   }}
                                   value={
-                                    selectedAccessType[row.id] || row.accessType
+                                    selectedCheck[row.id]
+                                      ? null
+                                      : selectedAccessType[row.id] ||
+                                        row.accessType
                                   }
                                   onChange={(e) =>
                                     handleChangeAccessType(e, row.id)
@@ -1406,7 +1490,7 @@ const handleChangeInputAccountNumber = (event, id) => {
 
               <TypographyStyle>Итого: {totalSum} &#x20bd;</TypographyStyle>
               {element.status === "Активный" ||
-              element.status === "Выставлен счет" ? (
+              element.status === "Выставлен счёт" ? (
                 <Box
                   sx={{
                     display: "flex",
@@ -1438,7 +1522,7 @@ const handleChangeInputAccountNumber = (event, id) => {
                   <Button
                     onClick={resetStates}
                     sx={{
-                      variant: "outlined",
+                      variant: "contained",
                       textTransform: "none",
                       backgroundColor: "#CCCCCC",
                       color: "#000000",
@@ -1462,6 +1546,15 @@ const handleChangeInputAccountNumber = (event, id) => {
           </div>
         </Modal>
       ))}
+
+
+      <Add
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        allPayees={allPayees}
+        allOrganizations={allOrganizations}
+        allProducts={allProducts}
+      ></Add>
     </Box>
   );
 }

@@ -116,7 +116,7 @@ export default function Completed() {
                   {element.organizationName}
                 </StyledTableCellBody>
                 <StyledTableCellBody>
-                  {element.dispatchDate}
+                  {element.formattedDispatchDate}
                 </StyledTableCellBody>
                 <StyledTableCellBody>
                   {element.SUM} &#x20bd;

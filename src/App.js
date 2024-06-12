@@ -19,6 +19,11 @@ import PriceList from "./UI/Content/admin/priceList/PriceList.jsx";
 import Users from "./UI/Content/admin/users/Users.jsx";
 import Deposits from "./UI/Content/admin/deposits/Deposits.jsx";
 import Orders from "./UI/Content/admin/orders/Orders.jsx";
+import Statistics from "./UI/Content/superAdmin/statistics/Statistics.jsx";
+import Commission from "./UI/Content/superAdmin/commission/Commission.jsx";
+import Review from "./UI/Content/superAdmin/review/Review.jsx";
+import Reciever from "./UI/Content/superAdmin/reciever/Reciever.jsx";
+import NavSuperAdmin from "./UI/Navigation/superAdmin/NavSuperAdmin.jsx";
 
 function App() {
   return (
@@ -33,8 +38,8 @@ function App() {
           path=":accountId/admin/*"
           element={<NavAdmin></NavAdmin>}
         ></Route>
-
-        <Route path=":accountId/superAdmin/*" element={<Nav></Nav>}></Route>
+        
+        <Route path=":accountId/superAdmin/*" element={<NavSuperAdmin></NavSuperAdmin>}></Route>
       </Routes>
 
       <div className="app-wrapper-content">
@@ -102,25 +107,42 @@ function App() {
             element={
               <Content>
                 <Routes>
-                <Route
-                    path="orders"
-                    element={<Orders></Orders>}
-                  ></Route>
-                  <Route
-                    path="archive"
-                    element={<Archive></Archive>}
-                  ></Route>
+                  <Route path="orders" element={<Orders></Orders>}></Route>
+                  <Route path="archive" element={<Archive></Archive>}></Route>
                   <Route
                     path="priceList"
                     element={<PriceList></PriceList>}
                   ></Route>
-                  <Route
-                    path="users"
-                    element={<Users></Users>}
-                  ></Route>
+                  <Route path="users" element={<Users></Users>}></Route>
                   <Route
                     path="deposits"
                     element={<Deposits></Deposits>}
+                  ></Route>
+                </Routes>
+              </Content>
+            }
+          ></Route>
+
+          <Route
+            path="/:accountId/superAdmin/*"
+            element={
+              <Content>
+                <Routes>
+                  <Route
+                    path="comission"
+                    element={<Commission></Commission>}
+                  ></Route>
+                   <Route
+                    path="statistics"
+                    element={<Statistics></Statistics>}
+                  ></Route>
+                   <Route
+                    path="review"
+                    element={<Review></Review>}
+                  ></Route>
+                   <Route
+                    path="reciever"
+                    element={<Reciever></Reciever>}
                   ></Route>
                 </Routes>
               </Content>

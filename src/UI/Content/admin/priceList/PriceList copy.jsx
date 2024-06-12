@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useLayoutEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import {
@@ -16,16 +16,12 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import { InputLabel, FormControl, Autocomplete, Chip } from "@mui/material";
+import {InputLabel, FormControl, Autocomplete, Chip } from '@mui/material';
 import Modal from "@mui/material/Modal";
 import { styled } from "@mui/system";
 import add from "./add.svg";
 import exit from "./exit.svg";
-import {
-  getModalAbbrevation,
-  getPriceList,
-  postPrice,
-} from "../../../../BLL/admin/priceListSlice";
+import { getModalAbbrevation, getPriceList, postPrice } from "../../../../BLL/admin/priceListSlice";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
@@ -75,7 +71,6 @@ export default function PriceList() {
   const [priceAccess, setPriceAccess] = useState("");
   const [priceBooklet, setPriceBooklet] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
-  const [newInputValue, setNewInputValue] = useState("");
   const [type, setType] = useState("");
   const [date, setDate] = useState(dayjs());
   const [modalDate, setModalDate] = useState(dayjs());
@@ -87,20 +82,6 @@ export default function PriceList() {
   const pricesForEmployers = useSelector(
     (state) => state.adminPriceList.pricesForEmployers
   );
-
-  const [boxSize, setBoxSize] = useState({ height: "auto", width: "auto" }); // Храним размеры <Box>
-  const boxRef = useRef(null);
-
-  useLayoutEffect(() => {
-    if (boxRef.current) {
-      const rect = boxRef.current.getBoundingClientRect();
-      setBoxSize({ height: rect.height, width: rect.width });
-      console.log(`rect.height - ${rect.height}`);
-      console.log(`rect.width - ${rect.width}`);
-    }
-    console.log(`boxRef.current - ${boxRef.current}`);
-  }, [nameСourses]);
-
 
   const openModal = () => {
     setIsOpen(true);
@@ -114,7 +95,7 @@ export default function PriceList() {
 
   useEffect(() => {
     console.log(date.format("DD-MM-YYYY"));
-    dispatch(getPriceList({ accountId: accountId, date: date }));
+    dispatch(getPriceList({ accountId:accountId, date: date }));
   }, [dispatch, accountId, date]); // Добавляем accountId в список зависимостей
 
   useEffect(() => {
@@ -126,7 +107,7 @@ export default function PriceList() {
       postPrice({
         accountId: accountId,
         productTypeId: type,
-        name: name.name ? name.name : newInputValue,
+        name: name,
         abbreviation: abbreviation,
         priceAccess: priceAccess,
         priceBooklet: priceBooklet,
@@ -139,52 +120,16 @@ export default function PriceList() {
     resetForm();
   };
 
-  useEffect(() => {
-    disabledPolya();
-  }, [name, newInputValue]);
-
-  const disabledPolya = () => {
-    if (name.name !== null && name.name !== undefined) {
-      console.log("name");
-      console.log(name.name);
-      console.log("name");
-      return true;
-    } else {
-      console.log("newInputValue");
-      console.log(newInputValue);
-      console.log("newInputValue");
-      return false;
-    }
-  };
-
   const handleSelect = (event) => {
     setType(event.target.value);
   };
 
-  const handleSelectName = (event, newValue) => {
-    if (newValue !== null && newValue !== undefined) {
-      setName(newValue);
-      setAbbreviation(
-        nameСourses.find((item) => item.name === newValue.name)?.abbreviation
-      );
-      setType(
-        nameСourses.find((item) => item.name === newValue.name)?.productTypeId
-      );
-    }
+  const handleSelectName = (event) => {
+    setName(event.target.value);
+    setAbbreviation(nameСourses.find((item) => (item.name == event.target.value))?.abbreviation);
+    setType(nameСourses.find((item) => (item.name == event.target.value))?.productTypeId);
   };
 
-  const handleInputChange = (event, value) => {
-    if (
-      value &&
-      !nameСourses.some((option) => option.organizationName === value)
-    ) {
-      // Сохраняем ввод во временном состоянии
-      setName('');
-      setNewInputValue(value);
-      console.log('setNewInputValue')
-      console.log(value)
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -243,7 +188,6 @@ export default function PriceList() {
 
   const resetForm = () => {
     setName("");
-    setNewInputValue("");
     setAbbreviation("");
     setPriceAccess("");
     setPriceBooklet("");
@@ -253,8 +197,9 @@ export default function PriceList() {
   // Функция для определения, должен ли день быть отключен
   const disablePastDates = (date) => {
     // Сравниваем дату с текущей датой
-    return date.isBefore(dayjs(), "day"); // 'day' здесь означает сравнение по дню, без учета времени
+    return date.isBefore(dayjs(), 'day'); // 'day' здесь означает сравнение по дню, без учета времени
   };
+
 
   return (
     <div>
@@ -406,14 +351,13 @@ export default function PriceList() {
             sx={{
               gridArea: "icon",
               position: "absolute", // Изменено на абсолютное позиционирование
-               marginLeft: `${boxSize.width + 25}px`
+              marginLeft: "900px",
             }}
           >
             <img src={exit} alt="закрыть" />
           </IconButton>
 
           <Box
-            ref={boxRef}
             sx={{
               backgroundColor: "white",
               boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
@@ -470,7 +414,7 @@ export default function PriceList() {
                         }}
                         value={type}
                         onChange={handleSelect}
-                        disabled={disabledPolya()}
+                        disabled={true}
                       >
                         <MenuItem value={1}>Начальные</MenuItem>
                         <MenuItem value={2}>Основные</MenuItem>
@@ -479,7 +423,7 @@ export default function PriceList() {
                     </StyledTableCellBody>
 
                     <StyledTableCellBody>
-                      {/* <Select
+                    <Select
                         variant="standard"
                         sx={{
                           fontFamily: "Montserrat",
@@ -493,45 +437,23 @@ export default function PriceList() {
                         value={name}
                         onChange={handleSelectName}
                       >
+                      
                         {nameСourses.map((item) => {
-                          return (
-                            <MenuItem value={item.name}>{item.name}</MenuItem>
-                          );
+                          return <MenuItem value={item.name}>{item.name}</MenuItem>
                         })}
-                      </Select> */}
-
-                      <Autocomplete
-                        id="size-small-standard"
-                        size="small"
-                        freeSolo
-                        options={nameСourses || []}
-                        value={name || ""}
-                        onChange={(event, newValue) =>
-                          handleSelectName(event, newValue)
-                        }
-                        onInputChange={handleInputChange}
-                        getOptionLabel={(option) =>
-                          option.name ? option.name : ""
-                        }
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            variant="standard"
-                            label="Size small"
-                            placeholder="Favorites"
-                          />
-                        )}
-                      />
+                        
+                 
+                      </Select>
                     </StyledTableCellBody>
 
                     <StyledTableCellBody>
-                      <TextField
+                    <TextField
                         label="Аббревиатура"
                         variant="standard"
                         value={abbreviation}
                         onChange={handleChange}
                         name="abbreviation"
-                        disabled={disabledPolya()}
+                        disabled={true}
                       />
                     </StyledTableCellBody>
 
@@ -570,7 +492,7 @@ export default function PriceList() {
                           format="DD/MM/YYYY"
                           value={modalDate}
                           onChange={setModalDate}
-                          shouldDisableDate={disablePastDates}
+                          shouldDisableDate={disablePastDates} 
                         />
                       </LocalizationProvider>
                     </TableCell>
