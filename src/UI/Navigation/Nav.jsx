@@ -18,7 +18,8 @@ export default function Nav() {
   const { accountId } = useParams();
   const dispatch = useDispatch();
 
-  const list = useSelector((state) => state.work.work);
+  // const list = useSelector((state) => state.work.work);
+  const count = useSelector((state) => state.products.countButton);
   // const [isHovered, setIsHovered] = useState(false);
 
 // Отслеживаем изменения в accountId для обновления списка работ
@@ -134,8 +135,8 @@ useEffect(() => {
             >
               В работе
             </span>
-            
-            <Badge  badgeContent={list.length ? list.length : "0" }    
+            {/* {list.length ? list.length : "0" }  */}
+            <Badge  badgeContent= {count ? count : "0"}    
             sx={{
               "& .MuiBadge-badge": {
                 backgroundColor:"#005475", // Установка фона в синий или #005475 в зависимости от условия

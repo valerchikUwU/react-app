@@ -42,9 +42,14 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import CustomStyledCheckbox from "../styledComponents/CustomStyledCheckbox.jsx";
 import { styled } from "@mui/system";
-import classes from './Work.module.css'
-import { deletePress } from "../../../BLL/productSlice.js";
-
+import classes from "./Work.module.css";
+import {
+  deletePress,
+  deletePressArray,
+  deletePressSend,
+  deleteCountClick,
+  decrementCountClick
+} from "../../../BLL/productSlice.js";
 
 export default function Work() {
   const dispatch = useDispatch();
@@ -66,8 +71,6 @@ export default function Work() {
   const [selectedProduct, setSelectedProduct] = useState({});
   const [productId, setProductId] = useState({});
   const [isDeleteClicked, setIsDeleteClicked] = useState(false);
-
-
 
   const list = useSelector((state) => state.work?.work || []);
   const organizationList = useSelector((state) => state.work.organizationList);
@@ -191,19 +194,22 @@ export default function Work() {
   useEffect(() => {
     // Инициализация sumForOneTitle
 
-    const initialSumForOneTitle = listModalTitles.reduce((acc, row) => {    
+    const initialSumForOneTitle = listModalTitles.reduce((acc, row) => {
       const price = selectedCheck[row.id]
-        ? selectedProduct[row.id]?.priceBooklet ||
-          row.price.priceBooklet
-        : selectedProduct[row.id]?.priceAccess ||
-          row.price.priceAccess;
+        ? selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet
+        : selectedProduct[row.id]?.priceAccess || row.price.priceAccess;
       acc[row.id] = parseFloat(selectedInput[row.id] || 0) * price;
       return acc;
     }, {});
 
     setSumForOneTitle(initialSumForOneTitle);
-  }, [selectedProduct, productId, selectedCheck, selectedInput, listModalTitles]);
-  
+  }, [
+    selectedProduct,
+    productId,
+    selectedCheck,
+    selectedInput,
+    listModalTitles,
+  ]);
 
   const OpenModal = (id) => setOpenStates({ ...openStates, [id]: true });
 
@@ -218,11 +224,12 @@ export default function Work() {
         titleId: titleId,
       })
     ).then(() => {
-      dispatch(deletePress({id: productId}))
-      console.log('productId');
+      dispatch(deletePress({ id: productId }));
+      dispatch(decrementCountClick());
+      console.log("productId");
       console.log(productId);
       // После успешного выполнения deleteTitleOrder вызываем getWork
-      dispatch(getWork(accountId));// для обновления полей когда еще пользователь находится в модальном окне на самой странице уже меняется
+      dispatch(getWork(accountId)); // для обновления полей когда еще пользователь находится в модальном окне на самой странице уже меняется
       setIsDeleteClicked(true);
     });
   };
@@ -234,7 +241,11 @@ export default function Work() {
         orderId: orderId,
         organizationName: organizationName,
       })
-    ).then(() => { dispatch(getWork(accountId))});
+    ).then(() => {
+      dispatch(getWork(accountId));
+      dispatch(deletePressSend());
+      dispatch(deleteCountClick());
+    });
     setDummyKey((prevKey) => prevKey + 1);
     setIsIconVisibleSend((prevState) => ({
       ...prevState,
@@ -249,7 +260,6 @@ export default function Work() {
       ...prevState,
       [orderId]: true,
     }));
-   
   };
 
   const handleIconClickResieved = (orderId) => {
@@ -328,29 +338,34 @@ export default function Work() {
     if (!hasErrors) {
       // Создаем пустой массив для titlesToUpdate
       const titlesToUpdate = [];
+      const changeProduct = [];
 
       // Проходим по listModalTitles и проверяем условия для каждого элемента
       listModalTitles.forEach((row) => {
-        // Проверяем, существует ли значение для данного id в selectedCheck
-        console.log('Хуйня');
-        console.log(productId[row.id] ? productId[row.id] : row.productId);
         titlesToUpdate.push({
           id: row.id,
           productId: productId[row.id] ? productId[row.id] : row.productId,
-          accessType:selectedCheck[row.id] ? null : (selectedAccessType[row.id]
+          accessType: selectedCheck[row.id]
+            ? null
+            : selectedAccessType[row.id]
             ? selectedAccessType[row.id]
-            : row.accessType) ,
+            : row.accessType,
           generation: selectedGeneration[row.id]
             ? selectedGeneration[row.id]
             : row.generation,
           quantity: selectedInput[row.id],
           addBooklet: selectedCheck[row.id],
         });
+
+        changeProduct.push({
+          id: productId[row.id] ? productId[row.id] : row.productId,
+        });
       });
 
       // Теперь titlesToUpdate - это массив объектов, который можно использовать в вашем запросе
       // Проверяем, что titlesToUpdate не пуст, перед тем как вызывать dispatch
       if (titlesToUpdate.length > 0) {
+        dispatch(deletePressArray(changeProduct));
         // Предполагается, что updateTitleOrder возвращает промис
         dispatch(
           updateTitleOrder({
@@ -738,12 +753,13 @@ export default function Work() {
                       <Tooltip title="Заказать" arrow>
                         <Fade in={!isIconVisibleSend[element.id]}>
                           <IconButton
-                           onClick={() => 
-                            handleIconClick(
-                              element.id,
-                              selectedValues[element.id] || element.organizationName
-                            )
-                          }
+                            onClick={() =>
+                              handleIconClick(
+                                element.id,
+                                selectedValues[element.id] ||
+                                  element.organizationName
+                              )
+                            }
                           >
                             <img src={send} alt="отправить" />
                           </IconButton>
@@ -975,25 +991,21 @@ export default function Work() {
               transform: "translate(-50%, -50%)",
               width: "100%",
               paddingTop: "5%",
-              
             }}
-           
           >
-          
-              <IconButton
-                onClick={() => handleCloseModal(element.id)}
-                sx={{
-                  gridArea: "icon",
-                  position: "absolute", // Изменено на абсолютное позиционирование
-                   marginLeft: `${boxSize.width + 25}px`
-                }}
-              >
-                <img src={exit} alt="закрыть" />
-              </IconButton>
-          
+            <IconButton
+              onClick={() => handleCloseModal(element.id)}
+              sx={{
+                gridArea: "icon",
+                position: "absolute", // Изменено на абсолютное позиционирование
+                marginLeft: `${boxSize.width + 25}px`,
+              }}
+            >
+              <img src={exit} alt="закрыть" />
+            </IconButton>
 
             <Box
-            ref={boxRef}
+              ref={boxRef}
               sx={{
                 backgroundColor: "white",
                 boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
@@ -1312,7 +1324,10 @@ export default function Work() {
                                     width: "150px",
                                   }}
                                   value={
-                                    selectedCheck[row.id] ? null : (selectedAccessType[row.id] || row.accessType)
+                                    selectedCheck[row.id]
+                                      ? null
+                                      : selectedAccessType[row.id] ||
+                                        row.accessType
                                   }
                                   onChange={(e) =>
                                     handleChangeAccessType(e, row.id)
@@ -1464,8 +1479,10 @@ export default function Work() {
                                   e,
                                   row.id,
                                   selectedCheck[row.id]
-                                    ? selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet
-                                    : selectedProduct[row.id]?.priceAccess || row.price.priceAccess
+                                    ? selectedProduct[row.id]?.priceBooklet ||
+                                        row.price.priceBooklet
+                                    : selectedProduct[row.id]?.priceAccess ||
+                                        row.price.priceAccess
                                 )
                               }
                             />
@@ -1473,8 +1490,10 @@ export default function Work() {
 
                           <TableCellModal>
                             {selectedCheck[row.id]
-                              ? selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet
-                              : selectedProduct[row.id]?.priceAccess || row.price.priceAccess}
+                              ? selectedProduct[row.id]?.priceBooklet ||
+                                row.price.priceBooklet
+                              : selectedProduct[row.id]?.priceAccess ||
+                                row.price.priceAccess}
                             &#x20bd;
                           </TableCellModal>
 
@@ -1488,7 +1507,7 @@ export default function Work() {
                                 handleDeleteOrder(
                                   element.id,
                                   row.id,
-                                  productId[element.id] || row.productId,
+                                  productId[element.id] || row.productId
                                 )
                               }
                             >
@@ -1597,7 +1616,7 @@ export default function Work() {
                     marginTop: "60px",
                     marginRight: "10px",
                     gap: "15px",
-                    marginBottom:'20px'
+                    marginBottom: "20px",
                   }}
                 >
                   <Button
@@ -1647,7 +1666,7 @@ export default function Work() {
                     marginTop: "60px",
                     marginRight: "10px",
                     gap: "15px",
-                    marginBottom:'20px'
+                    marginBottom: "20px",
                   }}
                 >
                   <Button

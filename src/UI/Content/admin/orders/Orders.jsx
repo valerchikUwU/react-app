@@ -453,7 +453,6 @@ export default function Orders() {
   const [boxSize, setBoxSize] = useState({ height: "auto", width: "auto" }); // Храним размеры <Box>
   const boxRef = useRef(null);
 
-
   useLayoutEffect(() => {
     if (boxRef.current) {
       const rect = boxRef.current.getBoundingClientRect();

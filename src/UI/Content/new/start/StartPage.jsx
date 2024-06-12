@@ -7,10 +7,10 @@ import classNames from "classnames";
 import { Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { getProducts, isPress } from "../../../../BLL/productSlice";
+import { getProducts, isPress, countClick } from "../../../../BLL/productSlice";
 import { getWork, putOrders } from "../../../../BLL/workSlice";
 
-export default function PersonalPage() {
+export default function StartPage() {
   const [checkedStates, setCheckedStates] = useState({});
   const [checked1States, setChecked1States] = useState({});
   const [isDisabledStates, setIsDisabledStates] = useState({});
@@ -52,6 +52,7 @@ export default function PersonalPage() {
     quantity
   ) => {
     if (countStates[orderId] > 0) {
+      dispatch(countClick());
       setDummyKey((prevState) => prevState + 1);
       setIsDisabledStates((prevStates) => {
         return {

@@ -7,7 +7,7 @@ import classNames from "classnames";
 import { Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { getProducts } from "../../../../BLL/productSlice";
+import { getProducts, isPress, countClick } from "../../../../BLL/productSlice";
 import { getWork, putOrders } from "../../../../BLL/workSlice";
 
 export default function PersonalPage() {
@@ -16,6 +16,23 @@ export default function PersonalPage() {
   const [isDisabledStates, setIsDisabledStates] = useState({});
   const [countStates, setCountStates] = useState({});
   const [isCheckedBoxStates, setIsCheckedBoxStates] = useState({});
+  const [dummyKey, setDummyKey] = useState(0);
+
+  const isButton = useSelector((state) => state.products.isProduct);
+
+  useEffect(() => {
+    const updatedIsDisabledStates = isButton.reduce((acc, buttonState) => {
+      acc[buttonState.id] = {
+        id: buttonState.id,
+        isDisabled: buttonState.isBoolean,
+      };
+      return acc;
+    }, {});
+    console.log("useEffect");
+    console.log(updatedIsDisabledStates);
+    console.log("useEffect");
+    setIsDisabledStates(updatedIsDisabledStates);
+  }, [dummyKey]);
 
   const handleChange = (orderId, event) => {
     setCheckedStates({ ...checkedStates, [orderId]: event.target.checked });
@@ -35,8 +52,18 @@ export default function PersonalPage() {
     quantity
   ) => {
     if (countStates[orderId] > 0) {
-      setIsDisabledStates({ ...isDisabledStates, [orderId]: true });
-
+      dispatch(countClick());
+      setDummyKey((prevState) => prevState + 1);
+      setIsDisabledStates((prevStates) => {
+        return {
+          ...prevStates,
+          [productId]: { ...prevStates[productId], isDisabled: true },
+        };
+      });
+      console.log("setIsDisabledStates");
+      console.log(isDisabledStates);
+      console.log("setIsDisabledStates");
+      dispatch(isPress({ id: productId }));
       dispatch(
         putOrders({
           accountId: accountId,
@@ -48,7 +75,7 @@ export default function PersonalPage() {
             quantity: quantity,
           },
         })
-      ).then(() => dispatch(getWork(accountId)))
+      ).then(() => dispatch(getWork(accountId)));
     }
   };
 
@@ -130,9 +157,8 @@ export default function PersonalPage() {
                     classes.right,
                     checkedStates[order.id]
                       ? classes.typeBookPaperChange
-                      : classes.typeBookPaper,
+                      : classes.typeBookPaper
                   )}
-
                   style={{
                     opacity: isHidden[order.id] ? 0.5 : 1,
                   }}
@@ -176,7 +202,7 @@ export default function PersonalPage() {
                 <span className={classes.booklet}>Доп. буклет</span>
                 <button
                   className={
-                    isDisabledStates[order.id]
+                    isDisabledStates[order.id]?.isDisabled
                       ? classes.buttonCartDisabled
                       : classes.buttonCart
                   }
@@ -193,17 +219,17 @@ export default function PersonalPage() {
                       countStates[order.id]
                     )
                   }
-                  disabled={isDisabledStates[order.id]}
+                  disabled={!!isDisabledStates[order.id]?.isDisabled}
                 >
                   В корзину
                 </button>
                 <button
-                  className={classNames(
-                    isDisabledStates[order.id]
+                  className={
+                    isDisabledStates[order.id]?.isDisabled
                       ? classes.arrowCartDisabled
                       : classes.arrowCart
-                  )}
-                  disabled={isDisabledStates[order.id]}
+                  }
+                  disabled={!!isDisabledStates[order.id]?.isDisabled}
                 >
                   <span className={classes.count}>
                     {countStates[order.id] || 0}
