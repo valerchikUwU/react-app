@@ -28,7 +28,7 @@ export const putDeposit = createAsyncThunk(
         `/${accountId}/orders/newOrder`, productData
       );
       console.log(response.status);
-      return response.status;
+      return {status: response.status};
     } catch (error) {
       console.log(error.response.status);
       return rejectWithValue(error.response.status);
@@ -43,6 +43,7 @@ const depositSlice = createSlice({
     organizations:[],
     status: null,
     error: null,
+    errorDeposit: null,
  },
  reducers: {},
  extraReducers: (builder) => {
@@ -62,16 +63,18 @@ const depositSlice = createSlice({
         state.error = action.payload;
       })
       //putDeposit
-      .addCase(putDeposit.pending, (state) => {
+      .addCase(putDeposit.pending, (state, action) => {
         state.status = 'loading';
         state.error = null;
       })
-      .addCase(putDeposit.fulfilled, (state) => {
-        state.status = 'resolved';
+      .addCase(putDeposit.fulfilled, (state, action) => {
+        state.status = 'resolved'; 
+        state.errorDeposit = action.payload.status;
       })
       .addCase(putDeposit.rejected, (state, action) => {
         state.status = 'rejected';
         state.error = action.payload;
+        state.errorDeposit = action.payload;
       });
  },
 });

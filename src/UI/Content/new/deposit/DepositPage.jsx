@@ -44,6 +44,9 @@ export default function DepositPage() {
   const deposit = useSelector((state) => state.deposit.deposit);
   const organizations = useSelector((state) => state.deposit.organizations);
 
+  const errorDeposit = useSelector((state) => state.deposit.errorDeposit);
+  
+
   const handleSubmit = (SUMDeposit, productId, organizationName) => {
     console.log(
       `Submitting with accountId: ${accountId}, SUMDeposit: ${SUMDeposit}, productId: ${productId}, organizationName: ${organizationName}`
@@ -58,8 +61,8 @@ export default function DepositPage() {
           quantity: SUMDeposit,
         },
       })
-    )
-    
+    );
+
     setSnackbarValue(SUMDeposit);
     setSnackbarOpen(true);
     setValue("");
@@ -198,17 +201,21 @@ export default function DepositPage() {
                 autoHideDuration={2000}
                 onClose={handleClose}
               >
-                <Alert
-                  severity="info"
-                  sx={{
-                    backgroundColor: "#005475",
-                    color: "white",
-                    marginLeft: "230px",
-                    marginBottom: "-10px",
-                  }}
-                >
-                  {`Депозит на сумму ${snackbarValue} ₽`}
-                </Alert>
+                {errorDeposit == 400 ? (
+                  <Alert severity="error">Ошибка</Alert>
+                ) : (
+                  <Alert
+                    severity="info"
+                    sx={{
+                      backgroundColor: "#005475",
+                      color: "white",
+                      marginLeft: "230px",
+                      marginBottom: "-10px",
+                    }}
+                  >
+                    {`Депозит на сумму ${snackbarValue} ₽`}
+                  </Alert>
+                )}
               </Snackbar>
             </div>
           </div>
