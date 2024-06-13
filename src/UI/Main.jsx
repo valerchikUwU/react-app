@@ -3,6 +3,13 @@ import axios from "axios";
 import classes from "./Main.module.css";
 import QRCode from "qrcode.react"; // Импортируем QRCode
 
+
+const apiURL = process.env.REACT_APP_ENV === 'dev'? process.env.REACT_APP_DEV_API_URL : process.env.REACT_APP_PROD_API_URL;
+
+const wsURL = process.env.REACT_APP_ENV === 'dev'? process.env.REACT_APP_DEV_WS_URL : process.env.REACT_APP_PROD_WS_URL;
+
+
+
 export default function Main() {
   const [data, setData] = useState({ token: "", sessionId: "" });
   const [ws, setWs] = useState(null); // Добавляем состояние для WebSocket соединения
@@ -12,7 +19,7 @@ export default function Main() {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/homepage"
+          `${apiURL}/homepage`
         );
         // Обновляем состояние с полученными данными
         setData(response.data);
@@ -42,7 +49,7 @@ export default function Main() {
     }
     // Устанавливаем WebSocket соединение после получения данных
     if (data.sessionId) {
-      const wsUrl = `ws://localhost:3002?sessionId=${data.sessionId}`;
+      const wsUrl = `${wsURL}sessionId=${data.sessionId}`;
       // const wsUrl = `ws://localhost:8080?sessionId=${data.sessionId}`;
       const wsConnection = new WebSocket(wsUrl);
 
