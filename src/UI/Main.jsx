@@ -32,15 +32,15 @@ export default function Main() {
     if(data.isLogged === true){
       switch(data.accountRoleId){
         case 1:
-        navigate(`https://24academy.ru/desktop/#/${data.accountId}/superAdmin/new/start`);
+        window.location.href = `#/${data.accountId}/superAdmin/new/start`;
         break;
         case 2:
-        navigate(`https://24academy.ru/desktop/#/${data.accountId}/admin/orders`);
+        window.location.href = `#/${data.accountId}/admin/orders`;
         break;
         case 3:
-        navigate(`https://24academy.ru/desktop/#/${data.accountId}/user/new/start`);
+        window.location.href = `#/${data.accountId}/user/new/start`;
         break;
-        default: navigate(`https://24academy.ru/desktop/#/`);
+        default: window.location.href = `#/`;
       }
     }
     // Устанавливаем WebSocket соединение после получения данных
@@ -64,15 +64,15 @@ export default function Main() {
           // Если сообщение не равно 'false', выполняем редирект
           switch(data.accountRoleId){
             case 1:
-            window.location.href = `#/${data.accountId}/superAdmin/new/start`;
-            break;
-            case 2:
-            window.location.href = `#/${data.accountId}/admin/orders`;
-            break;
-            case 3:
-            window.location.href = `#/${data.accountId}/user/new/start`;
-            break;
-            default: window.location.href = `#/`;
+              navigate(`https://24academy.ru/desktop/#/${data.accountId}/superAdmin/new/start`);
+              break;
+              case 2:
+              navigate(`https://24academy.ru/desktop/#/${data.accountId}/admin/orders`);
+              break;
+              case 3:
+              navigate(`https://24academy.ru/desktop/#/${data.accountId}/user/new/start`);
+              break;
+              default: navigate(`https://24academy.ru/desktop/#/`);
           }
         } else {
           // Если сообщение равно 'false', выводим ошибку
