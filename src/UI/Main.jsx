@@ -111,8 +111,8 @@ export default function Main() {
       </div>
 
       {/* Отображаем полученные данные */}
-      <div>Token: {data.token}</div>
-      <div>Session ID: {data.sessionId}</div>
+      {/* <div>Token: {data.token}</div>
+      <div>Session ID: {data.sessionId}</div> */}
     </div>
   );
 }
