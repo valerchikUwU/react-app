@@ -35,7 +35,7 @@ export default function Main() {
         navigate(`https://24academy.ru/desktop/#/${data.accountId}/superAdmin/new/start`);
         break;
         case 2:
-        navigate(`https://24academy.ru/desktop/#/${data.accountId}/superAdmin/admin/orders`);
+        navigate(`https://24academy.ru/desktop/#/${data.accountId}/admin/orders`);
         break;
         case 3:
         navigate(`https://24academy.ru/desktop/#/${data.accountId}/user/new/start`);
