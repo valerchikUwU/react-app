@@ -2,11 +2,14 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import classes from "./Main.module.css";
 import QRCode from "qrcode.react"; // Импортируем QRCode
+import { useNavigate } from 'react-router-dom';
+
 
 export default function Main() {
   const [data, setData] = useState({ token: "", sessionId: "" });
   const [ws, setWs] = useState(null); // Добавляем состояние для WebSocket соединения
-
+  const navigate = useNavigate();
+  
   useEffect(() => {
     // Функция для выполнения GET запроса
     const fetchData = async () => {
@@ -29,15 +32,15 @@ export default function Main() {
     if(data.isLogged === true){
       switch(data.accountRoleId){
         case 1:
-        window.location.href = `#/${data.accountId}/superAdmin/new/start`;
+        navigate(`https://24academy.ru/desktop/#/${data.accountId}/superAdmin/new/start`);
         break;
         case 2:
-        window.location.href = `#/${data.accountId}/admin/orders`;
+        navigate(`https://24academy.ru/desktop/#/${data.accountId}/superAdmin/admin/orders`);
         break;
         case 3:
-        window.location.href = `#/${data.accountId}/user/new/start`;
+        navigate(`https://24academy.ru/desktop/#/${data.accountId}/user/new/start`);
         break;
-        default: window.location.href = `#/`;
+        default: navigate(`https://24academy.ru/desktop/#/`);
       }
     }
     // Устанавливаем WebSocket соединение после получения данных
