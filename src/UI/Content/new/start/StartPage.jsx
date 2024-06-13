@@ -7,7 +7,7 @@ import classNames from "classnames";
 import { Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { getProducts, isPress, countClick } from "../../../../BLL/productSlice";
+import { getProducts, getDraft, isPress, countClick } from "../../../../BLL/productSlice";
 import { getWork, putOrders } from "../../../../BLL/workSlice";
 
 export default function StartPage() {
@@ -109,14 +109,19 @@ export default function StartPage() {
 
   const dispatch = useDispatch();
   const { accountId } = useParams();
+
+
   useEffect(() => {
     dispatch(getProducts({ accountId: accountId, typeId: "1" }));
+    dispatch(getDraft(accountId));
   }, [accountId]);
 
   const orders = useSelector((state) => state.products.productsStart);
-
+  const render = useSelector((state) => state.products.render);
+  console.log(`render ---- ${render}`);
   return (
     <Grid
+      key={render}
       sx={{ mt: "1px" }}
       container
       rowSpacing={2}

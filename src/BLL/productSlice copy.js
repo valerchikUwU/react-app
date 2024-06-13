@@ -42,7 +42,6 @@ const productSlice = createSlice({
     status: null,
     error: null,
     countButton: 0,
-    render:0,
   },
   reducers: {
     countClick(state) {
@@ -157,8 +156,7 @@ const productSlice = createSlice({
               ? { ...product, isBoolean: true }
               : product
           );
-          state.render +=1;
-          console.log(`render.state ---- ${state.render}`);
+
           console.log(`isProduct ---- ${ state.isProduct}`);
           console.log(`productsInDraft  --- ${ state.productsInDraft}`);
         }
@@ -182,3 +180,8 @@ export const {
 
 export default productSlice.reducer;
 
+//  // Обновляем isProduct, добавляя в него продукты из productsInDraft,
+//   // которые имеют совпадающие id с уже существующими в isProduct
+//   state.isProduct = [...state.isProduct,...action.payload.productsInDraft.filter(productInDraft =>
+//     state.isProduct.some(isProduct => isProduct.id === productInDraft.id)
+//   )];

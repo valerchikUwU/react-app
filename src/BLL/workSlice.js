@@ -3,8 +3,6 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import instance from "./api.js";
 
 
-
-
 export const getWork = createAsyncThunk(
   "work/getWork",
   async (accountId, { rejectWithValue }) => {
