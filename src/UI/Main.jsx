@@ -28,17 +28,18 @@ export default function Main() {
   useEffect(() => {
     if (data.isLogged === true) {
       switch (data.accountRoleId) {
-        case 1:
+        case (1):
           window.location.href = `#/${data.accountId}/superAdmin/comission`;
           break;
-        case 2:
+        case (2):
           window.location.href = `#/${data.accountId}/admin/orders`;
           break;
-        case 3:
+        case (3):
           window.location.href = `#/${data.accountId}/user/new/start`;
           break;
         default:
           window.location.href = `#/`;
+          window.location.reload();
       }
     }
     // Устанавливаем WebSocket соединение после получения данных
@@ -61,15 +62,15 @@ export default function Main() {
         if (message !== "false") {
           // Если сообщение не равно 'false', выполняем редирект
           switch (data.accountRoleId) {
-            case 1:
+            case (1):
               window.location.href = `#/${data.accountId}/superAdmin/comission`;
               window.location.reload();
               break;
-            case 2:
+            case (2):
               window.location.href = `#/${data.accountId}/admin/orders`;
               window.location.reload();
               break;
-            case 3:
+            case (3):
               window.location.href = `#/${data.accountId}/user/new/start`;
               window.location.reload();
               break;
