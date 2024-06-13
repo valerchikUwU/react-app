@@ -92,7 +92,7 @@ export default function Main() {
         wsConnection.close();
       };
     }
-  }, [data.sessionId]); // Зависимость от sessionId, чтобы обновлять соединение при изменении sessionId
+  }, [data.sessionId, data.accountId]); // Зависимость от sessionId, чтобы обновлять соединение при изменении sessionId
 
   // const qrUrl = `https://t.me/AcademyStrategBot?start=${data.token}-${data.sessionId}`;
   const qrUrl = `tg://resolve?domain=AcademyStrategBot&start=${encodeURIComponent(
