@@ -193,6 +193,7 @@ export default function Add({
       ).then(() => {
         dispatch(getOrder(accountId));
         resetStates();
+        setIsOpen(false);
       });
     }
   };
@@ -247,7 +248,7 @@ export default function Add({
             }}
           >
             <IconButton
-              onClick={() => {setIsOpen(false);resetStates();}}
+              onClick={() => {setIsOpen(false); resetStates();}}
               sx={{
                 position: "absolute",
                 float: "right",
