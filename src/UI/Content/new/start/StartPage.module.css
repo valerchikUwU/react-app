@@ -30,6 +30,16 @@
     height: auto;
     background-color: #FFFFFF;
     padding: 5px;
+    display:grid;
+    grid-template-areas: "one two";
+}
+.one{
+
+    grid-area: one;
+}
+.two{
+
+    grid-area: two;
 }
 
 .book {
