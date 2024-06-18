@@ -10,7 +10,19 @@ export const getOrder = createAsyncThunk(
       const response = await instance.get(`${accountId}/orders/all`);
 
       console.log(response.data);
-      return { orders_list: response.data.orders_list };
+
+      // Отсортировка массива orders_list по полю organizationName
+      const sortedOrdersList = response.data.orders_list.sort((a, b) => {
+        if (a.organizationName > b.organizationName) {
+          return 1; // a идет после b
+        }
+        if (a.organizationName < b.organizationName) {
+          return -1; // a идет перед b
+        }
+        return 0; // a и b равны
+      });
+
+      return { orders_list: sortedOrdersList };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -25,7 +37,11 @@ export const getNewOrder = createAsyncThunk(
       const response = await instance.get(`${accountId}/orders/admin/newOrder`);
 
       console.log(response.data);
-      return { allProducts: response.data.allProducts, allOrganizations: response.data.allOrganizations, allPayees: response.data.allPayees};
+      return {
+        allProducts: response.data.allProducts,
+        allOrganizations: response.data.allOrganizations,
+        allPayees: response.data.allPayees,
+      };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -46,6 +62,7 @@ export const getOrderModal = createAsyncThunk(
         titles: response.data.titles,
         products: response.data.products,
         payees: response.data.payees,
+        allOrganizationsModal: response.data.allOrganizations,
       };
     } catch (error) {
       return rejectWithValue(error.message);
@@ -55,12 +72,31 @@ export const getOrderModal = createAsyncThunk(
 
 export const putNewOrder = createAsyncThunk(
   "order/putNewOrder",
-  async ({ accountId,organizationCustomerId, status, billNumber, payeeId, isFromDeposit, titlesToCreate }, { rejectWithValue }) => {
+  async (
+    {
+      accountId,
+      organizationCustomerId,
+      status,
+      billNumber,
+      payeeId,
+      isFromDeposit,
+      titlesToCreate,
+    },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await instance.post(
-        `/${accountId}/orders/admin/newOrder`,{ organizationCustomerId,status,billNumber,payeeId,isFromDeposit,titlesToCreate}
+        `/${accountId}/orders/admin/newOrder`,
+        {
+          organizationCustomerId,
+          status,
+          billNumber,
+          payeeId,
+          isFromDeposit,
+          titlesToCreate,
+        }
       );
-    return response.data
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -86,7 +122,14 @@ export const updateTitleOrderAdmin = createAsyncThunk(
       // Используем шаблонные строки для динамического формирования URL
       const response = await instance.put(
         `/${accountId}/orders/admin/${orderId}/update`,
-        { organizationName, status, billNumber, payeeId, isFromDeposit, titlesToUpdate }
+        {
+          organizationName,
+          status,
+          billNumber,
+          payeeId,
+          isFromDeposit,
+          titlesToUpdate,
+        }
       );
       console.log(response.data.organizationName);
       console.log(response.data.status);
@@ -110,6 +153,7 @@ const orderSlice = createSlice({
     payees: [],
     allProducts: [],
     allOrganizations: [],
+    allOrganizationsModal: [],
     allPayees: [],
     status: null,
     error: null,
@@ -156,6 +200,7 @@ const orderSlice = createSlice({
         state.modalTitles = action.payload.titles;
         state.products = action.payload.products;
         state.payees = action.payload.payees;
+        state.allOrganizationsModal = action.payload.allOrganizationsModal;
       })
       .addCase(getOrderModal.rejected, (state, action) => {
         state.status = "rejected";

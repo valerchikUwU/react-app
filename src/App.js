@@ -24,10 +24,13 @@ import Commission from "./UI/Content/superAdmin/commission/Commission.jsx";
 import Review from "./UI/Content/superAdmin/review/Review.jsx";
 import Reciever from "./UI/Content/superAdmin/reciever/Reciever.jsx";
 import NavSuperAdmin from "./UI/Navigation/superAdmin/NavSuperAdmin.jsx";
+import useNetwork from "./UI/Custom/useNetwork"; // Импорт хука
 
 function App() {
+  const isOnline = useNetwork();
+
   return (
-    <div className="app-wrapper">
+    <div className="app-wrapper" style={{background: isOnline ? '' :'#999999'}}>
       <Header></Header>
       <Routes>
         <Route path="/*" element={<NavMain></NavMain>}></Route>

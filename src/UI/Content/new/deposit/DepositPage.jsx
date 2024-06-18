@@ -9,19 +9,7 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Select, MenuItem, FormControl } from "@mui/material";
 import { getDeposit, putDeposit } from "../../../../BLL/depositSlice";
-import { getWork } from "../../../../BLL/workSlice";
 
-// // Создаем стилизованный компонент TextField
-// const StyledTextField = styled(TextField)({
-//   "& .MuiInputLabel-root": {
-//     fontSize: "14px", // Измените размер шрифта метки
-//     color: "#005475",
-//   },
-//   "& .MuiInputBase-input": {
-//     fontSize: "14px", // Установите размер шрифта текста в поле ввода
-//     color: "#005475",
-//   },
-// });
 
 export default function DepositPage() {
   const [value, setValue] = useState("");
@@ -201,22 +189,6 @@ export default function DepositPage() {
                   autoHideDuration={2000}
                   onClose={handleClose}
                 >
-                  {/* {errorDeposit == 400 ? (
-                  <Alert severity="error">Ошибка</Alert>
-                ) : (
-                  <Alert
-                    severity="info"
-                    sx={{
-                      backgroundColor: "#005475",
-                      color: "white",
-                      marginLeft: "230px",
-                      marginBottom: "-10px",
-                    }}
-                  >
-                    {`Депозит на сумму ${snackbarValue} ₽`}
-                  </Alert>
-                )} */}
-
                   <Alert
                     severity="info"
                     sx={{
@@ -237,7 +209,7 @@ export default function DepositPage() {
                   autoHideDuration={2000}
                   onClose={handleClose}
                 >
-                  <Alert severity="error">Ошибка</Alert>
+                  <Alert severity="error">Ошибка {errorDeposit}</Alert>
                 </Snackbar>
               )}
             </div>

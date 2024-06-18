@@ -13,11 +13,15 @@ import {
   Button,
   Autocomplete,
   Checkbox,
-  Chip
+  Chip,
 } from "@mui/material";
 import Modal from "@mui/material/Modal";
 import { styled } from "@mui/system";
-import { getOrganizationList, getUser, postAccount } from "../../../../BLL/admin/userSlice";
+import {
+  getOrganizationList,
+  getUser,
+  postAccount,
+} from "../../../../BLL/admin/userSlice";
 import plus from "./image/add.svg";
 import check from "./image/checboxCheck.svg";
 import unCheck from "./image/checbox.svg";
@@ -62,7 +66,6 @@ export default function Users() {
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [selectedValues, setSelectedValues] = useState([]);
 
-
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
   const [telephone, setTelephone] = useState("");
@@ -105,88 +108,86 @@ export default function Users() {
   };
 
   const handleAdd = () => {
-    dispatch(postAccount({
-       accountId: accountId, 
-       firstName: name,
-       lastName: lastName, 
-       telephoneNumber: telephone, 
-       organizationList: selectedValues
-    })).then(() => {
+    dispatch(
+      postAccount({
+        accountId: accountId,
+        firstName: name,
+        lastName: lastName,
+        telephoneNumber: telephone,
+        organizationList: selectedValues,
+      })
+    ).then(() => {
       dispatch(getUser(accountId));
-    })
+    });
     resetForm();
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    let newValue;
 
-const handleChange = (e) => {
-  const { name, value } = e.target;
-  let newValue;
-
-  if (name === "name") {
-    newValue = value.charAt(0).toUpperCase() + value.slice(1);
-  } else if (name === "lastName") {
-    newValue = value.charAt(0).toUpperCase() + value.slice(1);
-  } else if (name === "telephone") {
-    newValue = value.replace(/[^\d+]/g, "");
-  }
-
-  if (newValue!== undefined) {
-    switch (name) {
-      case "name":
-        setName(newValue);
-
-        break;
-      case "lastName":
-        setLastName(newValue);
-
-        break;
-      case "telephone":
-        setTelephone(newValue);
-
-        break;
+    if (name === "name") {
+      newValue = value.charAt(0).toUpperCase() + value.slice(1);
+    } else if (name === "lastName") {
+      newValue = value.charAt(0).toUpperCase() + value.slice(1);
+    } else if (name === "telephone") {
+      newValue = value.replace(/[^\d+]/g, "");
     }
-    validateForm(); // Trigger validation for the active field
-  }
-};
 
-const validateForm = () => {
-  // Initialize isValid as true
-  let isValid = true;
+    if (newValue !== undefined) {
+      switch (name) {
+        case "name":
+          setName(newValue);
 
-  // Validate each field individually
-  if (!/^([a-zA-Zа-яА-ЯёЁ]{2,})$/.test(name)) {
-    isValid = false; // Set to false if name is invalid
-  }
-  if (!/^([a-zA-Zа-яА-ЯёЁ]{2,})$/.test(lastName)) {
-    isValid = false; // Set to false if lastName is invalid
-  }
- // Check if telephone is valid
- if (telephone.length!== 11 && telephone.length!== 12) {
-  isValid = false; // Set to false if telephone is invalid
-} 
+          break;
+        case "lastName":
+          setLastName(newValue);
 
-  // Set form validity based on all fields' validity
-  setIsFormValid(isValid);
-  console.log(`isFormValid ${isValid}`);
-};
+          break;
+        case "telephone":
+          setTelephone(newValue);
 
-const resetForm = () => {
-  setName("");
-  setLastName("");
-  setTelephone("");
-  setIsFormValid(false);
+          break;
+      }
+      validateForm(); // Trigger validation for the active field
+    }
+  };
 
-};
+  const validateForm = () => {
+    // Initialize isValid as true
+    let isValid = true;
 
+    // Validate each field individually
+    if (!/^([a-zA-Zа-яА-ЯёЁ]{2,})$/.test(name)) {
+      isValid = false; // Set to false if name is invalid
+    }
+    if (!/^([a-zA-Zа-яА-ЯёЁ]{2,})$/.test(lastName)) {
+      isValid = false; // Set to false if lastName is invalid
+    }
+    // Check if telephone is valid
+    if (telephone.length !== 11 && telephone.length !== 12) {
+      isValid = false; // Set to false if telephone is invalid
+    }
+
+    // Set form validity based on all fields' validity
+    setIsFormValid(isValid);
+    console.log(`isFormValid ${isValid}`);
+  };
+
+  const resetForm = () => {
+    setName("");
+    setLastName("");
+    setTelephone("");
+    setIsFormValid(false);
+  };
 
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
   const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
-
   // Определяем функцию для обработки выбранных опций
-const handleSelectionChange = (event, newValue) => {
-  setSelectedValues(newValue);
-};
+  const handleSelectionChange = (event, newValue) => {
+    setSelectedValues(newValue);
+  };
 
   const handleInputChange = (event, value) => {
     if (
@@ -344,34 +345,22 @@ const handleSelectionChange = (event, newValue) => {
 
       <Modal open={isOpen}>
         <div
-            style={{
-              display: "grid",
-              gridTemplateAreas: '"icon" "box"',
-              gridGap: "10px",
-              placeItems: "center",
-              height: "auto",
-              position: "absolute",
-              top: "45%",
-              left: "55%",
-              transform: "translate(-50%, -50%)",
-              width: "100%",
-              paddingTop: "5%",
-            }}
+          style={{
+            display: "grid",
+            gridTemplateAreas: '"icon" "box"',
+            gridGap: "10px",
+            placeItems: "center",
+            height: "auto",
+            position: "absolute",
+            top: "45%",
+            left: "55%",
+            transform: "translate(-50%, -50%)",
+            width: "100%",
+            paddingTop: "5%",
+          }}
         >
-        
-           <IconButton
-            onClick={() => handleClose()}
-            sx={{
-              gridArea: "icon",
-              position: "absolute", // Изменено на абсолютное позиционирование
-               marginLeft: `${boxSize.width + 25}px`
-            }}
-          >
-            <img src={exit} alt="закрыть" />
-          </IconButton>
-
           <Box
-          ref={boxRef}
+            ref={boxRef}
             sx={{
               backgroundColor: "white",
               boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
@@ -379,14 +368,23 @@ const handleSelectionChange = (event, newValue) => {
               borderRadius: "10px",
               gridArea: "box",
               alignSelf: "center",
-              position: "relative",
-              maxHeight: "calc(100vh - 200px)",
-              width:'80%',
-              overflow: "auto",
-              scrollbarWidth: "thin",
-              scrollbarColor: "#005475 #FFFFFF",
+              position: "absolute",
+              width: "80%",
+              overflow: "visible",
             }}
-          > 
+          >
+            <IconButton
+              onClick={() => handleClose()}
+              sx={{
+                position: "absolute",
+                float: "right",
+                top: "-38px",
+                right: "-40px",
+              }}
+            >
+              <img src={exit} alt="закрыть" />
+            </IconButton>
+
             <TableContainer
               component={Paper}
               sx={{
@@ -419,11 +417,7 @@ const handleSelectionChange = (event, newValue) => {
                         value={name}
                         onChange={handleChange}
                         name="name" // Добавляем атрибут name
-                        helperText={
-                          !name 
-                            ? "Необходимо заполнить"
-                            : ""
-                        }
+                        helperText={!name ? "Необходимо заполнить" : ""}
                       />
                     </StyledTableCellBody>
                     <StyledTableCellBody>
@@ -433,11 +427,7 @@ const handleSelectionChange = (event, newValue) => {
                         value={lastName}
                         onChange={handleChange}
                         name="lastName" // Добавляем атрибут name
-                        helperText={
-                          !lastName 
-                            ? "Необходимо заполнить"
-                            : ""
-                        }
+                        helperText={!lastName ? "Необходимо заполнить" : ""}
                       />
                     </StyledTableCellBody>
                     <StyledTableCellBody>
@@ -447,11 +437,7 @@ const handleSelectionChange = (event, newValue) => {
                         value={telephone}
                         onChange={handleChange}
                         name="telephone" // Добавляем атрибут name
-                        helperText={
-                          !telephone 
-                            ? "Начинаться с +7 либо 8"
-                            : ""
-                        }
+                        helperText={!telephone ? "Начинаться с +7 либо 8" : ""}
                       />
                     </StyledTableCellBody>
 
@@ -462,22 +448,28 @@ const handleSelectionChange = (event, newValue) => {
                         onInputChange={handleInputChange} // Обработчик для нового ввода значений
                         options={
                           selectedOptions?.length > 0
-                            ? selectedOptions.map((option) => option.organizationName)
-                            : organizations.map((option) => option.organizationName)
+                            ? selectedOptions.map(
+                                (option) => option.organizationName
+                              )
+                            : organizations.map(
+                                (option) => option.organizationName
+                              )
                         }
-                  
                         disableCloseOnSelect
                         renderTags={(value, getTagProps) =>
                           value.map((option, index) => {
-                            const { key,...tagProps } = getTagProps({ index });
+                            const { key, ...tagProps } = getTagProps({ index });
                             return (
-                              <Chip variant="outlined" label={option} key={key} {...tagProps} />
+                              <Chip
+                                variant="outlined"
+                                label={option}
+                                key={key}
+                                {...tagProps}
+                              />
                             );
                           })
                         }
-                        getOptionLabel={(option) =>
-                          option.organizationName
-                        }
+                        getOptionLabel={(option) => option.organizationName}
                         onChange={handleSelectionChange}
                         renderOption={(props, option, { selected }) => (
                           <li {...props}>
@@ -485,7 +477,7 @@ const handleSelectionChange = (event, newValue) => {
                               icon={icon}
                               checkedIcon={checkedIcon}
                               style={{ marginRight: 8 }}
-                              checked={selected} 
+                              checked={selected}
                             />
                             {option}
                           </li>

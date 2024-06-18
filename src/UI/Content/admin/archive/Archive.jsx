@@ -59,17 +59,6 @@ export default function Archive() {
                   background: "#fff",
                 }}
               >
-                №
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
                 Заказчик
               </StyledTableCellHead>
               <StyledTableCellHead
@@ -103,6 +92,17 @@ export default function Archive() {
                   background: "#fff",
                 }}
               >
+                №
+              </StyledTableCellHead>
+              <StyledTableCellHead
+                sx={{
+                  paddingY: 1,
+                  position: "sticky",
+                  top: 0,
+                  zIndex: 100,
+                  background: "#fff",
+                }}
+              >
                 Сумма
               </StyledTableCellHead>
 
@@ -123,9 +123,6 @@ export default function Archive() {
             {archive.map((element) => (
               <TableRow key={element.id}>
                 <StyledTableCellBody>
-                  {element.orderNumber}
-                </StyledTableCellBody>
-                <StyledTableCellBody>
                   {element.fullName}
                 </StyledTableCellBody>
                 <StyledTableCellBody>
@@ -133,6 +130,9 @@ export default function Archive() {
                 </StyledTableCellBody>
                 <StyledTableCellBody>
                   {element.formattedDispatchDate}
+                </StyledTableCellBody>
+                <StyledTableCellBody>
+                  {element.orderNumber}
                 </StyledTableCellBody>
                 <StyledTableCellBody>
                   {element.SUM} &#x20bd;

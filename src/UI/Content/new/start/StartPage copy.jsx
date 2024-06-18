@@ -4,7 +4,6 @@ import book from "../image/book.svg";
 import { MuiSwitchLarge } from "../customUi/MuiSwitch";
 import CustomStyledCheckbox from "../customUi/CustomStyledCheckbox";
 import classNames from "classnames";
-import ErrorHandler from "../../../Custom/ErrorHandler.jsx";
 import { Grid } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -13,9 +12,9 @@ import {
   getDraft,
   isPress,
   countClick,
-  renderIncrement
 } from "../../../../BLL/productSlice";
 import { getWork, putOrders } from "../../../../BLL/workSlice";
+import { Alert, Snackbar} from "@mui/material";
 
 export default function StartPage() {
   const [checkedStates, setCheckedStates] = useState({});
@@ -124,17 +123,18 @@ export default function StartPage() {
 
   const dispatch = useDispatch();
   const { accountId } = useParams();
-  const orders = useSelector((state) => state.products.productsStart);
-  const render = useSelector((state) => state.products.render);
+
   useEffect(() => {
     dispatch(getProducts({ accountId: accountId, typeId: "1" }));
     dispatch(getDraft(accountId));
   }, [accountId]);
 
-
+  const orders = useSelector((state) => state.products.productsStart);
+  const render = useSelector((state) => state.products.render);
   console.log(`render ---- ${render}`);
   return (
     <>
+      {" "}
       <Grid
         key={render}
         sx={{ mt: "1px" }}
@@ -315,7 +315,27 @@ export default function StartPage() {
         ))}
       </Grid>
 
-   <ErrorHandler error = {error} snackbarOpen = {snackbarOpen} close={setSnackbarOpen} ></ErrorHandler>
+      {error === 200 && (
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={2000}
+   
+        >
+          <Alert
+            severity="success"
+          >
+            {`Всё ОК 200`}
+          </Alert>
+        </Snackbar>
+      )}
+      {error === 400 && (
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={2000}
+        >
+          <Alert severity="error">Ошибка {error}</Alert>
+        </Snackbar>
+      )}
     </>
   );
 }

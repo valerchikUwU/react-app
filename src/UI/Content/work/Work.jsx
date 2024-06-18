@@ -12,6 +12,7 @@ import {
   Fade,
   Typography,
   Button,
+  CircularProgress
 } from "@mui/material";
 import send from "./image/send.svg";
 import done from "./image/done.svg";
@@ -48,7 +49,7 @@ import {
   deletePressArray,
   deletePressSend,
   deleteCountClick,
-  decrementCountClick
+  decrementCountClick,
 } from "../../../BLL/productSlice.js";
 
 export default function Work() {
@@ -71,6 +72,7 @@ export default function Work() {
   const [selectedProduct, setSelectedProduct] = useState({});
   const [productId, setProductId] = useState({});
   const [isDeleteClicked, setIsDeleteClicked] = useState(false);
+  const [isLoadingModal, setIsLoadingModal] = useState(false);
 
   const list = useSelector((state) => state.work?.work || []);
   const organizationList = useSelector((state) => state.work.organizationList);
@@ -88,18 +90,6 @@ export default function Work() {
     0
   );
 
-  const [boxSize, setBoxSize] = useState({ height: "auto", width: "auto" }); // Храним размеры <Box>
-  const boxRef = useRef(null);
-
-  useLayoutEffect(() => {
-    if (boxRef.current) {
-      const rect = boxRef.current.getBoundingClientRect();
-      setBoxSize({ height: rect.height, width: rect.width });
-      console.log(`rect.height - ${rect.height}`);
-      console.log(`rect.width - ${rect.width}`);
-    }
-    console.log(`boxRef.current - ${boxRef.current}`);
-  }, [ObjectModalOrder]);
 
   // Функция сортировки
   function sortElementsByStatus(a, b) {
@@ -131,7 +121,9 @@ export default function Work() {
     const openModalId = Object.keys(openStates).find((id) => openStates[id]);
     if (openModalId) {
       // Assuming you have the accountId available, replace "1" with the actual accountId
-      dispatch(getWorkModal({ accountId: accountId, orderId: openModalId }));
+      dispatch(getWorkModal({ accountId: accountId, orderId: openModalId })).then(() => {
+        setIsLoadingModal(false);
+      });
       setIsDeleteClicked(false);
     }
   }, [isDeleteClicked, openStates, dispatch]);
@@ -211,7 +203,10 @@ export default function Work() {
     listModalTitles,
   ]);
 
-  const OpenModal = (id) => setOpenStates({ ...openStates, [id]: true });
+  const OpenModal = (id) => {
+    setIsLoadingModal(true);
+    setOpenStates({ ...openStates, [id]: true });
+  }
 
   const handleCloseModal = (id) =>
     setOpenStates({ ...openStates, [id]: false });
@@ -976,7 +971,20 @@ export default function Work() {
         </Table>
       </TableContainer>
 
-      {list.map((element) => (
+
+      {isLoadingModal ? (
+        <Modal open={true}>
+          <CircularProgress
+            sx={{
+              position: "absolute",
+              top: "45%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          />
+        </Modal>
+      ) : (
+      list.map((element) => (
         <Modal open={openStates[element.id] || false} key={element.id}>
           <div
             style={{
@@ -993,19 +1001,7 @@ export default function Work() {
               paddingTop: "5%",
             }}
           >
-            <IconButton
-              onClick={() => handleCloseModal(element.id)}
-              sx={{
-                gridArea: "icon",
-                position: "absolute", // Изменено на абсолютное позиционирование
-                marginLeft: `${boxSize.width + 25}px`,
-              }}
-            >
-              <img src={exit} alt="закрыть" />
-            </IconButton>
-
             <Box
-              ref={boxRef}
               sx={{
                 backgroundColor: "white",
                 boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
@@ -1013,10 +1009,24 @@ export default function Work() {
                 borderRadius: "10px",
                 gridArea: "box",
                 alignSelf: "center",
-                position: "relative",
+                position: "absolute",
+                width: "auto",
+                overflow: "visible",
               }}
               className={classes.modal}
             >
+              <IconButton
+                onClick={() => handleCloseModal(element.id)}
+                sx={{
+                  position: "absolute",
+                  float: "right",
+                  top: "-38px",
+                  right: "-40px",
+                }}
+              >
+                <img src={exit} alt="закрыть" />
+              </IconButton>
+
               <TableContainer
                 component={Paper}
                 sx={{
@@ -1711,7 +1721,7 @@ export default function Work() {
             </Box>
           </div>
         </Modal>
-      ))}
+      )))}
     </Box>
   );
 }

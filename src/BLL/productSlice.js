@@ -13,7 +13,7 @@ export const getProducts = createAsyncThunk(
       // Убедитесь, что typeId передается в полезную нагрузку
       return { productsList: response.data.productsList, typeId: typeId };
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.response.status);
     }
   }
 );
@@ -28,7 +28,7 @@ export const getDraft = createAsyncThunk(
       console.log(response.data.productsInDraft);
       return { productsInDraft: response.data.productsInDraft[0].productIds };
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.response.status);
     }
   }
 );
@@ -53,6 +53,9 @@ const productSlice = createSlice({
     },
     decrementCountClick(state) {
       state.countButton -= 1;
+    },
+    renderIncrement(state) {
+      state.render += 1;
     },
     isPress(state, action) {
       state.isProduct = state.isProduct.map((product) =>
@@ -111,6 +114,7 @@ const productSlice = createSlice({
       })
       .addCase(getProducts.fulfilled, (state, action) => {
         state.status = "resolved";
+        state.error = 200;
         state.productsStart = action.payload.productsList;
         // Получаем текущее состояние isProduct
         let currentIsProduct = [...state.isProduct];
@@ -178,6 +182,7 @@ export const {
   countClick,
   deleteCountClick,
   decrementCountClick,
+  renderIncrement
 } = productSlice.actions;
 
 export default productSlice.reducer;

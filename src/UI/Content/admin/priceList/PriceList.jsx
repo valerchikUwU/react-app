@@ -101,7 +101,6 @@ export default function PriceList() {
     console.log(`boxRef.current - ${boxRef.current}`);
   }, [nameСourses]);
 
-
   const openModal = () => {
     setIsOpen(true);
     dispatch(getModalAbbrevation(accountId));
@@ -179,10 +178,10 @@ export default function PriceList() {
       !nameСourses.some((option) => option.organizationName === value)
     ) {
       // Сохраняем ввод во временном состоянии
-      setName('');
+      setName("");
       setNewInputValue(value);
-      console.log('setNewInputValue')
-      console.log(value)
+      console.log("setNewInputValue");
+      console.log(value);
     }
   };
 
@@ -261,7 +260,7 @@ export default function PriceList() {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DesktopDatePicker
           label="Date"
-          format="DD/MM/YYYY"
+          format="DD.MM.YYYY"
           value={date}
           onChange={setDate}
         />
@@ -401,19 +400,7 @@ export default function PriceList() {
             paddingTop: "5%",
           }}
         >
-          <IconButton
-            onClick={() => handleClose()}
-            sx={{
-              gridArea: "icon",
-              position: "absolute", // Изменено на абсолютное позиционирование
-               marginLeft: `${boxSize.width + 25}px`
-            }}
-          >
-            <img src={exit} alt="закрыть" />
-          </IconButton>
-
           <Box
-            ref={boxRef}
             sx={{
               backgroundColor: "white",
               boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
@@ -421,14 +408,22 @@ export default function PriceList() {
               borderRadius: "10px",
               gridArea: "box",
               alignSelf: "center",
-              position: "relative",
-              maxHeight: "calc(100vh - 200px)",
+              position: "absolute",
               width: "80%",
-              overflow: "auto",
-              scrollbarWidth: "thin",
-              scrollbarColor: "#005475 #FFFFFF",
+              overflow: "visible",
             }}
           >
+            <IconButton
+              onClick={() => handleClose()}
+              sx={{
+                position: "absolute",
+                float: "right",
+                top: "-38px",
+                right: "-40px",
+              }}
+            >
+              <img src={exit} alt="закрыть" />
+            </IconButton>
             <TableContainer
               component={Paper}
               sx={{
@@ -567,7 +562,7 @@ export default function PriceList() {
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DesktopDatePicker
                           label="Дата"
-                          format="DD/MM/YYYY"
+                          format="DD.MM.YYYY"
                           value={modalDate}
                           onChange={setModalDate}
                           shouldDisableDate={disablePastDates}
