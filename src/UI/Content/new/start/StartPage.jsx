@@ -151,7 +151,7 @@ export default function StartPage() {
 
                 <div className={classes.two}>
                   <div className={classes.nameText}>{order.abbreviation}</div>
-                  <div className={classes.nameParentText}>{order.name}</div>
+                  <div className={classes.nameParentText}>{order.name.split("&quot;").join('"')}</div>
                   <hr></hr>
                   <div className={classes.containerPaper}>
                     <span
