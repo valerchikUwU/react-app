@@ -192,6 +192,7 @@ export default function Add({
         })
       ).then(() => {
         dispatch(getOrder(accountId));
+        resetStates();
       });
     }
   };
@@ -205,7 +206,15 @@ export default function Add({
     setSelectStatus(event.target.value);
   };
 
-  const resetStates = () => {};
+  const resetStates = () => {
+    setProducts([]);
+    setSelectStatus();
+    setCheckDeposit();
+    setInputAccountNumber();
+    setSelectOrganizationName();
+    setSelectPayee();
+  };
+
   return (
     <>
       <Modal open={isOpen}>
@@ -238,7 +247,7 @@ export default function Add({
             }}
           >
             <IconButton
-              onClick={() => setIsOpen(false)}
+              onClick={() => {setIsOpen(false);resetStates();}}
               sx={{
                 position: "absolute",
                 float: "right",
@@ -387,106 +396,100 @@ export default function Add({
                     </TableCell>
 
                     <TableCell sx={{ textAlign: "center" }}>
-                            <Select
-                              variant="standard"
-                              sx={{
-                                fontFamily: "Montserrat",
-                                fontSize: "16px",
-                                fontWeight: 600,
-                                color: "black",
-                                textAlign: "center",
-                                cursor: "pointer",
-                                width: "150px",
-                              }}
-                              value={
-                                selectStatus || "Активный"
-                              }
-                              onChange={(event) =>
-                                handleChangeSelectStatus(
-                                  event
-                                )
-                              }
-                            >
-                              <MenuItem
-                                value="Активный"
-                                sx={{
-                                  fontFamily: "Montserrat",
-                                  fontSize: "16px",
-                                  fontWeight: 600,
-                                  color: "#999999",
-                                  textAlign: "center",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Активный
-                              </MenuItem>
-                              <MenuItem
-                                value="Выставлен счёт"
-                                sx={{
-                                  fontFamily: "Montserrat",
-                                  fontSize: "16px",
-                                  fontWeight: 600,
-                                  color: "#999999",
-                                  textAlign: "center",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Выставлен счёт
-                              </MenuItem>
-                              <MenuItem
-                                value="Оплачен"
-                                sx={{
-                                  fontFamily: "Montserrat",
-                                  fontSize: "16px",
-                                  fontWeight: 600,
-                                  color: "#999999",
-                                  textAlign: "center",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Оплачен
-                              </MenuItem>
-                              <MenuItem
-                                value="Отправлен"
-                                sx={{
-                                  fontFamily: "Montserrat",
-                                  fontSize: "16px",
-                                  fontWeight: 600,
-                                  color: "#999999",
-                                  textAlign: "center",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Отправлен
-                              </MenuItem>
-                              <MenuItem
-                                value="Получен"
-                                sx={{
-                                  fontFamily: "Montserrat",
-                                  fontSize: "16px",
-                                  fontWeight: 600,
-                                  color: "#999999",
-                                  textAlign: "center",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Получен
-                              </MenuItem>
-                              <MenuItem
-                                value="Отменен"
-                                sx={{
-                                  fontFamily: "Montserrat",
-                                  fontSize: "16px",
-                                  fontWeight: 600,
-                                  color: "#999999",
-                                  textAlign: "center",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Отменен
-                              </MenuItem>
-                            </Select>
-                          </TableCell>
+                      <Select
+                        variant="standard"
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
+                          fontWeight: 600,
+                          color: "black",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          width: "150px",
+                        }}
+                        value={selectStatus || "Активный"}
+                        onChange={(event) => handleChangeSelectStatus(event)}
+                      >
+                        <MenuItem
+                          value="Активный"
+                          sx={{
+                            fontFamily: "Montserrat",
+                            fontSize: "16px",
+                            fontWeight: 600,
+                            color: "#999999",
+                            textAlign: "center",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Активный
+                        </MenuItem>
+                        <MenuItem
+                          value="Выставлен счёт"
+                          sx={{
+                            fontFamily: "Montserrat",
+                            fontSize: "16px",
+                            fontWeight: 600,
+                            color: "#999999",
+                            textAlign: "center",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Выставлен счёт
+                        </MenuItem>
+                        <MenuItem
+                          value="Оплачен"
+                          sx={{
+                            fontFamily: "Montserrat",
+                            fontSize: "16px",
+                            fontWeight: 600,
+                            color: "#999999",
+                            textAlign: "center",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Оплачен
+                        </MenuItem>
+                        <MenuItem
+                          value="Отправлен"
+                          sx={{
+                            fontFamily: "Montserrat",
+                            fontSize: "16px",
+                            fontWeight: 600,
+                            color: "#999999",
+                            textAlign: "center",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Отправлен
+                        </MenuItem>
+                        <MenuItem
+                          value="Получен"
+                          sx={{
+                            fontFamily: "Montserrat",
+                            fontSize: "16px",
+                            fontWeight: 600,
+                            color: "#999999",
+                            textAlign: "center",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Получен
+                        </MenuItem>
+                        <MenuItem
+                          value="Отменен"
+                          sx={{
+                            fontFamily: "Montserrat",
+                            fontSize: "16px",
+                            fontWeight: 600,
+                            color: "#999999",
+                            textAlign: "center",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Отменен
+                        </MenuItem>
+                      </Select>
+                    </TableCell>
 
                     <TableCell>
                       <TextField
