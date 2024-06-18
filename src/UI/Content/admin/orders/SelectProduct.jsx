@@ -58,13 +58,10 @@ export default function SelectProduct({
   }, []);
 
   const handleChangeCheckbox = (event, id, type) => {
-    
     setCheck((prevState) => ({
       ...prevState,
       [id]: {checked: event.target.checked, type: type},
     }));
-    console.log(check[id]?.checked);
-    console.log(check[id]?.type);
   };
 
   const resetStates = () => {
@@ -213,7 +210,7 @@ export default function SelectProduct({
                         <TableRow>
                           <TableCell key={item.id}>
                             <CustomStyledCheckbox
-                              checked={check[item.id]}
+                              checked={check[item.id]?.checked}
                               onChange={(event) =>
                                 handleChangeCheckbox(event, item.id, 2)
                               }
@@ -252,7 +249,7 @@ export default function SelectProduct({
                         <TableRow>
                           <TableCell key={item.id}>
                             <CustomStyledCheckbox
-                              checked={check[item.id]}
+                              checked={check[item.id]?.checked}
                               onChange={(event) =>
                                 handleChangeCheckbox(event, item.id, 3)
                               }
@@ -290,7 +287,7 @@ export default function SelectProduct({
                         <TableRow>
                           <TableCell key={item.id}>
                             <CustomStyledCheckbox
-                              checked={check[item.id]}
+                              checked={check[item.id]?.checked}
                               onChange={(event) =>
                                 handleChangeCheckbox(event, item.id, 4)
                               }
