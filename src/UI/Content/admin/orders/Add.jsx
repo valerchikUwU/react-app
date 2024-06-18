@@ -65,6 +65,7 @@ export default function Add({
   const [selectPayee, setSelectPayee] = useState("");
   const [inputAccountNumber, setInputAccountNumber] = useState("");
   const [checkDeposit, setCheckDeposit] = useState(false);
+  const [selectStatus, setSelectStatus] = useState();
 
   const [products, setProducts] = useState([]);
 
@@ -183,7 +184,7 @@ export default function Add({
         putNewOrder({
           accountId: accountId,
           organizationCustomerId: selectOrganizationName,
-          status: "Активный",
+          status: selectStatus || "Активный",
           billNumber: inputAccountNumber,
           payeeId: selectPayee,
           isFromDeposit: checkDeposit,
@@ -198,6 +199,10 @@ export default function Add({
   const handleChangeOpenModalProduct = (selectProducts) => {
     setProducts(selectProducts);
     setOpenModalAddProduct(true);
+  };
+
+  const handleChangeSelectStatus = (event) => {
+    setSelectStatus(event.target.value);
   };
 
   const resetStates = () => {};
@@ -381,17 +386,107 @@ export default function Add({
                       </Select>
                     </TableCell>
 
-                    <TableCell
-                      sx={{
-                        fontFamily: "Montserrat",
-                        fontSize: "16px",
-                        fontWeight: 600,
-                        color: "black",
-                        textAlign: "center",
-                      }}
-                    >
-                      Активный
-                    </TableCell>
+                    <TableCell sx={{ textAlign: "center" }}>
+                            <Select
+                              variant="standard"
+                              sx={{
+                                fontFamily: "Montserrat",
+                                fontSize: "16px",
+                                fontWeight: 600,
+                                color: "black",
+                                textAlign: "center",
+                                cursor: "pointer",
+                                width: "150px",
+                              }}
+                              value={
+                                selectStatus || "Активный"
+                              }
+                              onChange={(event) =>
+                                handleChangeSelectStatus(
+                                  event
+                                )
+                              }
+                            >
+                              <MenuItem
+                                value="Активный"
+                                sx={{
+                                  fontFamily: "Montserrat",
+                                  fontSize: "16px",
+                                  fontWeight: 600,
+                                  color: "#999999",
+                                  textAlign: "center",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Активный
+                              </MenuItem>
+                              <MenuItem
+                                value="Выставлен счёт"
+                                sx={{
+                                  fontFamily: "Montserrat",
+                                  fontSize: "16px",
+                                  fontWeight: 600,
+                                  color: "#999999",
+                                  textAlign: "center",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Выставлен счёт
+                              </MenuItem>
+                              <MenuItem
+                                value="Оплачен"
+                                sx={{
+                                  fontFamily: "Montserrat",
+                                  fontSize: "16px",
+                                  fontWeight: 600,
+                                  color: "#999999",
+                                  textAlign: "center",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Оплачен
+                              </MenuItem>
+                              <MenuItem
+                                value="Отправлен"
+                                sx={{
+                                  fontFamily: "Montserrat",
+                                  fontSize: "16px",
+                                  fontWeight: 600,
+                                  color: "#999999",
+                                  textAlign: "center",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Отправлен
+                              </MenuItem>
+                              <MenuItem
+                                value="Получен"
+                                sx={{
+                                  fontFamily: "Montserrat",
+                                  fontSize: "16px",
+                                  fontWeight: 600,
+                                  color: "#999999",
+                                  textAlign: "center",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Получен
+                              </MenuItem>
+                              <MenuItem
+                                value="Отменен"
+                                sx={{
+                                  fontFamily: "Montserrat",
+                                  fontSize: "16px",
+                                  fontWeight: 600,
+                                  color: "#999999",
+                                  textAlign: "center",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                Отменен
+                              </MenuItem>
+                            </Select>
+                          </TableCell>
 
                     <TableCell>
                       <TextField
