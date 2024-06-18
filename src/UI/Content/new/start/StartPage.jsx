@@ -5,7 +5,7 @@ import { MuiSwitchLarge } from "../customUi/MuiSwitch";
 import CustomStyledCheckbox from "../customUi/CustomStyledCheckbox";
 import classNames from "classnames";
 import ErrorHandler from "../../../Custom/ErrorHandler.jsx";
-import { Grid } from "@mui/material";
+import { Grid, Box } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import {

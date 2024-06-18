@@ -41,7 +41,9 @@ export default function SelectProduct({
   const [activeDeposit, setActiveDeposit] = useState(false);
 
   useEffect(() => {
-    const hasDepositChecked = Object.values(check).some(value => value.checked && value.type === 4);
+    const hasDepositChecked = Object.values(check).some(
+      (value) => value.checked && value.type === 4
+    );
     if (hasDepositChecked) {
       setActive(true);
       setActiveDeposit(false);
@@ -53,38 +55,34 @@ export default function SelectProduct({
 
   useEffect(() => {
     setActiveDeposit(false); // Автоматически выбираем депозит при открытии модального окна
-  }, [])
+  }, []);
 
   const handleChangeCheckbox = (event, id, type) => {
-    setCheck(prevState => ({
-     ...prevState,
-      [id]: { checked: event.target.checked, type: Number(type) },
+    
+    setCheck((prevState) => ({
+      ...prevState,
+      [id]: {checked: event.target.checked, type: type},
     }));
+    console.log(check[id]?.checked);
+    console.log(check[id]?.type);
   };
 
   const resetStates = () => {
     selectProducts(0);
     const newCheckState = Object.keys(check).reduce((acc, key) => {
-      acc[key] = { checked: false, type: Number(key.split('-')[1]) }; // Преобразование строки в число
+      acc[key] = { checked: false, type: Number(key.split("-")[1]) }; // Преобразование строки в число
       return acc;
     }, {});
     setCheck(newCheckState);
   };
 
   const handleSave = () => {
-    const checkedProducts = allProducts.filter(product =>!!check[product.id] && check[product.id].checked);
+    const checkedProducts = allProducts.filter(
+      (product) => !!check[product.id] && check[product.id].checked
+    );
     selectProducts(checkedProducts);
   };
 
-  const [boxSize, setBoxSize] = useState({ height: "auto", width: "auto" });
-  const boxRef = useRef(null);
-
-  useEffect(() => {
-    if (boxRef.current) {
-      const rect = boxRef.current.getBoundingClientRect();
-      setBoxSize({ height: rect.height, width: rect.width });
-    }
-  }, [boxRef]);
   return (
     <Modal open={openModalProduct}>
       <div
@@ -102,19 +100,7 @@ export default function SelectProduct({
           paddingTop: "5%",
         }}
       >
-        <IconButton
-          onClick={() => setOpenModalProduct(false)}
-          sx={{
-            gridArea: "icon",
-            position: "absolute", // Изменено на абсолютное позиционирование
-            marginLeft: `${boxSize.width}px`,
-          }}
-        >
-          <img src={exit} alt="закрыть" />
-        </IconButton>
-
         <Box
-          ref={boxRef}
           sx={{
             backgroundColor: "white",
             boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
@@ -122,9 +108,23 @@ export default function SelectProduct({
             borderRadius: "10px",
             gridArea: "box",
             alignSelf: "center",
-            position: "relative",
+            position: "absolute",
+            width: "auto",
+            overflow: "visible",
           }}
         >
+          <IconButton
+            onClick={() => setOpenModalProduct(false)}
+            sx={{
+              position: "absolute",
+              float: "right",
+              top: "-38px",
+              right: "-40px",
+            }}
+          >
+            <img src={exit} alt="закрыть" />
+          </IconButton>
+
           <TableContainer
             component={Paper}
             sx={{
@@ -174,7 +174,7 @@ export default function SelectProduct({
                         <TableRow>
                           <TableCell key={item.id}>
                             <CustomStyledCheckbox
-                              checked={check[item.id]}
+                             checked={check[item.id]?.checked}
                               onChange={(event) =>
                                 handleChangeCheckbox(event, item.id, 1)
                               }

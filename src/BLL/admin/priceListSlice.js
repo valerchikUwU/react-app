@@ -10,57 +10,64 @@ export const getModalAbbrevation = createAsyncThunk(
       const response = await instance.get(`${accountId}/prices/newPrice`);
 
       console.log(response.data);
-      return {nameСourses: response.data.products};
+      return { nameСourses: response.data.products };
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
 
-
 export const getPriceList = createAsyncThunk(
   "priceList/getPriceList",
   async ({ accountId, date }, { rejectWithValue }) => {
     try {
       const response = await instance.get(`${accountId}/prices`);
-  
-      
       // Фильтрация pricesInit по дате
-      const filteredPricesInit = response.data.pricesInit.filter(price => {
+      const filteredPricesInit = response.data.pricesInit.filter((price) => {
         const priceDate = new Date(price.activationDate);
         const selectedDate = new Date(date); // Преобразование строки даты в объект Date
         return (
-          selectedDate.getFullYear() <= priceDate.getFullYear() &&
-          selectedDate.getMonth() <= priceDate.getMonth() && // Месяцы индексируются с 0
-          selectedDate.getDate() <= priceDate.getDate()
+          selectedDate.getFullYear() < priceDate.getFullYear() ||
+          (selectedDate.getMonth() < priceDate.getMonth() &&
+            selectedDate.getFullYear() < priceDate.getFullYear()) ||
+          (selectedDate.getMonth() <= priceDate.getMonth() &&
+            selectedDate.getFullYear() <= priceDate.getFullYear() &&
+            selectedDate.getDate() <= priceDate.getDate())
         );
       });
 
-         // Фильтрация pricesMain по дате
-         const filteredPricesMain = response.data.pricesMain.filter(price => {
+      // Фильтрация pricesMain по дате
+      const filteredPricesMain = response.data.pricesMain.filter((price) => {
+        const priceDate = new Date(price.activationDate);
+        const selectedDate = new Date(date); // Преобразование строки даты в объект Date
+        return (
+          selectedDate.getFullYear() < priceDate.getFullYear() ||
+          (selectedDate.getMonth() < priceDate.getMonth() &&
+            selectedDate.getFullYear() < priceDate.getFullYear()) ||
+          (selectedDate.getMonth() <= priceDate.getMonth() &&
+            selectedDate.getFullYear() <= priceDate.getFullYear() &&
+            selectedDate.getDate() <= priceDate.getDate())
+        );
+      });
+      // Фильтрация pricesForEmployers по дате
+      const filteredPricesForEmployers =
+        response.data.pricesForEmployers.filter((price) => {
           const priceDate = new Date(price.activationDate);
           const selectedDate = new Date(date); // Преобразование строки даты в объект Date
           return (
-            selectedDate.getFullYear() <= priceDate.getFullYear() &&
-            selectedDate.getMonth() <= priceDate.getMonth() && // Месяцы индексируются с 0
-            selectedDate.getDate() <= priceDate.getDate()
+            selectedDate.getFullYear() < priceDate.getFullYear() ||
+            (selectedDate.getMonth() < priceDate.getMonth() &&
+              selectedDate.getFullYear() < priceDate.getFullYear()) ||
+            (selectedDate.getMonth() <= priceDate.getMonth() &&
+              selectedDate.getFullYear() <= priceDate.getFullYear() &&
+              selectedDate.getDate() <= priceDate.getDate())
           );
         });
-           // Фильтрация pricesForEmployers по дате
-      const filteredPricesForEmployers = response.data.pricesForEmployers.filter(price => {
-        const priceDate = new Date(price.activationDate);
-        const selectedDate = new Date(date); // Преобразование строки даты в объект Date
-        return (
-          selectedDate.getFullYear() <= priceDate.getFullYear() &&
-          selectedDate.getMonth() <= priceDate.getMonth() && // Месяцы индексируются с 0
-          selectedDate.getDate() <= priceDate.getDate()
-        );
-      });
 
       return {
         pricesInit: filteredPricesInit,
-        pricesMain:filteredPricesMain,
-        pricesForEmployers: filteredPricesForEmployers
+        pricesMain: filteredPricesMain,
+        pricesForEmployers: filteredPricesForEmployers,
       };
     } catch (error) {
       return rejectWithValue(error.message);
@@ -68,21 +75,36 @@ export const getPriceList = createAsyncThunk(
   }
 );
 
-
-
 export const postPrice = createAsyncThunk(
   "priceList/newPrice",
-  async ({accountId, productTypeId, name, abbreviation, priceAccess, priceBooklet, activationDate}, { rejectWithValue }) => {
+  async (
+    {
+      accountId,
+      productTypeId,
+      name,
+      abbreviation,
+      priceAccess,
+      priceBooklet,
+      activationDate,
+    },
+    { rejectWithValue }
+  ) => {
     try {
       // Используем шаблонные строки для динамического формирования URL
-      const response = await instance.post(`${accountId}/prices/newPrice`,  {name, productTypeId, abbreviation, priceAccess, priceBooklet,activationDate} );
+      const response = await instance.post(`${accountId}/prices/newPrice`, {
+        name,
+        productTypeId,
+        abbreviation,
+        priceAccess,
+        priceBooklet,
+        activationDate,
+      });
 
       console.log(response.data);
       return response.data;
     } catch (error) {
-      console.log('Пиздец');
+      console.log("Пиздец");
       return rejectWithValue(error.message);
-     
     }
   }
 );
@@ -93,7 +115,7 @@ const userSlice = createSlice({
     pricesInit: [],
     pricesMain: [],
     pricesForEmployers: [],
-    nameСourses:[],
+    nameСourses: [],
     status: null,
     error: null,
   },
@@ -115,8 +137,8 @@ const userSlice = createSlice({
         state.status = "rejected";
         state.error = action.payload;
       })
-       //getModalAbbrevation
-       .addCase(getModalAbbrevation.pending, (state) => {
+      //getModalAbbrevation
+      .addCase(getModalAbbrevation.pending, (state) => {
         state.status = "loading";
         state.error = null;
       })

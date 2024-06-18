@@ -15,7 +15,8 @@
 
 .block {
     width: 440px;
-    height: 205px;
+    min-height: 205px;
+    height: auto;
     box-shadow: 0px 0px 4px 0px #00000040;
     border-radius: 5px;
     margin-left: 15px;
@@ -25,7 +26,8 @@
 
 .cartGrid {
     width: 430px;
-    height: 200px;
+    min-height: 200px;
+    height: auto;
     background-color: #FFFFFF;
     padding: 5px;
 }
