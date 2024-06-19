@@ -87,18 +87,9 @@ export default function PriceList() {
     (state) => state.adminPriceList.pricesForEmployers
   );
 
-  const [boxSize, setBoxSize] = useState({ height: "auto", width: "auto" }); // Храним размеры <Box>
-  const boxRef = useRef(null);
-
-  useLayoutEffect(() => {
-    if (boxRef.current) {
-      const rect = boxRef.current.getBoundingClientRect();
-      setBoxSize({ height: rect.height, width: rect.width });
-      console.log(`rect.height - ${rect.height}`);
-      console.log(`rect.width - ${rect.width}`);
-    }
-    console.log(`boxRef.current - ${boxRef.current}`);
-  }, [nameСourses]);
+  const filteredPricesInit = pricesInit;
+  const filteredPricesMain = pricesMain;
+  const filteredPricesForEmployers = pricesForEmployers;
 
   const openModal = () => {
     setIsOpen(true);
@@ -114,6 +105,24 @@ export default function PriceList() {
     console.log(date.format("DD-MM-YYYY"));
     dispatch(getPriceList({ accountId: accountId, date: date }));
   }, [dispatch, accountId, date]); // Добавляем accountId в список зависимостей
+
+
+  useEffect(() => {
+    console.log(date.format("DD-MM-YYYY"));
+    filteredPricesInit = response.data.pricesInit.filter((price) => {
+      const priceDate = new Date(price.activationDate);
+      const selectedDate = new Date(date); // Преобразование строки даты в объект Date
+      return (
+        selectedDate.getFullYear() < priceDate.getFullYear() ||
+        (selectedDate.getMonth() < priceDate.getMonth() &&
+          selectedDate.getFullYear() < priceDate.getFullYear()) ||
+        (selectedDate.getMonth() <= priceDate.getMonth() &&
+          selectedDate.getFullYear() <= priceDate.getFullYear() &&
+          selectedDate.getDate() <= priceDate.getDate())
+      );
+    });
+  }, [date]); // Добавляем accountId в список зависимостей
+
 
   useEffect(() => {
     validateForm();

@@ -270,7 +270,7 @@ export default function Orders() {
     // Проверяем, есть ли хотя бы одна ошибка в массиве errors
     const hasErrors = Object.values(errors).some((error) => error !== null);
 
-    if (!hasErrors) {
+    // if (!hasErrors) {
       // Создаем пустой массив для titlesToUpdate
       const titlesToUpdate = [];
 
@@ -327,10 +327,10 @@ export default function Orders() {
         // Выводим сообщение или выполняем другую логику, если titlesToUpdate пуст
         console.log("Нет элементов для сохранения");
       }
-    } else {
-      // Если есть хотя бы одна ошибка, выводим сообщение или выполняем другую логику
-      console.log("Есть ошибки, сохранение не производится");
-    }
+    // } else {
+    //   // Если есть хотя бы одна ошибка, выводим сообщение или выполняем другую логику
+    //   console.log("Есть ошибки, сохранение не производится");
+    // }
   };
 
   // Функция для сброса состояний

@@ -172,7 +172,7 @@ export default function Add({
         titlesToCreate.push({
           productId: item.id,
           generation: null,
-          accessType:null,
+          accessType: null,
           quantity: productInputQuantity[item.id],
           addBooklet: false,
         });
