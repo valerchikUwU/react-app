@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import classes from "./Main.module.css";
-import QRCode from "qrcode.react"; // Импортируем QRCode
 import { useNavigate } from "react-router-dom";
+import QRCode from "./QRCode";
 
 export default function Main() {
   const [data, setData] = useState({ token: "", sessionId: "" });
@@ -103,13 +103,12 @@ export default function Main() {
     <div className={classes.main}>
       <div className={classes.qr}>Для входа отсканируйте QR-код</div>
       {/* Используем QRCode вместо статической картинки */}
-      <QRCode value={qrUrl} style={{ marginTop: "25px" }} />
+      <QRCode value={qrUrl}/>
       <div className={classes.link}>
         <a href={qrUrl} target="_blank">
           Или перейдите по ссылке
         </a>
       </div>
-
       {/* Отображаем полученные данные */}
       {/* <div>Token: {data.token}</div>
       <div>Session ID: {data.sessionId}</div> */}

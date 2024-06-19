@@ -52,7 +52,6 @@ const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
 const StyledTableCellBody = styled(TableCell)(({ theme }) => ({
   fontFamily: '"Montserrat"',
   fontSize: "16px",
-  fontWeight: 600,
   color: "#333333BF",
   textAlign: "center",
 }));
@@ -457,7 +456,6 @@ export default function PriceList() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
                           color: "black",
                           textAlign: "center",
                           cursor: "pointer",
@@ -554,7 +552,7 @@ export default function PriceList() {
                       sx={{
                         fontFamily: '"Montserrat"',
                         fontSize: "16px",
-                        fontWeight: 600,
+                       
                         color: "#333333BF",
                         textAlign: "center",
                       }}
@@ -582,7 +580,7 @@ export default function PriceList() {
                 color: isFormValid ? "#FFFFFF" : "#999999",
                 fontFamily: "Montserrat",
                 fontSize: "14px",
-                fontWeight: 600,
+               fontWeight:600,
                 marginTop: "30px",
                 marginBottom: "20px",
                 marginRight: "10px",

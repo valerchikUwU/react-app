@@ -35,39 +35,62 @@ export default function SelectProduct({
   setOpenModalProduct,
   allProducts,
   selectProducts,
+  checkBox
 }) {
   const [check, setCheck] = useState({});
   const [active, setActive] = useState(false);
   const [activeDeposit, setActiveDeposit] = useState(false);
 
   useEffect(() => {
+    const hasChecked = Object.values(check).some(
+      (value) =>{
+        return( value.checked && (value.type === 1 || value.type === 2 || value.type === 3))
+      }
+    );
+    if(hasChecked) {
+      console.log("hasChecked true");
+      setActive(false);
+      setActiveDeposit(true);
+    }else{
+      console.log("hasChecked false");
+      setActiveDeposit(false);
+    }
+
     const hasDepositChecked = Object.values(check).some(
       (value) => value.checked && value.type === 4
     );
     if (hasDepositChecked) {
+      console.log("hasDepositChecked true");
       setActive(true);
       setActiveDeposit(false);
-    } else {
+    }else{
+      console.log("hasDepositChecked false");
       setActive(false);
-      setActiveDeposit(true);
     }
   }, [check]);
 
-  useEffect(() => {
-    setActiveDeposit(false); // Автоматически выбираем депозит при открытии модального окна
-  }, []);
+useEffect(() => {
+  console.log("useEffect");
+  if(checkBox === true){
+    const newCheckState = Object.keys(check).reduce((acc, key) => {
+      acc[key] = { checked: false, type: check[key].type}; // Преобразование строки в число
+      return acc;
+    }, {});
+    setCheck(newCheckState);
+  }
+}, [checkBox])
 
   const handleChangeCheckbox = (event, id, type) => {
     setCheck((prevState) => ({
       ...prevState,
-      [id]: {checked: event.target.checked, type: type},
+      [id]: { checked: event.target.checked, type: type },
     }));
   };
 
   const resetStates = () => {
     selectProducts(0);
     const newCheckState = Object.keys(check).reduce((acc, key) => {
-      acc[key] = { checked: false, type: Number(key.split("-")[1]) }; // Преобразование строки в число
+      acc[key] = { checked: false, type: check[key].type}; // Преобразование строки в число
       return acc;
     }, {});
     setCheck(newCheckState);
@@ -78,8 +101,9 @@ export default function SelectProduct({
       (product) => !!check[product.id] && check[product.id].checked
     );
     selectProducts(checkedProducts);
+    setOpenModalProduct(false);
   };
-
+  console.log(`checkBox ${checkBox}`);
   return (
     <Modal open={openModalProduct}>
       <div
@@ -165,13 +189,13 @@ export default function SelectProduct({
                 </TableHead>
 
                 <TableBody>
-                  {allProducts.map((item) => {
-                    if (item.productTypeId == 1) {
+                  {allProducts?.map((item) => {
+                    if (item.productTypeId === 1) {
                       return (
                         <TableRow>
                           <TableCell key={item.id}>
                             <CustomStyledCheckbox
-                             checked={check[item.id]?.checked}
+                              checked={check[item.id]?.checked}
                               onChange={(event) =>
                                 handleChangeCheckbox(event, item.id, 1)
                               }
@@ -204,8 +228,8 @@ export default function SelectProduct({
                 </TableHead>
 
                 <TableBody>
-                  {allProducts.map((item) => {
-                    if (item.productTypeId == 2) {
+                  {allProducts?.map((item) => {
+                    if (item.productTypeId === 2) {
                       return (
                         <TableRow>
                           <TableCell key={item.id}>
@@ -243,8 +267,8 @@ export default function SelectProduct({
                 </TableHead>
 
                 <TableBody>
-                  {allProducts.map((item) => {
-                    if (item.productTypeId == 3) {
+                  {allProducts?.map((item) => {
+                    if (item.productTypeId === 3) {
                       return (
                         <TableRow>
                           <TableCell key={item.id}>
@@ -281,8 +305,8 @@ export default function SelectProduct({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {allProducts.map((item) => {
-                    if (item.productTypeId == 4) {
+                  {allProducts?.map((item) => {
+                    if (item.productTypeId === 4) {
                       return (
                         <TableRow>
                           <TableCell key={item.id}>

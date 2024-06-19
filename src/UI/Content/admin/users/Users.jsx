@@ -30,6 +30,7 @@ import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import CircularProgressCustom from "../../styledComponents/CircularProgress";
 
 // Создаем стилизованные компоненты с помощью styled
 const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
@@ -49,7 +50,6 @@ const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
 const StyledTableCellBody = styled(TableCell)(({ theme }) => ({
   fontFamily: '"Montserrat"',
   fontSize: "16px",
-  fontWeight: 600,
   color: "#333333BF",
   textAlign: "center",
 }));
@@ -71,21 +71,13 @@ export default function Users() {
   const [telephone, setTelephone] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
 
-  const [boxSize, setBoxSize] = useState({ height: "auto", width: "auto" }); // Храним размеры <Box>
-  const boxRef = useRef(null);
-
-  useLayoutEffect(() => {
-    if (boxRef.current) {
-      const rect = boxRef.current.getBoundingClientRect();
-      setBoxSize({ height: rect.height, width: rect.width });
-      console.log(`rect.height - ${rect.height}`);
-      console.log(`rect.width - ${rect.width}`);
-    }
-    console.log(`boxRef.current - ${boxRef.current}`);
-  }, [organizations]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    dispatch(getUser(accountId));
+    setIsLoading(true);
+    dispatch(getUser(accountId)).then(() => {
+      setIsLoading(false);
+    });
     // dispatch(getOrganizationList(accountId));
   }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
 
@@ -212,136 +204,141 @@ export default function Users() {
 
   return (
     <div>
-      <TableContainer
-        component={Paper}
-        sx={{
-          height: "calc(100vh - 90px)",
-          overflow: "auto",
-          scrollbarWidth: "thin",
-          scrollbarColor: "#005475BF #FFFFFF",
-        }}
-      >
-        <Table stickyHeader sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                №
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Имя
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Академии
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Был
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Телефон
-              </StyledTableCellHead>
+      {isLoading ? (
+        <CircularProgressCustom value={"55%"}></CircularProgressCustom>
+      ) : (
+        <TableContainer
+          component={Paper}
+          sx={{
+            height: "calc(100vh - 90px)",
+            overflow: "auto",
+            scrollbarWidth: "thin",
+            scrollbarColor: "#005475BF #FFFFFF",
+          }}
+        >
+          <Table stickyHeader sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  №
+                </StyledTableCellHead>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  Имя
+                </StyledTableCellHead>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  Академии
+                </StyledTableCellHead>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  Был
+                </StyledTableCellHead>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  Телефон
+                </StyledTableCellHead>
 
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Теллеграм
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                <IconButton onClick={() => openModal()}>
-                  <img src={plus} alt="плюс" />
-                </IconButton>
-              </StyledTableCellHead>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {users.map((element) => (
-              <TableRow key={element.id}>
-                <StyledTableCellBody>
-                  {element.accountNumber}
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.firstName + " " + element.lastName}
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.organizationList.map((organization, index, array) =>
-                    index === array.length - 1
-                      ? organization
-                      : `${organization}, `
-                  )}
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.formattedLastSeen}
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.telephoneNumber}
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.telegramId ? (
-                    <img src={check} alt="есть" />
-                  ) : (
-                    <img src={unCheck} alt="нету" />
-                  )}
-                </StyledTableCellBody>
-
-                <StyledTableCellBody></StyledTableCellBody>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  Теллеграм
+                </StyledTableCellHead>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  <IconButton onClick={() => openModal()}>
+                    <img src={plus} alt="плюс" />
+                  </IconButton>
+                </StyledTableCellHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {users.map((element) => (
+                <TableRow key={element.id}>
+                  <StyledTableCellBody>
+                    {element.accountNumber}
+                  </StyledTableCellBody>
+                  <StyledTableCellBody>
+                    {element.firstName + " " + element.lastName}
+                  </StyledTableCellBody>
+                  <StyledTableCellBody>
+                    {element.organizationList.map(
+                      (organization, index, array) =>
+                        index === array.length - 1
+                          ? organization
+                          : `${organization}, `
+                    )}
+                  </StyledTableCellBody>
+                  <StyledTableCellBody>
+                    {element.formattedLastSeen}
+                  </StyledTableCellBody>
+                  <StyledTableCellBody>
+                    {element.telephoneNumber}
+                  </StyledTableCellBody>
+                  <StyledTableCellBody>
+                    {element.telegramId ? (
+                      <img src={check} alt="есть" />
+                    ) : (
+                      <img src={unCheck} alt="нету" />
+                    )}
+                  </StyledTableCellBody>
+
+                  <StyledTableCellBody></StyledTableCellBody>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       <Modal open={isOpen}>
         <div
@@ -360,7 +357,6 @@ export default function Users() {
           }}
         >
           <Box
-            ref={boxRef}
             sx={{
               backgroundColor: "white",
               boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
