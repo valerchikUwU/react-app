@@ -67,6 +67,7 @@ export default function Orders() {
   const [selectOrganization, setSelectOrganization] = useState({});
   const [selectStatus, setSelectStatus] = useState({});
   const [payeeName, setPayeeName] = useState({});
+  const [payeeID, setPayeeID] = useState({});
   const [inputAccountNumber, setInputAccountNumber] = useState({});
   const [isInputCleared, setIsInputCleared] = useState();
   const [selectedCheckDeposit, setSelectedCheckDeposit] = useState();
@@ -424,7 +425,9 @@ export default function Orders() {
         billNumber: inputAccountNumber[ObjectModalOrder.id]
           ? inputAccountNumber[ObjectModalOrder.id]
           : ObjectModalOrder.billNumber,
-        payeeId: ObjectModalOrder.payeeId,
+        payeeId: payeeID[ObjectModalOrder.id]
+          ? payeeID[ObjectModalOrder.id]
+          : ObjectModalOrder.payeeId,
         isFromDeposit: ObjectModalOrder.selectedCheckDeposit || false,
         titlesToUpdate: titlesToUpdate,
         titlesToCreate: titlesToCreate,
@@ -488,12 +491,7 @@ export default function Orders() {
       }),
       {}
     );
-    setPayeeName(
-      () => ({
-        [ObjectModalOrder.id]: ObjectModalOrder.payeeName,
-      }),
-      {}
-    );
+    setPayeeName({});
     setSelectStatus({});
     setInputAccountNumber(
       () => ({
@@ -514,10 +512,21 @@ export default function Orders() {
       [id]: event.target.value,
     }));
   };
+
   const handleChangePayeeName = (event, id) => {
     setPayeeName(() => ({
       [id]: event.target.value,
     }));
+
+  
+  const matchingPayee = listModalPayees.find(payee => payee.name == event.target.value);
+
+  if (matchingPayee) {
+    setPayeeID(prevState => ({
+     ...prevState,
+      [id]: matchingPayee.id,
+    }));
+  }
   };
 
   const handleChangeInputAccountNumber = (event, id) => {
@@ -573,7 +582,6 @@ export default function Orders() {
 
   return (
     <Box>
-
       {isLoading ? (
         <CircularProgressCustom value={"55%"}></CircularProgressCustom>
       ) : (
@@ -821,7 +829,6 @@ export default function Orders() {
           {/* <FloatingScrollToTopButton showOnPageScroll={true} /> */}
         </TableContainer>
       )}
-
 
       {isLoadingModal ? (
         <Modal open={true}>
@@ -1323,11 +1330,6 @@ export default function Orders() {
                     )}
                   </Table>
                 </TableContainer>
-
-
-
-
-
 
                 {listModalTitles[0]?.product.abbreviation == "Д" ? (
                   <TableContainer
