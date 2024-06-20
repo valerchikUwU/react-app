@@ -11,6 +11,8 @@ import {
   Box,
   Typography,
   Button,
+  Divider,
+  Chip,
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import Modal from "@mui/material/Modal";
@@ -42,6 +44,8 @@ import {
 } from "../../../../BLL/admin/orderSlice.js";
 import FloatingScrollToTopButton from "../../styledComponents/FloatingScrollToTopButton.jsx";
 import CircularProgressCustom from "../../styledComponents/CircularProgress.jsx";
+import AddSelectProduct from "./AddSelectProduct.jsx";
+import AddTitlesOrders from "./AddTitlesOrders.jsx";
 
 export default function Orders() {
   const dispatch = useDispatch();
@@ -59,6 +63,7 @@ export default function Orders() {
   const [productId, setProductId] = useState({});
   const [isDeleteClicked, setIsDeleteClicked] = useState(false); // при удалении товара в модальном окне заново вызывался getOrderModal
   const [isOpen, setIsOpen] = useState(false);
+  const [isOpenModalUpdate, setIsOpenModalUpdate] = useState(false);
   const [selectOrganization, setSelectOrganization] = useState({});
   const [selectStatus, setSelectStatus] = useState({});
   const [payeeName, setPayeeName] = useState({});
@@ -68,8 +73,95 @@ export default function Orders() {
   const [isLoadingModal, setIsLoadingModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const orders = useSelector((state) => state.adminOrder.orders);
+  // AddTitlesOrders.jsx
+  const [checkProductBooklet, setcheckProductBooklet] = useState({});
+  const [selectProductGeneration, setSelectProductGeneration] = useState({});
+  const [selectProductAccessType, setSelectProductAccessType] = useState({});
+  const [productInputQuantity, setProductInputQuantity] = useState({});
+  const [isFieldClearedProduct, setIsFieldClearedProduct] = useState({});
+  const [sumForOneProduct, setSumForOneProduct] = useState({});
 
+  const [exitAddSelectProduct, setExitAddSelectProduct] = useState(false);
+  const [deleteTitles, setDeleteTitles] = useState(false);
+
+  const [products, setProducts] = useState([]);
+  const handleChangeModalProduct = (selectProducts) => {
+    setProducts(selectProducts);
+  };
+  const allIdsProduct =
+    Array.isArray(products) && products.map((row) => row.id);
+  const totalSumProduct =
+    Array.isArray(products) &&
+    allIdsProduct.reduce((acc, id) => acc + (sumForOneProduct[id] || 0), 0);
+
+  useEffect(() => {
+    // Инициализация sumForOneTitle
+    const initialSumForOneTitle =
+      Array.isArray(products) &&
+      products.reduce((acc, row) => {
+        const price = checkProductBooklet[row.id]
+          ? row.priceBooklet
+          : row.priceAccess;
+        acc[row.id] = (productInputQuantity[row.id] || 1) * price;
+        console.log(price);
+        console.log(acc[row.id]);
+        console.log(acc[row.id]);
+        return acc;
+      }, {});
+
+    setSumForOneProduct(initialSumForOneTitle);
+  }, [products, checkProductBooklet, productInputQuantity]);
+
+  const handleChangeAccessTypeProduct = (event, id) => {
+    setSelectProductAccessType((prevState) => ({
+      ...prevState,
+      [id]: event.target.value,
+    }));
+  };
+  const handleChangeGenerationProduct = (event, id) => {
+    setSelectProductGeneration((prevState) => ({
+      ...prevState,
+      [id]: event.target.value,
+    }));
+  };
+  const handleChangeCheckboxBooklet = (event, id) => {
+    setcheckProductBooklet((prevState) => ({
+      ...prevState,
+      [id]: event.target.checked,
+    }));
+  };
+  const handleChangeInputQuantity = (event, id) => {
+    const newValue = event.target.value.replace(/[^0-9]/g, "");
+    if (newValue === "") {
+      setProductInputQuantity((prevState) => ({
+        ...prevState,
+        [id]: undefined,
+      }));
+      setIsFieldClearedProduct((prevState) => ({
+        ...prevState,
+        [id]: true,
+      }));
+    } else {
+      setProductInputQuantity((prevState) => ({
+        ...prevState,
+        [id]: newValue,
+      }));
+      setIsFieldClearedProduct((prevState) => ({
+        ...prevState,
+        [id]: false,
+      }));
+    }
+  };
+
+  const deleteTitlesNew = (idToDelete) => {
+    setProducts(products.filter((product) => product.id !== idToDelete));
+    setDeleteTitles(true);
+  };
+  const stateDeleteTitles = () => {
+    setDeleteTitles(false);
+  };
+
+  const orders = useSelector((state) => state.adminOrder.orders);
   const ListProductsModal = useSelector((state) => state.adminOrder?.products);
   const listModalTitles = useSelector((state) => state.adminOrder?.modalTitles);
   const ObjectModalOrder = useSelector((state) => state.adminOrder?.modalOrder);
@@ -184,9 +276,27 @@ export default function Orders() {
     setOpenStates({ ...openStates, [id]: true });
   };
 
+  const resetStatesNewTitles = () => {
+    setcheckProductBooklet({});
+    setSelectProductGeneration({});
+    setSelectProductAccessType({});
+    setProductInputQuantity({});
+    setIsFieldClearedProduct({});
+    setSumForOneProduct({});
+  };
+  const resetAddSelectProduct = () => {
+    setExitAddSelectProduct(false);
+  };
   const handleCloseModal = (id) => {
+    setExitAddSelectProduct(true);
+
+    setOpenStates({ ...openStates, [id]: false });
+
+    setProducts(null);
     setIsInputCleared(false);
-    resetStates(id);
+
+    resetStatesNewTitles();
+    resetStates();
   };
 
   const handleDeleteOrder = (orderId, titleId) => {
@@ -197,24 +307,22 @@ export default function Orders() {
         titleId: titleId,
       })
     ).then(() => {
-      // После успешного выполнения deleteTitleOrder вызываем getWork
-      dispatch(getOrder(accountId)); // для обновления полей когда еще пользователь находится в модальном окне на самой странице уже меняется
+      dispatch(getOrder(accountId));
       setIsDeleteClicked(true);
     });
   };
 
-  // Функция для обработки изменения значения в Select
   const handleChangeSelectAbbr = (event, id) => {
     setSelectedAbbr((prevState) => ({
       ...prevState,
-      [id]: event.target.value, // Обновляем выбранное значение для данного элемента
+      [id]: event.target.value,
     }));
   };
 
   const handleChangeGeneration = (event, id) => {
     setSelectedGeneration((prevState) => ({
       ...prevState,
-      [id]: event.target.value, // Обновляем выбранное значение для данного элемента
+      [id]: event.target.value,
     }));
   };
 
@@ -238,13 +346,6 @@ export default function Orders() {
         ...prevState,
         [id]: false,
       }));
-
-      // // Вычисляем новую сумму и обновляем SumForOneTitle
-      // const newSum = parseFloat(newValue) * price;
-      // setSumForOneTitle((prevSums) => ({
-      //   ...prevSums,
-      //   [id]: newSum,
-      // }));
     }
   };
 
@@ -262,80 +363,84 @@ export default function Orders() {
   const handleChangeAccessType = (event, id) => {
     setSelectedAccessType((prevState) => ({
       ...prevState,
-      [id]: event.target.value, // Обновляем выбранное значение для данного элемента
+      [id]: event.target.value,
     }));
   };
 
   const handleSave = (exitID) => {
-    // Проверяем, есть ли хотя бы одна ошибка в массиве errors
-    const hasErrors = Object.values(errors).some((error) => error !== null);
-
-    // if (!hasErrors) {
-      // Создаем пустой массив для titlesToUpdate
-      const titlesToUpdate = [];
-
-      // Проходим по listModalTitles и проверяем условия для каждого элемента
-      listModalTitles.forEach((row) => {
-        // Проверяем, существует ли значение для данного id в selectedCheck
-        console.log("------------------------------------------");
-        console.log(row.productId);
-        console.log("------------------------------------------");
-        titlesToUpdate.push({
-          id: row.id,
-          productId: productId[row.id] ? productId[row.id] : row.productId,
-          accessType: selectedCheck[row.id]
-            ? null
-            : selectedAccessType[row.id]
-            ? selectedAccessType[row.id]
-            : row.accessType,
-          generation: selectedGeneration[row.id]
-            ? selectedGeneration[row.id]
-            : row.generation,
-          quantity: selectedInput[row.id],
-          addBooklet: selectedCheck[row.id],
-        });
+    const titlesToUpdate = [];
+    listModalTitles.forEach((row) => {
+      titlesToUpdate.push({
+        id: row.id,
+        productId: productId[row.id] ? productId[row.id] : row.productId,
+        accessType: selectedCheck[row.id]
+          ? null
+          : selectedAccessType[row.id]
+          ? selectedAccessType[row.id]
+          : row.accessType,
+        generation: selectedGeneration[row.id]
+          ? selectedGeneration[row.id]
+          : row.generation,
+        quantity: selectedInput[row.id],
+        addBooklet: selectedCheck[row.id],
       });
+    });
 
-      // Теперь titlesToUpdate - это массив объектов, который можно использовать в вашем запросе
-      // Проверяем, что titlesToUpdate не пуст, перед тем как вызывать dispatch
-      if (titlesToUpdate.length > 0) {
-        // Предполагается, что updateTitleOrder возвращает промис
-        console.log(selectOrganization[ObjectModalOrder.id]);
-        console.log(ObjectModalOrder.organizationName);
-        dispatch(
-          updateTitleOrderAdmin({
-            accountId: accountId,
-            orderId: ObjectModalOrder.id,
-            organizationName: selectOrganization[ObjectModalOrder.id]
-              ? selectOrganization[ObjectModalOrder.id]
-              : ObjectModalOrder.organizationName,
-            status: selectStatus[ObjectModalOrder.id]
-              ? selectStatus[ObjectModalOrder.id]
-              : ObjectModalOrder.status,
-            billNumber: inputAccountNumber[ObjectModalOrder.id]
-              ? inputAccountNumber[ObjectModalOrder.id]
-              : ObjectModalOrder.billNumber,
-            payeeId: ObjectModalOrder.payeeId,
-            isFromDeposit: ObjectModalOrder.selectedCheckDeposit || false,
-            titlesToUpdate: titlesToUpdate, // titlesToUpdate теперь является массивом объектов
-          })
-        ).then(() => {
-          dispatch(getOrder(accountId)); // для обновления Суммы и Состояния моментально при нажатии на кнопку сохранить в модальном окне
-          setOpenStates({ ...openStates, [exitID]: false });
-        });
-      } else {
-        // Выводим сообщение или выполняем другую логику, если titlesToUpdate пуст
-        console.log("Нет элементов для сохранения");
-      }
-    // } else {
-    //   // Если есть хотя бы одна ошибка, выводим сообщение или выполняем другую логику
-    //   console.log("Есть ошибки, сохранение не производится");
-    // }
+    const titlesToCreate = [];
+    products?.forEach((item) => {
+      titlesToCreate.push({
+        productId: item.id,
+
+        accessType: checkProductBooklet[item.id]
+          ? null
+          : selectProductAccessType[item.id]
+          ? selectProductAccessType[item.id]
+          : "Электронный",
+
+        generation: selectProductGeneration[item.id]
+          ? selectProductGeneration[item.id]
+          : "Второе поколение",
+
+        quantity: productInputQuantity[item.id]
+          ? productInputQuantity[item.id]
+          : 1,
+
+        addBooklet: checkProductBooklet[item.id]
+          ? checkProductBooklet[item.id]
+          : false,
+      });
+    });
+
+    dispatch(
+      updateTitleOrderAdmin({
+        accountId: accountId,
+        orderId: ObjectModalOrder.id,
+        organizationName: selectOrganization[ObjectModalOrder.id]
+          ? selectOrganization[ObjectModalOrder.id]
+          : ObjectModalOrder.organizationName,
+        status: selectStatus[ObjectModalOrder.id]
+          ? selectStatus[ObjectModalOrder.id]
+          : ObjectModalOrder.status,
+        billNumber: inputAccountNumber[ObjectModalOrder.id]
+          ? inputAccountNumber[ObjectModalOrder.id]
+          : ObjectModalOrder.billNumber,
+        payeeId: ObjectModalOrder.payeeId,
+        isFromDeposit: ObjectModalOrder.selectedCheckDeposit || false,
+        titlesToUpdate: titlesToUpdate,
+        titlesToCreate: titlesToCreate,
+      })
+    ).then(() => {
+      dispatch(getOrder(accountId));
+      setOpenStates({ ...openStates, [exitID]: false });
+    });
+    handleCloseModal(exitID);
   };
 
   // Функция для сброса состояний
-  const resetStates = (ID) => {
-    setOpenStates({ ...openStates, [ID]: false });
+  const resetStates = () => {
+    setExitAddSelectProduct(true);
+    resetStatesNewTitles();
+    setProducts(null);
     // Сброс selectedAbbr
     const initialSelectedAbbr = listModalTitles.reduce((acc, row) => {
       acc[row.id] = row.abbr;
@@ -379,25 +484,25 @@ export default function Orders() {
     //Первая таблица
     setSelectOrganization(
       () => ({
-        [ObjectModalOrder.id]: ObjectModalOrder.organizationName, // Обновляем выбранное значение для данного элемента
+        [ObjectModalOrder.id]: ObjectModalOrder.organizationName,
       }),
       {}
     );
     setPayeeName(
       () => ({
-        [ObjectModalOrder.id]: ObjectModalOrder.payeeName, // Обновляем выбранное значение для данного элемента
+        [ObjectModalOrder.id]: ObjectModalOrder.payeeName,
       }),
       {}
     );
     setSelectStatus(
       () => ({
-        [ObjectModalOrder.id]: ObjectModalOrder.status, // Обновляем выбранное значение для данного элемента
+        [ObjectModalOrder.id]: ObjectModalOrder.status,
       }),
       {}
     );
     setInputAccountNumber(
       () => ({
-        [ObjectModalOrder.id]: ObjectModalOrder.billNumber, // Обновляем выбранное значение для данного элемента
+        [ObjectModalOrder.id]: ObjectModalOrder.billNumber,
       }),
       {}
     );
@@ -405,18 +510,18 @@ export default function Orders() {
 
   const handleChangeSelectOrganization = (event, id) => {
     setSelectOrganization(() => ({
-      [id]: event.target.value, // Обновляем выбранное значение для данного элемента
+      [id]: event.target.value,
     }));
   };
 
   const handleChangeSelectStatus = (event, id) => {
     setSelectStatus(() => ({
-      [id]: event.target.value, // Обновляем выбранное значение для данного элемента
+      [id]: event.target.value,
     }));
   };
   const handleChangePayeeName = (event, id) => {
     setPayeeName(() => ({
-      [id]: event.target.value, // Обновляем выбранное значение для данного элемента
+      [id]: event.target.value,
     }));
   };
 
@@ -428,7 +533,7 @@ export default function Orders() {
     }
 
     setInputAccountNumber(() => ({
-      [id]: event.target.value, // Обновляем выбранное значение для данного элемента
+      [id]: event.target.value,
     }));
   };
 
@@ -436,6 +541,12 @@ export default function Orders() {
     dispatch(getNewOrder(accountId));
     setIsOpen(true);
   };
+
+  const handleChangeModalUpdate = () => {
+    dispatch(getNewOrder(accountId));
+    setIsOpenModalUpdate(true);
+  };
+
   // Text Header
   const TextHeader = styled(TableCell)({
     fontFamily: "Montserrat",
@@ -463,27 +574,14 @@ export default function Orders() {
     marginBottom: "15px",
   });
 
-  // const [boxSize, setBoxSize] = useState({ height: "auto", width: "auto" }); // Храним размеры <Box>
-  // const boxRef = useRef(null);
-
-  // useLayoutEffect(() => {
-  //   if (boxRef.current) {
-  //     const rect = boxRef.current.getBoundingClientRect();
-  //     setBoxSize({ height: rect.height, width: rect.width });
-  //     console.log(`rect.height - ${rect.height}`);
-  //     console.log(`rect.width - ${rect.width}`);
-  //   }
-  //   console.log(`boxRef.current - ${boxRef.current}`);
-  // }, [ObjectModalOrder]);
-
   const sortedNumber = () => {};
 
   return (
     <Box>
-      { isLoading ? (
-        <CircularProgressCustom value={"55%"}></CircularProgressCustom> 
+      {isLoading ? (
+        <CircularProgressCustom value={"55%"}></CircularProgressCustom>
       ) : (
-         <TableContainer
+        <TableContainer
           component={Paper}
           sx={{
             height: "calc(100vh - 90px)",
@@ -1293,12 +1391,16 @@ export default function Orders() {
                               sx={{
                                 paddingY: 1,
                                 position: "sticky",
-
+                                top: 0,
                                 zIndex: 100,
                                 background: "#fff",
                               }}
                             >
-                              <img src={deleteBlue} alt="удалить" />
+                              <IconButton
+                                onClick={() => handleChangeModalUpdate()}
+                              >
+                                <img src={plus} alt="плюс" />
+                              </IconButton>
                             </TextHeader>
                           ) : (
                             ""
@@ -1391,423 +1493,654 @@ export default function Orders() {
                     </Table>
                   </TableContainer>
                 ) : (
-                  <TableContainer
-                    component={Paper}
-                    sx={{
-                      maxHeight: "calc(100vh - 350px)",
-                      overflow: "auto",
-                      scrollbarWidth: "thin",
-                      scrollbarColor: "#005475 #FFFFFF",
-                    }}
-                  >
-                    <Table stickyHeader>
-                      <TableHead>
-                        <TableRow>
-                          <TextHeader
-                            sx={{
-                              paddingY: 1,
-                              position: "sticky",
-                              top: 0,
-                              zIndex: 100,
-                              background: "#fff",
-                            }}
-                          >
-                            Курс
-                          </TextHeader>
-                          <TextHeader
-                            sx={{
-                              paddingY: 1,
-                              position: "sticky",
-                              top: 0,
-                              zIndex: 100,
-                              background: "#fff",
-                            }}
-                          >
-                            Доступ
-                          </TextHeader>
-                          <TextHeader
-                            sx={{
-                              paddingY: 1,
-                              position: "sticky",
-                              top: 0,
-                              zIndex: 100,
-                              background: "#fff",
-                            }}
-                          >
-                            Поколение
-                          </TextHeader>
-                          <TextHeader
-                            sx={{
-                              paddingY: 1,
-                              position: "sticky",
-                              top: 0,
-                              zIndex: 100,
-                              background: "#fff",
-                            }}
-                          >
-                            Доп. буклет
-                          </TextHeader>
-                          <TextHeader
-                            sx={{
-                              paddingY: 1,
-                              position: "sticky",
-                              top: 0,
-                              zIndex: 100,
-                              background: "#fff",
-                            }}
-                          >
-                            Количество
-                          </TextHeader>
-                          <TextHeader
-                            sx={{
-                              paddingY: 1,
-                              position: "sticky",
-                              top: 0,
-                              zIndex: 100,
-                              background: "#fff",
-                            }}
-                          >
-                            Цена
-                          </TextHeader>
-                          <TextHeader
-                            sx={{
-                              paddingY: 1,
-                              position: "sticky",
-                              top: 0,
-                              zIndex: 100,
-                              background: "#fff",
-                            }}
-                          >
-                            Сумма
-                          </TextHeader>
-                          {element.status === "Активный" ||
-                          element.status === "Выставлен счёт" ? (
+                  <>
+                    <TableContainer
+                      component={Paper}
+                      sx={{
+                        maxHeight: "calc(100vh - 350px)",
+                        overflow: "auto",
+                        scrollbarWidth: "thin",
+                        scrollbarColor: "#005475 #FFFFFF",
+                      }}
+                    >
+                      <Table stickyHeader>
+                        <TableHead>
+                          <TableRow>
                             <TextHeader
                               sx={{
                                 paddingY: 1,
                                 position: "sticky",
-
+                                top: 0,
                                 zIndex: 100,
                                 background: "#fff",
                               }}
                             >
-                              <img src={deleteBlue} alt="удалить" />
+                              Курс
                             </TextHeader>
-                          ) : (
-                            ""
-                          )}
-                        </TableRow>
-                      </TableHead>
-
-                      {element.status === "Активный" ||
-                      element.status === "Выставлен счёт" ? (
-                        <TableBody>
-                          {listModalTitles.map((row) => (
-                            <TableRow key={row.id}>
-                              <TableCell>
-                                <Select
-                                  variant="standard"
-                                  sx={{
-                                    fontFamily: "Montserrat",
-                                    fontSize: "16px",
-
-                                    textAlign: "center",
-                                    cursor: "pointer",
-                                    width: "70px",
-                                  }}
-                                  value={
-                                    selectedAbbr[row.id] ||
-                                    row.product.abbreviation
-                                  }
-                                  onChange={(event) => {
-                                    const newSelectedAbbr = event.target.value;
-                                    const product = ListProductsModal.find(
-                                      (p) => p.abbreviation === newSelectedAbbr
-                                    );
-
-                                    setSelectedProduct((prevState) => ({
-                                      ...prevState,
-                                      [row.id]: product,
-                                    }));
-
-                                    handleChangeSelectAbbr(event, row.id);
-
-                                    setProductId((prevState) => ({
-                                      ...prevState,
-                                      [row.id]: product.id, // Обновляем выбранное значение для данного элемента
-                                    }));
-                                  }}
-                                >
-                                  {ListProductsModal.map((product) => (
-                                    <MenuItem
-                                      key={product.id}
-                                      value={product.abbreviation}
-                                      sx={{
-                                        fontFamily: "Montserrat",
-                                        fontSize: "16px",
-
-                                        textAlign: "center",
-                                        cursor: "pointer",
-                                      }}
-                                    >
-                                      {product.abbreviation}
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                              </TableCell>
-
-                              <TableCell>
-                                {selectedCheck[row.id] ? (
-                                  <FormControl
-                                    error={!!errors[row.id]}
-                                    fullWidth
-                                  >
-                                    <Select
-                                      variant="standard"
-                                      sx={{
-                                        fontFamily: "Montserrat",
-                                        fontSize: "16px",
-
-                                        textAlign: "center",
-                                        cursor: "pointer",
-                                        width: "150px",
-                                      }}
-                                      value={
-                                        selectedCheck[row.id]
-                                          ? null
-                                          : selectedAccessType[row.id] ||
-                                            row.accessType
-                                      }
-                                      onChange={(e) =>
-                                        handleChangeAccessType(e, row.id)
-                                      }
-                                      disabled={selectedCheck[row.id] || false} // Добавляем условие для отключения
-                                      displayEmpty
-                                      renderValue={(selected) =>
-                                        selected === null ? null : selected
-                                      }
-                                    >
-                                      <MenuItem
-                                        value={null}
-                                        disabled
-                                      ></MenuItem>
-                                    </Select>
-                                    <FormHelperText error>
-                                      {errors[row.id]}
-                                    </FormHelperText>
-                                  </FormControl>
-                                ) : (
-                                  <FormControl
-                                    error={!!errors[row.id]}
-                                    fullWidth
-                                  >
-                                    <Select
-                                      variant="standard"
-                                      sx={{
-                                        fontFamily: "Montserrat",
-                                        fontSize: "16px",
-
-                                        textAlign: "center",
-                                        cursor: "pointer",
-                                        width: "150px",
-                                      }}
-                                      value={
-                                        selectedAccessType[row.id] ||
-                                        row.accessType
-                                      }
-                                      onChange={(e) =>
-                                        handleChangeAccessType(e, row.id)
-                                      }
-                                      disabled={selectedCheck[row.id] || false} // Добавляем условие для отключения
-                                      displayEmpty
-                                      renderValue={(selected) =>
-                                        selected === null ? null : selected
-                                      }
-                                    >
-                                      <MenuItem
-                                        value={null}
-                                        disabled
-                                      ></MenuItem>
-
-                                      <MenuItem
-                                        value="Электронный"
-                                        sx={{
-                                          fontFamily: "Montserrat",
-                                          fontSize: "16px",
-
-                                          textAlign: "center",
-                                          cursor: "pointer",
-                                        }}
-                                      >
-                                        Электронный
-                                      </MenuItem>
-                                      <MenuItem
-                                        value="Бумажный"
-                                        sx={{
-                                          fontFamily: "Montserrat",
-                                          fontSize: "16px",
-
-                                          textAlign: "center",
-                                          cursor: "pointer",
-                                        }}
-                                      >
-                                        Бумажный
-                                      </MenuItem>
-                                    </Select>
-                                    <FormHelperText error>
-                                      {errors[row.id]}
-                                    </FormHelperText>
-                                  </FormControl>
-                                )}
-                              </TableCell>
-
-                              <TableCell>
-                                <Select
-                                  variant="standard"
-                                  sx={{
-                                    fontFamily: "Montserrat",
-                                    fontSize: "16px",
-
-                                    textAlign: "center",
-                                    cursor: "pointer",
-                                    width: "200px",
-                                  }}
-                                  value={
-                                    selectedGeneration[row.id] || row.generation
-                                  }
-                                  onChange={(e) =>
-                                    handleChangeGeneration(e, row.id)
-                                  }
-                                >
-                                  <MenuItem
-                                    value="Первое поколение"
-                                    sx={{
-                                      fontFamily: "Montserrat",
-                                      fontSize: "16px",
-
-                                      textAlign: "center",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    Первое поколение
-                                  </MenuItem>
-                                  <MenuItem
-                                    value="Второе поколение"
-                                    sx={{
-                                      fontFamily: "Montserrat",
-                                      fontSize: "16px",
-
-                                      textAlign: "center",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    Второе поколение
-                                  </MenuItem>
-                                </Select>
-                              </TableCell>
-
-                              <TableCell sx={{ textAlign: "center" }}>
-                                <CustomStyledCheckbox
-                                  sx={{ textAlign: "center" }}
-                                  checked={selectedCheck[row.id] || false} // Используйте false для неотмеченных чекбоксов
-                                  onChange={(event) =>
-                                    handleCheckboxChange(event, row.id)
-                                  }
-                                  size={1}
-                                ></CustomStyledCheckbox>
-                              </TableCell>
-
-                              <TableCell>
-                                <TextField
-                                  variant="standard"
-                                  sx={{
-                                    width: "80px",
-                                  }}
-                                  value={
-                                    selectedInput[row.id] ||
-                                    (isFieldCleared[row.id] ? "" : row.quantity)
-                                  }
-                                  onChange={(e) =>
-                                    handleChangeInput(
-                                      e,
-                                      row.id,
-                                      selectedCheck[row.id]
-                                        ? selectedProduct[row.id]
-                                            ?.PriceDefinition?.priceBooklet ||
-                                            row.price.priceBooklet
-                                        : selectedProduct[row.id]
-                                            ?.PriceDefinition?.priceAccess ||
-                                            row.price.priceAccess
-                                    )
-                                  }
-                                />
-                              </TableCell>
-
-                              <TableCellModal>
-                                {selectedCheck[row.id]
-                                  ? selectedProduct[row.id]?.PriceDefinition
-                                      ?.priceBooklet || row.price.priceBooklet
-                                  : selectedProduct[row.id]?.PriceDefinition
-                                      ?.priceAccess || row.price.priceAccess}
-                                &#x20bd;
-                              </TableCellModal>
-
-                              <TableCellModal>
-                                {sumForOneTitle[row.id]} &#x20bd;
-                              </TableCellModal>
-
-                              <TableCellModal>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Доступ
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Поколение
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Доп. буклет
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Количество
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Цена
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Сумма
+                            </TextHeader>
+                            {element.status === "Активный" ||
+                            element.status === "Выставлен счёт" ? (
+                              <TextHeader
+                                sx={{
+                                  paddingY: 1,
+                                  position: "sticky",
+                                  top: 0,
+                                  zIndex: 100,
+                                  background: "#fff",
+                                }}
+                              >
                                 <IconButton
-                                  onClick={() =>
-                                    handleDeleteOrder(
-                                      element.id,
-                                      row.id,
-                                      selectedProduct[row.id]?.id,
-                                      row.product.abbreviation
-                                    )
-                                  }
+                                  onClick={() => handleChangeModalUpdate()}
                                 >
-                                  <img src={deleteGrey} alt="удалить" />
+                                  <img src={plus} alt="плюс" />
                                 </IconButton>
-                              </TableCellModal>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      ) : (
-                        <TableBody>
-                          {listModalTitles.map((row) => (
-                            <TableRow key={row.id}>
-                              <TableCellModal>
-                                {row.product.abbreviation}
-                              </TableCellModal>
-                              <TableCellModal>{row.accessType}</TableCellModal>
-                              <TableCellModal>{row.generation}</TableCellModal>
-                              <TableCellModal>
-                                {row.addBooklet ? (
-                                  <img src={check} alt="галка" />
-                                ) : (
-                                  <img
-                                    src={checkbox}
-                                    alt="галка"
-                                    style={{ opacity: "0.6" }}
-                                  />
-                                )}
-                              </TableCellModal>
-                              <TableCellModal>{row.quantity}</TableCellModal>
-                              <TableCellModal>
-                                {row.PriceForOneProduct} &#x20bd;
-                              </TableCellModal>
-                              <TableCellModal>
-                                {row.SumForOneTitle} &#x20bd;
-                              </TableCellModal>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      )}
-                    </Table>
-                  </TableContainer>
+                              </TextHeader>
+                            ) : (
+                              ""
+                            )}
+                          </TableRow>
+                        </TableHead>
+
+                        {element.status === "Активный" ||
+                        element.status === "Выставлен счёт" ? (
+                          <>
+                            <TableBody>
+                              {listModalTitles.map((row) => (
+                                <TableRow key={row.id}>
+                                  <TableCell>
+                                    <Select
+                                      variant="standard"
+                                      sx={{
+                                        fontFamily: "Montserrat",
+                                        fontSize: "16px",
+
+                                        textAlign: "center",
+                                        cursor: "pointer",
+                                        width: "70px",
+                                      }}
+                                      value={
+                                        selectedAbbr[row.id] ||
+                                        row.product.abbreviation
+                                      }
+                                      onChange={(event) => {
+                                        const newSelectedAbbr =
+                                          event.target.value;
+                                        const product = ListProductsModal.find(
+                                          (p) =>
+                                            p.abbreviation === newSelectedAbbr
+                                        );
+
+                                        setSelectedProduct((prevState) => ({
+                                          ...prevState,
+                                          [row.id]: product,
+                                        }));
+
+                                        handleChangeSelectAbbr(event, row.id);
+
+                                        setProductId((prevState) => ({
+                                          ...prevState,
+                                          [row.id]: product.id, // Обновляем выбранное значение для данного элемента
+                                        }));
+                                      }}
+                                    >
+                                      {ListProductsModal.map((product) => (
+                                        <MenuItem
+                                          key={product.id}
+                                          value={product.abbreviation}
+                                          sx={{
+                                            fontFamily: "Montserrat",
+                                            fontSize: "16px",
+
+                                            textAlign: "center",
+                                            cursor: "pointer",
+                                          }}
+                                        >
+                                          {product.abbreviation}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                  </TableCell>
+
+                                  <TableCell>
+                                    {selectedCheck[row.id] ? (
+                                      <FormControl
+                                        error={!!errors[row.id]}
+                                        fullWidth
+                                      >
+                                        <Select
+                                          variant="standard"
+                                          sx={{
+                                            fontFamily: "Montserrat",
+                                            fontSize: "16px",
+
+                                            textAlign: "center",
+                                            cursor: "pointer",
+                                            width: "150px",
+                                          }}
+                                          value={
+                                            selectedCheck[row.id]
+                                              ? null
+                                              : selectedAccessType[row.id] ||
+                                                row.accessType
+                                          }
+                                          onChange={(e) =>
+                                            handleChangeAccessType(e, row.id)
+                                          }
+                                          disabled={
+                                            selectedCheck[row.id] || false
+                                          } // Добавляем условие для отключения
+                                          displayEmpty
+                                          renderValue={(selected) =>
+                                            selected === null ? null : selected
+                                          }
+                                        >
+                                          <MenuItem
+                                            value={null}
+                                            disabled
+                                          ></MenuItem>
+                                        </Select>
+                                        <FormHelperText error>
+                                          {errors[row.id]}
+                                        </FormHelperText>
+                                      </FormControl>
+                                    ) : (
+                                      <FormControl
+                                        error={!!errors[row.id]}
+                                        fullWidth
+                                      >
+                                        <Select
+                                          variant="standard"
+                                          sx={{
+                                            fontFamily: "Montserrat",
+                                            fontSize: "16px",
+
+                                            textAlign: "center",
+                                            cursor: "pointer",
+                                            width: "150px",
+                                          }}
+                                          value={
+                                            selectedAccessType[row.id] ||
+                                            row.accessType
+                                          }
+                                          onChange={(e) =>
+                                            handleChangeAccessType(e, row.id)
+                                          }
+                                          disabled={
+                                            selectedCheck[row.id] || false
+                                          } // Добавляем условие для отключения
+                                          displayEmpty
+                                          renderValue={(selected) =>
+                                            selected === null ? null : selected
+                                          }
+                                        >
+                                          <MenuItem
+                                            value={null}
+                                            disabled
+                                          ></MenuItem>
+
+                                          <MenuItem
+                                            value="Электронный"
+                                            sx={{
+                                              fontFamily: "Montserrat",
+                                              fontSize: "16px",
+
+                                              textAlign: "center",
+                                              cursor: "pointer",
+                                            }}
+                                          >
+                                            Электронный
+                                          </MenuItem>
+                                          <MenuItem
+                                            value="Бумажный"
+                                            sx={{
+                                              fontFamily: "Montserrat",
+                                              fontSize: "16px",
+
+                                              textAlign: "center",
+                                              cursor: "pointer",
+                                            }}
+                                          >
+                                            Бумажный
+                                          </MenuItem>
+                                        </Select>
+                                        <FormHelperText error>
+                                          {errors[row.id]}
+                                        </FormHelperText>
+                                      </FormControl>
+                                    )}
+                                  </TableCell>
+
+                                  <TableCell>
+                                    <Select
+                                      variant="standard"
+                                      sx={{
+                                        fontFamily: "Montserrat",
+                                        fontSize: "16px",
+
+                                        textAlign: "center",
+                                        cursor: "pointer",
+                                        width: "200px",
+                                      }}
+                                      value={
+                                        selectedGeneration[row.id] ||
+                                        row.generation
+                                      }
+                                      onChange={(e) =>
+                                        handleChangeGeneration(e, row.id)
+                                      }
+                                    >
+                                      <MenuItem
+                                        value="Первое поколение"
+                                        sx={{
+                                          fontFamily: "Montserrat",
+                                          fontSize: "16px",
+
+                                          textAlign: "center",
+                                          cursor: "pointer",
+                                        }}
+                                      >
+                                        Первое поколение
+                                      </MenuItem>
+                                      <MenuItem
+                                        value="Второе поколение"
+                                        sx={{
+                                          fontFamily: "Montserrat",
+                                          fontSize: "16px",
+
+                                          textAlign: "center",
+                                          cursor: "pointer",
+                                        }}
+                                      >
+                                        Второе поколение
+                                      </MenuItem>
+                                    </Select>
+                                  </TableCell>
+
+                                  <TableCell sx={{ textAlign: "center" }}>
+                                    <CustomStyledCheckbox
+                                      sx={{ textAlign: "center" }}
+                                      checked={selectedCheck[row.id] || false} // Используйте false для неотмеченных чекбоксов
+                                      onChange={(event) =>
+                                        handleCheckboxChange(event, row.id)
+                                      }
+                                      size={1}
+                                    ></CustomStyledCheckbox>
+                                  </TableCell>
+
+                                  <TableCell>
+                                    <TextField
+                                      variant="standard"
+                                      sx={{
+                                        width: "80px",
+                                      }}
+                                      value={
+                                        selectedInput[row.id] ||
+                                        (isFieldCleared[row.id]
+                                          ? ""
+                                          : row.quantity)
+                                      }
+                                      onChange={(e) =>
+                                        handleChangeInput(
+                                          e,
+                                          row.id,
+                                          selectedCheck[row.id]
+                                            ? selectedProduct[row.id]
+                                                ?.PriceDefinition
+                                                ?.priceBooklet ||
+                                                row.price.priceBooklet
+                                            : selectedProduct[row.id]
+                                                ?.PriceDefinition
+                                                ?.priceAccess ||
+                                                row.price.priceAccess
+                                        )
+                                      }
+                                    />
+                                  </TableCell>
+
+                                  <TableCellModal>
+                                    {selectedCheck[row.id]
+                                      ? selectedProduct[row.id]?.PriceDefinition
+                                          ?.priceBooklet ||
+                                        row.price.priceBooklet
+                                      : selectedProduct[row.id]?.PriceDefinition
+                                          ?.priceAccess ||
+                                        row.price.priceAccess}
+                                    &#x20bd;
+                                  </TableCellModal>
+
+                                  <TableCellModal>
+                                    {sumForOneTitle[row.id]} &#x20bd;
+                                  </TableCellModal>
+
+                                  <TableCellModal>
+                                    <IconButton
+                                      onClick={() =>
+                                        handleDeleteOrder(
+                                          element.id,
+                                          row.id,
+                                          selectedProduct[row.id]?.id,
+                                          row.product.abbreviation
+                                        )
+                                      }
+                                    >
+                                      <img src={deleteGrey} alt="удалить" />
+                                    </IconButton>
+                                  </TableCellModal>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+
+                            <TableBody>
+                              {Array.isArray(products) &&
+                                products?.map((product) => (
+                                  <TableRow key={product.id}>
+                                    <TableCell
+                                      sx={{
+                                        fontFamily: "Montserrat",
+                                        fontSize: "16px",
+                                        color: "black",
+                                        textAlign: "center",
+                                        width: "70px",
+                                      }}
+                                    >
+                                      {product.name}
+                                    </TableCell>
+
+                                    <TableCell>
+                                      <Select
+                                        variant="standard"
+                                        value={
+                                          checkProductBooklet[product.id]
+                                            ? null
+                                            : selectProductAccessType[
+                                                product.id
+                                              ] || "Электронный"
+                                        }
+                                        disabled={
+                                          checkProductBooklet[product.id] ||
+                                          false
+                                        } // Добавляем условие для отключения
+                                        onChange={(event) =>
+                                          handleChangeAccessTypeProduct(
+                                            event,
+                                            product.id,
+                                            product
+                                          )
+                                        }
+                                        sx={{
+                                          fontFamily: "Montserrat",
+                                          fontSize: "16px",
+
+                                          color: "black",
+                                          textAlign: "center",
+                                          cursor: "pointer",
+                                          width: "150px",
+                                        }}
+                                      >
+                                        <MenuItem
+                                          value="Бумажный"
+                                          sx={{
+                                            fontFamily: "Montserrat",
+                                            fontSize: "16px",
+
+                                            color: "#999999",
+                                            textAlign: "center",
+                                            cursor: "pointer",
+                                          }}
+                                        >
+                                          Бумажный
+                                        </MenuItem>
+                                        <MenuItem
+                                          value="Электронный"
+                                          sx={{
+                                            fontFamily: "Montserrat",
+                                            fontSize: "16px",
+
+                                            color: "#999999",
+                                            textAlign: "center",
+                                            cursor: "pointer",
+                                          }}
+                                        >
+                                          Электронный
+                                        </MenuItem>
+                                      </Select>
+                                    </TableCell>
+
+                                    <TableCell>
+                                      <Select
+                                        variant="standard"
+                                        value={
+                                          selectProductGeneration[product.id] ||
+                                          "Второе поколение"
+                                        }
+                                        onChange={(event) =>
+                                          handleChangeGenerationProduct(
+                                            event,
+                                            product.id
+                                          )
+                                        }
+                                        sx={{
+                                          fontFamily: "Montserrat",
+                                          fontSize: "16px",
+                                          color: "black",
+                                          textAlign: "center",
+                                          cursor: "pointer",
+                                          width: "200px",
+                                        }}
+                                      >
+                                        <MenuItem
+                                          value="Первое поколение"
+                                          sx={{
+                                            fontFamily: "Montserrat",
+                                            fontSize: "16px",
+
+                                            color: "#999999",
+                                            textAlign: "center",
+                                            cursor: "pointer",
+                                          }}
+                                        >
+                                          Первое поколение
+                                        </MenuItem>
+                                        <MenuItem
+                                          value="Второе поколение"
+                                          sx={{
+                                            fontFamily: "Montserrat",
+                                            fontSize: "16px",
+
+                                            color: "#999999",
+                                            textAlign: "center",
+                                            cursor: "pointer",
+                                          }}
+                                        >
+                                          Второе поколение
+                                        </MenuItem>
+                                      </Select>
+                                    </TableCell>
+
+                                    <TableCell
+                                      sx={{
+                                        fontFamily: "Montserrat",
+                                        fontSize: "16px",
+
+                                        color: "black",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      <CustomStyledCheckbox
+                                        checked={
+                                          checkProductBooklet[product.id]
+                                        }
+                                        onChange={(event) =>
+                                          handleChangeCheckboxBooklet(
+                                            event,
+                                            product.id
+                                          )
+                                        }
+                                      ></CustomStyledCheckbox>
+                                    </TableCell>
+
+                                    <TableCell>
+                                      <TextField
+                                        variant="standard"
+                                        sx={{
+                                          width: "80px",
+                                        }}
+                                        type="number"
+                                        value={
+                                          productInputQuantity[product.id] ||
+                                          (isFieldClearedProduct[product.id]
+                                            ? ""
+                                            : 1)
+                                        }
+                                        onChange={(event) =>
+                                          handleChangeInputQuantity(
+                                            event,
+                                            product.id,
+                                            product
+                                          )
+                                        }
+                                      />
+                                    </TableCell>
+
+                                    <TableCell>
+                                      {checkProductBooklet[product.id]
+                                        ? product.priceBooklet
+                                        : product.priceAccess}
+                                      &#x20bd;
+                                    </TableCell>
+
+                                    <TableCell
+                                      sx={{
+                                        fontFamily: "Montserrat",
+                                        fontSize: "16px",
+
+                                        color: "black",
+                                        textAlign: "center",
+                                      }}
+                                    >
+                                      {sumForOneProduct[product.id]} &#x20bd;
+                                    </TableCell>
+
+                                    <TableCell
+                                      sx={{
+                                        fontFamily: "Montserrat",
+                                        fontSize: "16px",
+                                        color: "black",
+                                        textAlign: "center",
+                                      }}
+                                    ></TableCell>
+                                  </TableRow>
+                                ))}
+                            </TableBody>
+                          </>
+                        ) : (
+                          <TableBody>
+                            {listModalTitles.map((row) => (
+                              <TableRow key={row.id}>
+                                <TableCellModal>
+                                  {row.product.abbreviation}
+                                </TableCellModal>
+                                <TableCellModal>
+                                  {row.accessType}
+                                </TableCellModal>
+                                <TableCellModal>
+                                  {row.generation}
+                                </TableCellModal>
+                                <TableCellModal>
+                                  {row.addBooklet ? (
+                                    <img src={check} alt="галка" />
+                                  ) : (
+                                    <img
+                                      src={checkbox}
+                                      alt="галка"
+                                      style={{ opacity: "0.6" }}
+                                    />
+                                  )}
+                                </TableCellModal>
+                                <TableCellModal>{row.quantity}</TableCellModal>
+                                <TableCellModal>
+                                  {row.PriceForOneProduct} &#x20bd;
+                                </TableCellModal>
+                                <TableCellModal>
+                                  {row.SumForOneTitle} &#x20bd;
+                                </TableCellModal>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        )}
+                      </Table>
+                    </TableContainer>
+                  </>
                 )}
-                <TypographyStyle>Итого: {totalSum} &#x20bd;</TypographyStyle>
+
+                <TypographyStyle>
+                  Итого: {totalSum + totalSumProduct} &#x20bd;
+                </TypographyStyle>
                 {element.status === "Активный" ||
                 element.status === "Выставлен счёт" ||
                 element.status === "Отправлен" ||
@@ -1856,7 +2189,7 @@ export default function Orders() {
                         },
                       }}
                     >
-                      Отменить
+                      Сбросить
                     </Button>
                   </Box>
                 ) : (
@@ -1867,6 +2200,18 @@ export default function Orders() {
           </Modal>
         ))
       )}
+
+      <AddSelectProduct
+        isOpenModalUpdate={isOpenModalUpdate}
+        allProducts={allProducts}
+        setIsOpenModalUpdate={setIsOpenModalUpdate}
+        selectProducts={handleChangeModalProduct}
+        exitAddSelectProduct={exitAddSelectProduct}
+        resetAddSelectProduct={resetAddSelectProduct}
+        deleteTitles={deleteTitles}
+        stateDeleteTitles={stateDeleteTitles}
+        updateProductDelete={products}
+      ></AddSelectProduct>
 
       <Add
         isOpen={isOpen}

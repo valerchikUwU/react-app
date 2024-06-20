@@ -68,7 +68,7 @@ export default function Add({
   const [selectStatus, setSelectStatus] = useState();
 
   const [products, setProducts] = useState([]);
-  const [checkBox, setCheckBox ] = useState(false);
+  const [checkBox, setCheckBox] = useState(false);
 
   const [isFieldCleared, setIsFieldCleared] = useState({});
   // Таблиц с добавлением продуктов
@@ -78,7 +78,7 @@ export default function Add({
   const [checkProductBooklet, setcheckProductBooklet] = useState({});
   const [sumForOneProduct, setSumForOneProduct] = useState({});
 
-  // Для заполнения правльной формы
+  const [exitAddSelectProduct, setExitAddSelectProduct] = useState(false);
 
   const allIds = Array.isArray(products) && products.map((row) => row.id);
   const totalSum =
@@ -229,8 +229,17 @@ export default function Add({
     setInputAccountNumber();
     setSelectOrganizationName();
     setSelectPayee();
+    setExitAddSelectProduct(true);
   };
 
+  const resetAddSelectProduct = () => {
+    setExitAddSelectProduct(false);
+  };
+  const handleChangeCloseModalProduct = () => {
+    setCheckBox(true);
+    setIsOpen(false);
+    resetStates();
+  };
   return (
     <>
       <Modal open={isOpen}>
@@ -263,11 +272,7 @@ export default function Add({
             }}
           >
             <IconButton
-              onClick={() => {
-                setCheckBox(true);
-                setIsOpen(false);
-                resetStates();
-              }}
+              onClick={() => handleChangeCloseModalProduct()}
               sx={{
                 position: "absolute",
                 float: "right",
@@ -347,7 +352,7 @@ export default function Add({
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          
+
                           color: "black",
                           textAlign: "center",
                           cursor: "pointer",
@@ -366,7 +371,7 @@ export default function Add({
                               sx={{
                                 fontFamily: "Montserrat",
                                 fontSize: "16px",
-                                
+
                                 color: "#999999",
                                 textAlign: "center",
                                 cursor: "pointer",
@@ -385,7 +390,7 @@ export default function Add({
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          
+
                           color: "black",
                           textAlign: "center",
                           cursor: "pointer",
@@ -402,7 +407,7 @@ export default function Add({
                               sx={{
                                 fontFamily: "Montserrat",
                                 fontSize: "16px",
-                                
+
                                 color: "#999999",
                                 textAlign: "center",
                                 cursor: "pointer",
@@ -421,7 +426,7 @@ export default function Add({
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          
+
                           color: "black",
                           textAlign: "center",
                           cursor: "pointer",
@@ -435,7 +440,7 @@ export default function Add({
                           sx={{
                             fontFamily: "Montserrat",
                             fontSize: "16px",
-                            
+
                             color: "#999999",
                             textAlign: "center",
                             cursor: "pointer",
@@ -448,7 +453,7 @@ export default function Add({
                           sx={{
                             fontFamily: "Montserrat",
                             fontSize: "16px",
-                            
+
                             color: "#999999",
                             textAlign: "center",
                             cursor: "pointer",
@@ -461,7 +466,7 @@ export default function Add({
                           sx={{
                             fontFamily: "Montserrat",
                             fontSize: "16px",
-                            
+
                             color: "#999999",
                             textAlign: "center",
                             cursor: "pointer",
@@ -474,7 +479,7 @@ export default function Add({
                           sx={{
                             fontFamily: "Montserrat",
                             fontSize: "16px",
-                            
+
                             color: "#999999",
                             textAlign: "center",
                             cursor: "pointer",
@@ -487,7 +492,7 @@ export default function Add({
                           sx={{
                             fontFamily: "Montserrat",
                             fontSize: "16px",
-                            
+
                             color: "#999999",
                             textAlign: "center",
                             cursor: "pointer",
@@ -500,7 +505,7 @@ export default function Add({
                           sx={{
                             fontFamily: "Montserrat",
                             fontSize: "16px",
-                            
+
                             color: "#999999",
                             textAlign: "center",
                             cursor: "pointer",
@@ -528,7 +533,7 @@ export default function Add({
                       sx={{
                         fontFamily: "Montserrat",
                         fontSize: "16px",
-                        
+
                         color: "black",
                         textAlign: "center",
                       }}
@@ -664,7 +669,7 @@ export default function Add({
                             sx={{
                               fontFamily: "Montserrat",
                               fontSize: "16px",
-                              
+
                               color: "black",
                               textAlign: "center",
                             }}
@@ -790,7 +795,7 @@ export default function Add({
                             sx={{
                               fontFamily: "Montserrat",
                               fontSize: "16px",
-                              
+
                               color: "black",
                               textAlign: "center",
                               width: "70px",
@@ -821,7 +826,7 @@ export default function Add({
                               sx={{
                                 fontFamily: "Montserrat",
                                 fontSize: "16px",
-                                
+
                                 color: "black",
                                 textAlign: "center",
                                 cursor: "pointer",
@@ -833,7 +838,7 @@ export default function Add({
                                 sx={{
                                   fontFamily: "Montserrat",
                                   fontSize: "16px",
-                                  
+
                                   color: "#999999",
                                   textAlign: "center",
                                   cursor: "pointer",
@@ -846,7 +851,7 @@ export default function Add({
                                 sx={{
                                   fontFamily: "Montserrat",
                                   fontSize: "16px",
-                                  
+
                                   color: "#999999",
                                   textAlign: "center",
                                   cursor: "pointer",
@@ -870,7 +875,7 @@ export default function Add({
                               sx={{
                                 fontFamily: "Montserrat",
                                 fontSize: "16px",
-                                
+
                                 color: "black",
                                 textAlign: "center",
                                 cursor: "pointer",
@@ -882,7 +887,7 @@ export default function Add({
                                 sx={{
                                   fontFamily: "Montserrat",
                                   fontSize: "16px",
-                                  
+
                                   color: "#999999",
                                   textAlign: "center",
                                   cursor: "pointer",
@@ -895,7 +900,7 @@ export default function Add({
                                 sx={{
                                   fontFamily: "Montserrat",
                                   fontSize: "16px",
-                                  
+
                                   color: "#999999",
                                   textAlign: "center",
                                   cursor: "pointer",
@@ -910,7 +915,7 @@ export default function Add({
                             sx={{
                               fontFamily: "Montserrat",
                               fontSize: "16px",
-                              
+
                               color: "black",
                               textAlign: "center",
                             }}
@@ -955,7 +960,7 @@ export default function Add({
                             sx={{
                               fontFamily: "Montserrat",
                               fontSize: "16px",
-                              
+
                               color: "black",
                               textAlign: "center",
                             }}
@@ -1015,18 +1020,21 @@ export default function Add({
                   },
                 }}
               >
-                Отменить
+                Сбросить
               </Button>
             </Box>
           </Box>
         </div>
       </Modal>
+
       <SelectProduct
         openModalProduct={openModalAddProduct}
         setOpenModalProduct={setOpenModalAddProduct}
         allProducts={allProducts}
         selectProducts={handleChangeModalProduct}
         checkBox={checkBox}
+        exitAddSelectProduct={exitAddSelectProduct}
+        resetAddSelectProduct={resetAddSelectProduct}
       ></SelectProduct>
     </>
   );

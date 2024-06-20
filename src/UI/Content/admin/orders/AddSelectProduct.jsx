@@ -7,11 +7,8 @@ import {
   TableRow,
   Paper,
   IconButton,
-  TextField,
   Box,
   Button,
-  Select,
-  MenuItem,
   Modal,
 } from "@mui/material";
 import React from "react";
@@ -30,37 +27,34 @@ const TextHeader = styled(TableCell)({
   textAlign: "center",
 });
 
-export default function SelectProduct({
-  openModalProduct,
-  setOpenModalProduct,
+export default function AddSelectProduct({
+  isOpenModalUpdate,
+  setIsOpenModalUpdate,
   allProducts,
   selectProducts,
-  checkBox,
   exitAddSelectProduct,
-  resetAddSelectProduct
+  resetAddSelectProduct,
+
+  deleteTitles,
+  stateDeleteTitles,
+  updateProductDelete,
 }) {
   const [check, setCheck] = useState({});
   const [active, setActive] = useState(false);
   const [activeDeposit, setActiveDeposit] = useState(false);
 
   useEffect(() => {
-    if(exitAddSelectProduct === true){
-    setCheck({});
-    resetAddSelectProduct();
-    }
-  }, [exitAddSelectProduct]);
-  
-  useEffect(() => {
-    const hasChecked = Object.values(check).some(
-      (value) =>{
-        return( value.checked && (value.type === 1 || value.type === 2 || value.type === 3))
-      }
-    );
-    if(hasChecked) {
+    const hasChecked = Object.values(check).some((value) => {
+      return (
+        value.checked &&
+        (value.type === 1 || value.type === 2 || value.type === 3)
+      );
+    });
+    if (hasChecked) {
       console.log("hasChecked true");
       setActive(false);
       setActiveDeposit(true);
-    }else{
+    } else {
       console.log("hasChecked false");
       setActiveDeposit(false);
     }
@@ -72,22 +66,48 @@ export default function SelectProduct({
       console.log("hasDepositChecked true");
       setActive(true);
       setActiveDeposit(false);
-    }else{
+    } else {
       console.log("hasDepositChecked false");
       setActive(false);
     }
   }, [check]);
 
-useEffect(() => {
-  console.log("useEffect");
-  if(checkBox === true){
-    const newCheckState = Object.keys(check).reduce((acc, key) => {
-      acc[key] = { checked: false, type: check[key].type}; // Преобразование строки в число
+
+   // Функция для фильтрации объекта check
+   const filterCheck = () => {
+    const filteredCheck = Object.keys(check).reduce((acc, key) => {
+      // Проверяем, есть ли id текущего ключа среди id объектов в массиве updateProductDelete
+      const shouldRemove = updateProductDelete.some(item => item.id === check[key].id);
+
+      // Если id не найден в массиве updateProductDelete, добавляем его в аккумулятор
+      if (!shouldRemove) {
+        acc[key] = check[key];
+      }
+
       return acc;
     }, {});
-    setCheck(newCheckState);
-  }
-}, [checkBox])
+
+    return filteredCheck;
+  };
+
+  useEffect(() => {
+    if (exitAddSelectProduct === true) {
+      setCheck({});
+      resetAddSelectProduct();
+    }
+  }, [exitAddSelectProduct]);
+
+  useEffect(() => {
+    if (deleteTitles === true) {
+      console.log('updateProductDelete');
+      console.log(updateProductDelete);
+      console.log('check');
+      console.log(check);
+      
+     setCheck(filterCheck());
+      stateDeleteTitles();
+    }
+  }, [deleteTitles]);
 
   const handleChangeCheckbox = (event, id, type) => {
     setCheck((prevState) => ({
@@ -97,12 +117,13 @@ useEffect(() => {
   };
 
   const resetStates = () => {
+    // const newCheckState = Object.keys(check).reduce((acc, key) => {
+    //   acc[key] = { checked: false, type: check[key].type }; // Преобразование строки в число
+    //   return acc;
+    // }, {});
+    // setCheck(newCheckState);
     selectProducts(0);
-    const newCheckState = Object.keys(check).reduce((acc, key) => {
-      acc[key] = { checked: false, type: check[key].type}; // Преобразование строки в число
-      return acc;
-    }, {});
-    setCheck(newCheckState);
+    setCheck({});
   };
 
   const handleSave = () => {
@@ -110,12 +131,11 @@ useEffect(() => {
       (product) => !!check[product.id] && check[product.id].checked
     );
     selectProducts(checkedProducts);
-    setOpenModalProduct(false);
+    setIsOpenModalUpdate(false);
   };
-  console.log(`checkBox ${checkBox}`);
 
   return (
-    <Modal open={openModalProduct}>
+    <Modal open={isOpenModalUpdate}>
       <div
         style={{
           display: "grid",
@@ -145,7 +165,7 @@ useEffect(() => {
           }}
         >
           <IconButton
-            onClick={() => setOpenModalProduct(false)}
+            onClick={() => setIsOpenModalUpdate(false)}
             sx={{
               position: "absolute",
               float: "right",

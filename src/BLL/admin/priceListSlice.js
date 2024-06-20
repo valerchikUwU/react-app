@@ -19,55 +19,15 @@ export const getModalAbbrevation = createAsyncThunk(
 
 export const getPriceList = createAsyncThunk(
   "priceList/getPriceList",
-  async ({ accountId, date }, { rejectWithValue }) => {
+  async ({accountId}, { rejectWithValue }) => {
     try {
       const response = await instance.get(`${accountId}/prices`);
-      // Фильтрация pricesInit по дате
-      const filteredPricesInit = response.data.pricesInit.filter((price) => {
-        const priceDate = new Date(price.activationDate);
-        const selectedDate = new Date(date); // Преобразование строки даты в объект Date
-        return (
-          selectedDate.getFullYear() < priceDate.getFullYear() ||
-          (selectedDate.getMonth() < priceDate.getMonth() &&
-            selectedDate.getFullYear() < priceDate.getFullYear()) ||
-          (selectedDate.getMonth() <= priceDate.getMonth() &&
-            selectedDate.getFullYear() <= priceDate.getFullYear() &&
-            selectedDate.getDate() <= priceDate.getDate())
-        );
-      });
-
-      // Фильтрация pricesMain по дате
-      const filteredPricesMain = response.data.pricesMain.filter((price) => {
-        const priceDate = new Date(price.activationDate);
-        const selectedDate = new Date(date); // Преобразование строки даты в объект Date
-        return (
-          selectedDate.getFullYear() < priceDate.getFullYear() ||
-          (selectedDate.getMonth() < priceDate.getMonth() &&
-            selectedDate.getFullYear() < priceDate.getFullYear()) ||
-          (selectedDate.getMonth() <= priceDate.getMonth() &&
-            selectedDate.getFullYear() <= priceDate.getFullYear() &&
-            selectedDate.getDate() <= priceDate.getDate())
-        );
-      });
-      // Фильтрация pricesForEmployers по дате
-      const filteredPricesForEmployers =
-        response.data.pricesForEmployers.filter((price) => {
-          const priceDate = new Date(price.activationDate);
-          const selectedDate = new Date(date); // Преобразование строки даты в объект Date
-          return (
-            selectedDate.getFullYear() < priceDate.getFullYear() ||
-            (selectedDate.getMonth() < priceDate.getMonth() &&
-              selectedDate.getFullYear() < priceDate.getFullYear()) ||
-            (selectedDate.getMonth() <= priceDate.getMonth() &&
-              selectedDate.getFullYear() <= priceDate.getFullYear() &&
-              selectedDate.getDate() <= priceDate.getDate())
-          );
-        });
-
+      
+      console.log(response.data);
       return {
-        pricesInit: filteredPricesInit,
-        pricesMain: filteredPricesMain,
-        pricesForEmployers: filteredPricesForEmployers,
+        pricesInit: response.data.pricesInit,
+        pricesMain: response.data.pricesMain,
+        pricesForEmployers: response.data.pricesForEmployers,
       };
     } catch (error) {
       return rejectWithValue(error.message);

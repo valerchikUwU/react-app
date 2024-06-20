@@ -115,6 +115,7 @@ export const updateTitleOrderAdmin = createAsyncThunk(
       payeeId,
       isFromDeposit,
       titlesToUpdate,
+      titlesToCreate
     },
     { rejectWithValue }
   ) => {
@@ -129,6 +130,7 @@ export const updateTitleOrderAdmin = createAsyncThunk(
           payeeId,
           isFromDeposit,
           titlesToUpdate,
+          titlesToCreate
         }
       );
       console.log(response.data.organizationName);

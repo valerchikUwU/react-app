@@ -87,9 +87,10 @@ export default function PriceList() {
     (state) => state.adminPriceList.pricesForEmployers
   );
 
-  const filteredPricesInit = pricesInit;
-  const filteredPricesMain = pricesMain;
-  const filteredPricesForEmployers = pricesForEmployers;
+  const [filteredPricesInit, setFilteredPricesInit] = useState([]);
+  const [filteredPricesMain, setFilteredPricesMain] = useState([]);
+  const [filteredPricesForEmployers, setFilteredPricesForEmployers] = useState([]);
+
 
   const openModal = () => {
     setIsOpen(true);
@@ -102,27 +103,35 @@ export default function PriceList() {
   };
 
   useEffect(() => {
-    console.log(date.format("DD-MM-YYYY"));
-    dispatch(getPriceList({ accountId: accountId, date: date }));
-  }, [dispatch, accountId, date]); // Добавляем accountId в список зависимостей
-
+    dispatch(getPriceList({ accountId: accountId }));
+  }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
 
   useEffect(() => {
-    console.log(date.format("DD-MM-YYYY"));
-    filteredPricesInit = response.data.pricesInit.filter((price) => {
-      const priceDate = new Date(price.activationDate);
-      const selectedDate = new Date(date); // Преобразование строки даты в объект Date
-      return (
-        selectedDate.getFullYear() < priceDate.getFullYear() ||
-        (selectedDate.getMonth() < priceDate.getMonth() &&
-          selectedDate.getFullYear() < priceDate.getFullYear()) ||
-        (selectedDate.getMonth() <= priceDate.getMonth() &&
-          selectedDate.getFullYear() <= priceDate.getFullYear() &&
-          selectedDate.getDate() <= priceDate.getDate())
-      );
-    });
-  }, [date]); // Добавляем accountId в список зависимостей
 
+    const selectedDate = new Date(date);
+
+    const filterPrices = (prices) => {
+      return prices.filter((price) => {
+        const priceDate = new Date(price.activationDate);
+        return (
+          selectedDate.getFullYear() < priceDate.getFullYear() ||
+          (selectedDate.getMonth() < priceDate.getMonth() &&
+            selectedDate.getFullYear() < priceDate.getFullYear()) ||
+          (selectedDate.getMonth() <= priceDate.getMonth() &&
+            selectedDate.getFullYear() <= priceDate.getFullYear() &&
+            selectedDate.getDate() <= priceDate.getDate())
+        );
+      });
+    };
+
+    setFilteredPricesInit(filterPrices(pricesInit));
+    setFilteredPricesMain(filterPrices(pricesMain));
+    setFilteredPricesForEmployers(filterPrices(pricesForEmployers));
+
+    console.log(`filteredPricesInit ${JSON.stringify(filteredPricesInit)}`);
+    console.log(`filteredPricesMain ${JSON.stringify(filteredPricesMain)}`);
+    console.log(`filteredPricesForEmployers ${JSON.stringify(filteredPricesForEmployers)}`);
+  }, [date]); 
 
   useEffect(() => {
     validateForm();
@@ -265,9 +274,10 @@ export default function PriceList() {
 
   return (
     <div>
+
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DesktopDatePicker
-          label="Date"
+          label="Дата"
           format="DD.MM.YYYY"
           value={date}
           onChange={setDate}
@@ -309,7 +319,7 @@ export default function PriceList() {
               <TableCellName colSpan={6}>Начальные</TableCellName>
             </TableRow>
 
-            {pricesInit.map((element, index) => (
+            {filteredPricesInit?.map((element, index) => (
               <TableRow key={pricesInit.id}>
                 <StyledTableCellBody>{++index}</StyledTableCellBody>
 
@@ -317,7 +327,7 @@ export default function PriceList() {
                   {element.productAbbreviation}
                 </StyledTableCellBody>
 
-                <StyledTableCellBody>{element.productName}</StyledTableCellBody>
+                <StyledTableCellBody>{element.productName.split("&quot;").join('"')}</StyledTableCellBody>
 
                 <StyledTableCellBody>
                   {element.priceAccess} &#x20bd;
@@ -337,7 +347,7 @@ export default function PriceList() {
               <TableCellName colSpan={6}>Основные</TableCellName>
             </TableRow>
 
-            {pricesMain.map((element, index) => (
+            {filteredPricesMain?.map((element, index) => (
               <TableRow key={pricesMain.id}>
                 <StyledTableCellBody>{++index}</StyledTableCellBody>
 
@@ -365,7 +375,7 @@ export default function PriceList() {
               <TableCellName colSpan={6}>Для персонала</TableCellName>
             </TableRow>
 
-            {pricesForEmployers.map((element, index) => (
+            {filteredPricesForEmployers?.map((element, index) => (
               <TableRow key={pricesForEmployers.id}>
                 <StyledTableCellBody>{++index}</StyledTableCellBody>
 
@@ -561,7 +571,7 @@ export default function PriceList() {
                       sx={{
                         fontFamily: '"Montserrat"',
                         fontSize: "16px",
-                       
+
                         color: "#333333BF",
                         textAlign: "center",
                       }}
@@ -589,7 +599,7 @@ export default function PriceList() {
                 color: isFormValid ? "#FFFFFF" : "#999999",
                 fontFamily: "Montserrat",
                 fontSize: "14px",
-               fontWeight:600,
+                fontWeight: 600,
                 marginTop: "30px",
                 marginBottom: "20px",
                 marginRight: "10px",
