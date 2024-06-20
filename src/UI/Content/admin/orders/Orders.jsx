@@ -494,12 +494,7 @@ export default function Orders() {
       }),
       {}
     );
-    setSelectStatus(
-      () => ({
-        [ObjectModalOrder.id]: ObjectModalOrder.status,
-      }),
-      {}
-    );
+    setSelectStatus({});
     setInputAccountNumber(
       () => ({
         [ObjectModalOrder.id]: ObjectModalOrder.billNumber,
@@ -578,6 +573,7 @@ export default function Orders() {
 
   return (
     <Box>
+
       {isLoading ? (
         <CircularProgressCustom value={"55%"}></CircularProgressCustom>
       ) : (
@@ -826,6 +822,7 @@ export default function Orders() {
         </TableContainer>
       )}
 
+
       {isLoadingModal ? (
         <Modal open={true}>
           <CircularProgressCustom></CircularProgressCustom>
@@ -1043,7 +1040,6 @@ export default function Orders() {
                               sx={{
                                 fontFamily: "Montserrat",
                                 fontSize: "16px",
-
                                 textAlign: "center",
                                 cursor: "pointer",
                                 width: "150px",
@@ -1327,6 +1323,11 @@ export default function Orders() {
                     )}
                   </Table>
                 </TableContainer>
+
+
+
+
+
 
                 {listModalTitles[0]?.product.abbreviation == "Д" ? (
                   <TableContainer
