@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import classes from "./Main.module.css";
 import { useNavigate } from "react-router-dom";
-import QRCode from "./QRCode";
+import QRCode from "qrcode.react"; // Импортируем QRCode
 
 export default function Main() {
   const [data, setData] = useState({ token: "", sessionId: "" });
@@ -28,13 +28,13 @@ export default function Main() {
   useEffect(() => {
     if (data.isLogged === true) {
       switch (data.accountRoleId) {
-        case (1):
+        case 1:
           window.location.href = `#/${data.accountId}/superAdmin/comission`;
           break;
-        case (2):
+        case 2:
           window.location.href = `#/${data.accountId}/admin/orders`;
           break;
-        case (3):
+        case 3:
           window.location.href = `#/${data.accountId}/user/new/start`;
           break;
         default:
@@ -62,15 +62,15 @@ export default function Main() {
         if (message !== "false") {
           // Если сообщение не равно 'false', выполняем редирект
           switch (data.accountRoleId) {
-            case (1):
+            case 1:
               window.location.href = `#/${data.accountId}/superAdmin/comission`;
               window.location.reload();
               break;
-            case (2):
+            case 2:
               window.location.href = `#/${data.accountId}/admin/orders`;
               window.location.reload();
               break;
-            case (3):
+            case 3:
               window.location.href = `#/${data.accountId}/user/new/start`;
               window.location.reload();
               break;
@@ -96,14 +96,25 @@ export default function Main() {
   }, [data.sessionId, data.accountId]); // Зависимость от sessionId, чтобы обновлять соединение при изменении sessionId
 
   // const qrUrl = `https://t.me/AcademyStrategBot?start=${data.token}-${data.sessionId}`;
+
   const qrUrl = `tg://resolve?domain=AcademyStrategBot&start=${encodeURIComponent(
     data.token
   )}-${encodeURIComponent(data.sessionId)}`;
+
   return (
     <div className={classes.main}>
       <div className={classes.qr}>Для входа отсканируйте QR-код</div>
-      {/* Используем QRCode вместо статической картинки */}
-      <QRCode value={qrUrl}/>
+
+      <QRCode
+        value={qrUrl}
+        ecLevel="Q"
+        size={128}
+        logoOpacity={1}
+        bgColor="#F1F5F9"
+        fgColor="#005475"
+        style={{ marginTop: "20px" }}
+      />
+
       <div className={classes.link}>
         <a href={qrUrl} target="_blank">
           Или перейдите по ссылке
