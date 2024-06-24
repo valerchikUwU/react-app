@@ -17,6 +17,20 @@ export const getUser = createAsyncThunk(
   }
 );
 
+export const getEditUser = createAsyncThunk(
+  "order/getEditUser",
+  async ({accountId, accountFocusId}, { rejectWithValue }) => {
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.get(`${accountId}/accounts/${accountFocusId}/update`);
+      console.log(response.data);
+      return {editAccount: response.data.account, editOrganizations: response.data.organizations};
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 export const getOrganizationList = createAsyncThunk(
   "order/getOrganizationList",
   async (accountId, { rejectWithValue }) => {
@@ -33,6 +47,7 @@ export const getOrganizationList = createAsyncThunk(
     }
   }
 );
+
 export const postAccount = createAsyncThunk(
   "order/putAccount",
   async ({accountId, firstName, lastName, telephoneNumber, organizationList }, { rejectWithValue }) => {
@@ -56,6 +71,8 @@ const userSlice = createSlice({
   initialState: {
     users: [],
     organizations: [],
+    editAccount: [],
+    editOrganizations: [],
     status: null,
     error: null,
   },
@@ -75,6 +92,20 @@ const userSlice = createSlice({
         state.status = "rejected";
         state.error = action.payload;
       })
+            //getEditUser
+            .addCase(getEditUser.pending, (state) => {
+              state.status = "loading";
+              state.error = null;
+            })
+            .addCase(getEditUser.fulfilled, (state, action) => {
+              state.status = "resolved";
+              state.editAccount = action.payload.editAccount;
+              state.editOrganizations = action.payload.editOrganizations;
+            })
+            .addCase(getEditUser.rejected, (state, action) => {
+              state.status = "rejected";
+              state.error = action.payload;
+            })
       //getOrganizationList
       .addCase(getOrganizationList.pending, (state) => {
         state.status = "loading";

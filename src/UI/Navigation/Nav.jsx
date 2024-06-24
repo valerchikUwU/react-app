@@ -1,33 +1,18 @@
 import classes from "./Nav.module.css";
-import React, {useState} from "react";
+import React from "react";
 import Logo from "./logo.svg";
 import { NavLink } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import classNames from "classnames";
 import { Badge } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
-import { getWork } from "../../BLL/workSlice";
-import { useEffect } from "react";
-import { useParams } from "react-router-dom";
-
+import { useSelector } from "react-redux";
 
 
 export default function Nav() {
   
   const location = useLocation();
-  const { accountId } = useParams();
-  const dispatch = useDispatch();
-
-  // const list = useSelector((state) => state.work.work);
   const count = useSelector((state) => state.products.countButton);
-  // const [isHovered, setIsHovered] = useState(false);
-
-// Отслеживаем изменения в accountId для обновления списка работ
-useEffect(() => {
-  dispatch(getWork(accountId));
-}, [accountId, dispatch]); // Используем accountId вместо list
   
-
   return (
     <div className={classes.nav}>
       <img src={Logo} alt="Logo" className={classes.logo} />

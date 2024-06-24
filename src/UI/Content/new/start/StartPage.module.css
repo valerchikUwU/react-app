@@ -22,6 +22,12 @@
     margin-left: 15px;
     border-top-left-radius: 10px;
     grid-area: cart;
+    display: grid;
+    justify-items:center;
+    align-items:center;
+    justify-content:center;
+    align-content:center;
+
 }
 
 .cartGrid {
@@ -32,6 +38,7 @@
     padding: 5px;
     display:grid;
     grid-template-areas: "one two";
+    
 }
 .one{
 

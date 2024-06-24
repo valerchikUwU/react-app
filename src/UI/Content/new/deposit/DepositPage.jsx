@@ -9,12 +9,13 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Select, MenuItem, FormControl } from "@mui/material";
 import { getDeposit, putDeposit } from "../../../../BLL/depositSlice";
-
+import CircularProgressCustom from "../../styledComponents/CircularProgress";
 
 export default function DepositPage() {
   const [value, setValue] = useState("");
   const [snackbarValue, setSnackbarValue] = useState("");
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (event) => {
     const inputValue = event.target.value;
@@ -26,7 +27,10 @@ export default function DepositPage() {
   const { accountId } = useParams();
 
   useEffect(() => {
-    dispatch(getDeposit({ accountId: accountId, typeId: "4" }));
+    setIsLoading(true);
+    dispatch(getDeposit({ accountId: accountId, typeId: "4" })).then(() =>
+      setIsLoading(false)
+    );
   }, [accountId]);
 
   const deposit = useSelector((state) => state.deposit.deposit);
@@ -83,139 +87,146 @@ export default function DepositPage() {
   }, [organizations]);
 
   return (
-    <Grid
-      sx={{ mt: "1px" }}
-      container
-      rowSpacing={2}
-      columnSpacing={5}
-      className={classes.scroll}
-    >
-      <Grid item>
-        {deposit.map((deposit) => (
-          <div className={classes.block}>
-            <div className={classes.cartGrid}>
-              <img src={logo} alt="logo" className={classes.logo} />
-              <div className={classes.nameText}>ДЕПОЗИТ</div>
-              <hr style={{ marginBottom: "10px" }}></hr>
-              <span
-                className={classes.otstup}
-                style={{
-                  fontFamily: "Montserrat",
-                  fontSize: "16px",
-                  fontWeight: 600,
-                  textAlign: "center",
-                  color: "#005475",
-                  wordSpacing: "70px", // Existing word spacing
-                  marginLeft: "30px", // Add left margin
-                }}
-              >
-                Академия Остаток:
-              </span>
-
-              <hr
-                style={{ marginTop: "5px", borderTop: "2px solid #005475" }}
-              ></hr>
-
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <div>
-                  <FormControl variant="standard">
-                    <Select
-                      labelId="academy-label"
-                      id="academy-select"
-                      value={academy}
-                      onChange={handleAcademyChange}
-                      label="Академия"
-                      sx={{ width: "130px" }}
-                    >
-                      {organizations.map((item) => (
-                        <MenuItem value={item.id}>
-                          {item.organizationName}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </div>
-                {selectedOrganization && (
-                  <pre
-                    style={{ marginLeft: "70px" }}
-                    className={classes.nameParentText}
-                  >
-                    {selectedOrganization.allDeposits} &#x20bd;
-                  </pre>
-                )}
-              </div>
-
-              <hr style={{ borderTop: "2px solid #999999" }}></hr>
-              <Button
-                className={classes.button}
-                onClick={() => {
-                  if (selectedOrganization) {
-                    handleSubmit(
-                      value,
-                      deposit.id,
-                      selectedOrganization.organizationName
-                    );
-                  }
-                }}
-                disabled={!value}
-                sx={{ marginTop: "20px" }}
-              >
-                <Typography
-                  variant="body2"
-                  gutterBottom
-                  sx={{ textTransform: "none" }}
-                >
-                  Заказать пополнение:
-                </Typography>
-              </Button>
-              <TextField
-                label="указать сумму"
-                variant="standard"
-                value={value}
-                onChange={handleChange}
-                InputProps={{
-                  inputProps: { min: 1 },
-                  endAdornment: (
-                    <InputAdornment position="end">₽</InputAdornment>
-                  ),
-                }}
-                className={classes.input}
-                sx={{ marginTop: "px" }}
-              />
-
-              {errorDeposit === 200 && (
-                <Snackbar
-                  open={snackbarOpen}
-                  autoHideDuration={2000}
-                  onClose={handleClose}
-                >
-                  <Alert
-                    severity="info"
-                    sx={{
-                      backgroundColor: "#005475",
-                      color: "white",
-                      marginLeft: "230px",
-                      marginBottom: "-10px",
+    <>
+      {" "}
+      {isLoading ? (
+        <CircularProgressCustom value={"55%"}></CircularProgressCustom>
+      ) : (
+        <Grid
+          sx={{ mt: "1px" }}
+          container
+          rowSpacing={2}
+          columnSpacing={5}
+          className={classes.scroll}
+        >
+          <Grid item>
+            {deposit.map((deposit) => (
+              <div className={classes.block}>
+                <div className={classes.cartGrid}>
+                  <img src={logo} alt="logo" className={classes.logo} />
+                  <div className={classes.nameText}>ДЕПОЗИТ</div>
+                  <hr style={{ marginBottom: "10px" }}></hr>
+                  <span
+                    className={classes.otstup}
+                    style={{
+                      fontFamily: "Montserrat",
+                      fontSize: "16px",
+                      fontWeight: 600,
+                      textAlign: "center",
+                      color: "#005475",
+                      wordSpacing: "70px", // Existing word spacing
+                      marginLeft: "30px", // Add left margin
                     }}
                   >
-                    {`Депозит на сумму ${snackbarValue} ₽`}
-                  </Alert>
-                </Snackbar>
-              )}
+                    Академия Остаток:
+                  </span>
 
-              {errorDeposit === 400 && (
-                <Snackbar
-                  open={snackbarOpen}
-                  autoHideDuration={2000}
-                  onClose={handleClose}
-                >
-                  <Alert severity="error">Ошибка {errorDeposit}</Alert>
-                </Snackbar>
-              )}
-            </div>
-          </div>
-        ))}
-      </Grid>
-    </Grid>
+                  <hr
+                    style={{ marginTop: "5px", borderTop: "2px solid #005475" }}
+                  ></hr>
+
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <div>
+                      <FormControl variant="standard">
+                        <Select
+                          labelId="academy-label"
+                          id="academy-select"
+                          value={academy}
+                          onChange={handleAcademyChange}
+                          label="Академия"
+                          sx={{ width: "130px" }}
+                        >
+                          {organizations.map((item) => (
+                            <MenuItem value={item.id}>
+                              {item.organizationName}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+                    </div>
+                    {selectedOrganization && (
+                      <pre
+                        style={{ marginLeft: "70px" }}
+                        className={classes.nameParentText}
+                      >
+                        {selectedOrganization.allDeposits} &#x20bd;
+                      </pre>
+                    )}
+                  </div>
+
+                  <hr style={{ borderTop: "2px solid #999999" }}></hr>
+                  <Button
+                    className={classes.button}
+                    onClick={() => {
+                      if (selectedOrganization) {
+                        handleSubmit(
+                          value,
+                          deposit.id,
+                          selectedOrganization.organizationName
+                        );
+                      }
+                    }}
+                    disabled={!value}
+                    sx={{ marginTop: "20px" }}
+                  >
+                    <Typography
+                      variant="body2"
+                      gutterBottom
+                      sx={{ textTransform: "none" }}
+                    >
+                      Заказать пополнение:
+                    </Typography>
+                  </Button>
+                  <TextField
+                    label="указать сумму"
+                    variant="standard"
+                    value={value}
+                    onChange={handleChange}
+                    InputProps={{
+                      inputProps: { min: 1 },
+                      endAdornment: (
+                        <InputAdornment position="end">₽</InputAdornment>
+                      ),
+                    }}
+                    className={classes.input}
+                    sx={{ marginTop: "px" }}
+                  />
+
+                  {errorDeposit === 200 && (
+                    <Snackbar
+                      open={snackbarOpen}
+                      autoHideDuration={2000}
+                      onClose={handleClose}
+                    >
+                      <Alert
+                        severity="info"
+                        sx={{
+                          backgroundColor: "#005475",
+                          color: "white",
+                          marginLeft: "230px",
+                          marginBottom: "-10px",
+                        }}
+                      >
+                        {`Депозит на сумму ${snackbarValue} ₽`}
+                      </Alert>
+                    </Snackbar>
+                  )}
+
+                  {errorDeposit === 400 && (
+                    <Snackbar
+                      open={snackbarOpen}
+                      autoHideDuration={2000}
+                      onClose={handleClose}
+                    >
+                      <Alert severity="error">Ошибка {errorDeposit}</Alert>
+                    </Snackbar>
+                  )}
+                </div>
+              </div>
+            ))}
+          </Grid>
+        </Grid>
+      )}
+    </>
   );
 }

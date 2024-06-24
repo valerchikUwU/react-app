@@ -15,8 +15,9 @@ import {
   Button,
   Select,
   MenuItem,
+  Input,
 } from "@mui/material";
-import { InputLabel, FormControl, Autocomplete, Chip } from "@mui/material";
+import { FormControl, Autocomplete, Chip } from "@mui/material";
 import Modal from "@mui/material/Modal";
 import { styled } from "@mui/system";
 import add from "./add.svg";
@@ -89,8 +90,9 @@ export default function PriceList() {
 
   const [filteredPricesInit, setFilteredPricesInit] = useState([]);
   const [filteredPricesMain, setFilteredPricesMain] = useState([]);
-  const [filteredPricesForEmployers, setFilteredPricesForEmployers] = useState([]);
-
+  const [filteredPricesForEmployers, setFilteredPricesForEmployers] = useState(
+    []
+  );
 
   const openModal = () => {
     setIsOpen(true);
@@ -107,19 +109,17 @@ export default function PriceList() {
   }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
 
   useEffect(() => {
-
     const selectedDate = new Date(date);
-
     const filterPrices = (prices) => {
       return prices.filter((price) => {
         const priceDate = new Date(price.activationDate);
         return (
-          selectedDate.getFullYear() < priceDate.getFullYear() ||
-          (selectedDate.getMonth() < priceDate.getMonth() &&
-            selectedDate.getFullYear() < priceDate.getFullYear()) ||
-          (selectedDate.getMonth() <= priceDate.getMonth() &&
-            selectedDate.getFullYear() <= priceDate.getFullYear() &&
-            selectedDate.getDate() <= priceDate.getDate())
+          selectedDate.getFullYear() > priceDate.getFullYear() ||
+          (selectedDate.getMonth() >= priceDate.getMonth() &&
+            selectedDate.getFullYear() >= priceDate.getFullYear()) ||
+          (selectedDate.getDate() >= priceDate.getDate() &&
+            selectedDate.getMonth() >= priceDate.getMonth() &&
+            selectedDate.getFullYear() >= priceDate.getFullYear())
         );
       });
     };
@@ -127,11 +127,7 @@ export default function PriceList() {
     setFilteredPricesInit(filterPrices(pricesInit));
     setFilteredPricesMain(filterPrices(pricesMain));
     setFilteredPricesForEmployers(filterPrices(pricesForEmployers));
-
-    console.log(`filteredPricesInit ${JSON.stringify(filteredPricesInit)}`);
-    console.log(`filteredPricesMain ${JSON.stringify(filteredPricesMain)}`);
-    console.log(`filteredPricesForEmployers ${JSON.stringify(filteredPricesForEmployers)}`);
-  }, [date]); 
+  }, [date]);
 
   useEffect(() => {
     validateForm();
@@ -147,6 +143,7 @@ export default function PriceList() {
         priceAccess: priceAccess,
         priceBooklet: priceBooklet,
         activationDate: modalDate,
+        selectedFile,
       })
     ).then(() => {
       dispatch(getPriceList(accountId));
@@ -272,9 +269,10 @@ export default function PriceList() {
     return date.isBefore(dayjs(), "day"); // 'day' здесь означает сравнение по дню, без учета времени
   };
 
+  const [selectedFile, setSelectedFile] = useState(null);
+
   return (
     <div>
-
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <DesktopDatePicker
           label="Дата"
@@ -327,7 +325,9 @@ export default function PriceList() {
                   {element.productAbbreviation}
                 </StyledTableCellBody>
 
-                <StyledTableCellBody>{element.productName.split("&quot;").join('"')}</StyledTableCellBody>
+                <StyledTableCellBody>
+                  {element.productName.split("&quot;").join('"')}
+                </StyledTableCellBody>
 
                 <StyledTableCellBody>
                   {element.priceAccess} &#x20bd;
@@ -464,6 +464,7 @@ export default function PriceList() {
                     <StyledTableCellHead>Цена курса</StyledTableCellHead>
                     <StyledTableCellHead>Цена буклета</StyledTableCellHead>
                     <StyledTableCellHead>Дата</StyledTableCellHead>
+                    <StyledTableCellHead>Добавить картинку</StyledTableCellHead>
                   </TableRow>
                 </TableHead>
 
@@ -491,27 +492,6 @@ export default function PriceList() {
                     </StyledTableCellBody>
 
                     <StyledTableCellBody>
-                      {/* <Select
-                        variant="standard"
-                        sx={{
-                          fontFamily: "Montserrat",
-                          fontSize: "16px",
-                          fontWeight: 600,
-                          color: "black",
-                          textAlign: "center",
-                          cursor: "pointer",
-                          width: "130px",
-                        }}
-                        value={name}
-                        onChange={handleSelectName}
-                      >
-                        {nameСourses.map((item) => {
-                          return (
-                            <MenuItem value={item.name}>{item.name}</MenuItem>
-                          );
-                        })}
-                      </Select> */}
-
                       <Autocomplete
                         id="size-small-standard"
                         size="small"
@@ -585,6 +565,19 @@ export default function PriceList() {
                           shouldDisableDate={disablePastDates}
                         />
                       </LocalizationProvider>
+                    </TableCell>
+
+                    <TableCell>
+                      <FormControl variant="standard" fullWidth>
+                        <Input
+                          id="file"
+                          name="image"
+                          type="file"
+                          multiple
+                          label="Выберите файл(ы) для загрузки"
+                          onChange={(e) => setSelectedFile(e.target.files[0])}
+                        />
+                      </FormControl>
                     </TableCell>
                   </TableRow>
                 </TableBody>

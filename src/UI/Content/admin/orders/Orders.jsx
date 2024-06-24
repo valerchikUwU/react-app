@@ -67,7 +67,6 @@ export default function Orders() {
   const [selectOrganization, setSelectOrganization] = useState({});
   const [selectStatus, setSelectStatus] = useState({});
   const [payeeName, setPayeeName] = useState({});
-  const [payeeID, setPayeeID] = useState({});
   const [inputAccountNumber, setInputAccountNumber] = useState({});
   const [isInputCleared, setIsInputCleared] = useState();
   const [selectedCheckDeposit, setSelectedCheckDeposit] = useState();
@@ -425,8 +424,8 @@ export default function Orders() {
         billNumber: inputAccountNumber[ObjectModalOrder.id]
           ? inputAccountNumber[ObjectModalOrder.id]
           : ObjectModalOrder.billNumber,
-        payeeId: payeeID[ObjectModalOrder.id]
-          ? payeeID[ObjectModalOrder.id]
+        payeeId: payeeName[ObjectModalOrder.id]
+          ? payeeName[ObjectModalOrder.id]
           : ObjectModalOrder.payeeId,
         isFromDeposit: ObjectModalOrder.selectedCheckDeposit || false,
         titlesToUpdate: titlesToUpdate,
@@ -517,16 +516,6 @@ export default function Orders() {
     setPayeeName(() => ({
       [id]: event.target.value,
     }));
-
-  
-  const matchingPayee = listModalPayees.find(payee => payee.name == event.target.value);
-
-  if (matchingPayee) {
-    setPayeeID(prevState => ({
-     ...prevState,
-      [id]: matchingPayee.id,
-    }));
-  }
   };
 
   const handleChangeInputAccountNumber = (event, id) => {
@@ -1014,7 +1003,7 @@ export default function Orders() {
                               }}
                               value={
                                 payeeName[ObjectModalOrder.id] ||
-                                ObjectModalOrder.payeeName
+                                ObjectModalOrder.payeeId
                               }
                               onChange={(event) =>
                                 handleChangePayeeName(
@@ -1026,7 +1015,7 @@ export default function Orders() {
                               {listModalPayees.map((payee) => (
                                 <MenuItem
                                   key={payee.id}
-                                  value={payee.name}
+                                  value={payee.id}
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
@@ -1399,11 +1388,6 @@ export default function Orders() {
                                 background: "#fff",
                               }}
                             >
-                              <IconButton
-                                onClick={() => handleChangeModalUpdate()}
-                              >
-                                <img src={plus} alt="плюс" />
-                              </IconButton>
                             </TextHeader>
                           ) : (
                             ""

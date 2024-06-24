@@ -1,134 +1,149 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getCompleted } from "../../../BLL/completedSlice";
-import { useParams } from 'react-router-dom';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
-import { styled } from '@mui/system';
+import { useParams } from "react-router-dom";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
+import { styled } from "@mui/system";
+import CircularProgressCustom from "../styledComponents/CircularProgress";
 
 // Создаем стилизованные компоненты с помощью styled
 const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
   fontFamily: '"Montserrat"',
-  fontSize: '16px',
+  fontSize: "16px",
   fontWeight: 600,
-  color: '#005475',
-  borderBottom: '3px solid #005475BF',
-  textAlign: 'center',
-  opacity:'0.75'
+  color: "#005475",
+  borderBottom: "3px solid #005475BF",
+  textAlign: "center",
+  opacity: "0.75",
 }));
 
 const StyledTableCellBody = styled(TableCell)(({ theme }) => ({
   fontFamily: '"Montserrat"',
-  fontSize: '16px',
+  fontSize: "16px",
   fontWeight: 600,
-  color: '#333333BF',
-  textAlign: 'center',
-  opacity:'0.75'
+  color: "#333333BF",
+  textAlign: "center",
+  opacity: "0.75",
 }));
 
 export default function Completed() {
   const dispatch = useDispatch();
   const { accountId } = useParams(); // Извлекаем accountId из URL
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-     dispatch(getCompleted(accountId)); // Передаем accountId в getCompleted
+    setIsLoading(true);
+    dispatch(getCompleted(accountId)).then(() => setIsLoading(false)); // Передаем accountId в getCompleted
   }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
 
   const list = useSelector((state) => state.completed.completed);
 
   return (
     <div>
-      <TableContainer
-        component={Paper}
-        sx={{
-          height: "calc(100vh - 90px)",
-          overflow: "auto",
-          scrollbarWidth: "thin",
-          scrollbarColor: "#005475BF #FFFFFF",
-        }}
-      >
-        <Table stickyHeader sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                №
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Академия
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Дата
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Сумма
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                № счета
-              </StyledTableCellHead>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {list.map((element) => (
-              <TableRow key={element.id}>
-                <StyledTableCellBody>
-                  {element.orderNumber}
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.organizationName}
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.formattedDispatchDate}
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.SUM} &#x20bd;
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.billNumber}
-                </StyledTableCellBody>
+      {isLoading ? (
+        <CircularProgressCustom value={"55%"}></CircularProgressCustom>
+      ) : (
+        <TableContainer
+          component={Paper}
+          sx={{
+            height: "calc(100vh - 90px)",
+            overflow: "auto",
+            scrollbarWidth: "thin",
+            scrollbarColor: "#005475BF #FFFFFF",
+          }}
+        >
+          <Table stickyHeader sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  №
+                </StyledTableCellHead>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  Академия
+                </StyledTableCellHead>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  Дата
+                </StyledTableCellHead>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  Сумма
+                </StyledTableCellHead>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  № счета
+                </StyledTableCellHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {list.map((element) => (
+                <TableRow key={element.id}>
+                  <StyledTableCellBody>
+                    {element.orderNumber}
+                  </StyledTableCellBody>
+                  <StyledTableCellBody>
+                    {element.organizationName}
+                  </StyledTableCellBody>
+                  <StyledTableCellBody>
+                    {element.formattedDispatchDate}
+                  </StyledTableCellBody>
+                  <StyledTableCellBody>
+                    {element.SUM} &#x20bd;
+                  </StyledTableCellBody>
+                  <StyledTableCellBody>
+                    {element.billNumber}
+                  </StyledTableCellBody>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </div>
   );
 }

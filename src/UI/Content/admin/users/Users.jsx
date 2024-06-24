@@ -18,6 +18,7 @@ import {
 import Modal from "@mui/material/Modal";
 import { styled } from "@mui/system";
 import {
+  getEditUser,
   getOrganizationList,
   getUser,
   postAccount,
@@ -47,11 +48,14 @@ const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
   background: "#fff",
 }));
 
-const StyledTableCellBody = styled(TableCell)(({ theme }) => ({
+const StyledTableCellBody = styled(TableCell)((open) => ({
   fontFamily: '"Montserrat"',
   fontSize: "16px",
   color: "#333333BF",
   textAlign: "center",
+  backgroundColor: open
+  ? "#0031B01A"
+  : "",
 }));
 
 export default function Users() {
@@ -72,6 +76,30 @@ export default function Users() {
   const [isFormValid, setIsFormValid] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [openStates, setOpenStates] = useState({});
+
+
+  useEffect(() => {
+    // Find the first open modal
+    let openModalId = Object.keys(openStates).find((id) => openStates[id]);
+    if (openModalId) {
+      console.log(openModalId);
+      // Assuming you have the accountId available, replace "1" with the actual accountId
+      dispatch(
+        getEditUser({
+          accountId: accountId,
+          accountFocusId: openModalId,
+        })
+      );
+    }
+  }, [openStates, dispatch]);
+   
+  const OpenEdit = (id) => {
+    return setOpenStates({ ...openStates, [id]: true });
+  };
+
+  const handleCloseEdit = (id) =>
+    setOpenStates({ ...openStates, [id]: false });
 
   useEffect(() => {
     setIsLoading(true);

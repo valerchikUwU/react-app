@@ -42,7 +42,7 @@ const productSlice = createSlice({
     status: null,
     error: null,
     countButton: 0,
-    render:0,
+    totalCheck: true,
   },
   reducers: {
     countClick(state) {
@@ -54,8 +54,12 @@ const productSlice = createSlice({
     decrementCountClick(state) {
       state.countButton -= 1;
     },
-    renderIncrement(state) {
-      state.render += 1;
+    total(state) {
+      if (state.totalCheck === true) {
+        const count = state.productsInDraft?.split(",");
+        state.countButton += count?.length;
+        state.totalCheck = false;
+      }
     },
     isPress(state, action) {
       state.isProduct = state.isProduct.map((product) =>
@@ -63,9 +67,6 @@ const productSlice = createSlice({
           ? { ...product, isBoolean: true }
           : { ...product, isBoolean: product.isBoolean }
       );
-      console.log("state.isProduct");
-      console.log(state.isProduct);
-      console.log("state.isProduct");
     },
 
     deletePress(state, action) {
@@ -74,10 +75,6 @@ const productSlice = createSlice({
           ? { ...product, isBoolean: false }
           : { ...product, isBoolean: product.isBoolean }
       );
-
-      console.log("deletePress");
-      console.log(state.isProduct);
-      console.log("deletePress");
     },
 
     deletePressArray(state, action) {
@@ -91,10 +88,6 @@ const productSlice = createSlice({
         // Возвращаем новый объект продукта с обновленным значением isBoolean
         return { ...product, isBoolean: isMatched };
       });
-
-      console.log("deletePressArray");
-      console.log(action.payload);
-      console.log("deletePressArray");
     },
 
     deletePressSend(state, action) {
@@ -103,7 +96,6 @@ const productSlice = createSlice({
         // Возвращаем новый объект продукта с обновленным значением isBoolean
         return { ...product, isBoolean: false };
       });
-      console.log("send");
     },
   },
   extraReducers: (builder) => {
@@ -112,6 +104,7 @@ const productSlice = createSlice({
         state.status = "loading";
         state.error = null;
       })
+
       .addCase(getProducts.fulfilled, (state, action) => {
         state.status = "resolved";
         state.error = 200;
@@ -135,6 +128,7 @@ const productSlice = createSlice({
         // Объединяем старые и новые продукты
         state.isProduct = [...currentIsProduct, ...newProducts];
       })
+
       .addCase(getProducts.rejected, (state, action) => {
         state.status = "rejected";
         state.error = action.payload;
@@ -144,6 +138,7 @@ const productSlice = createSlice({
         state.status = "loading";
         state.error = null;
       })
+
       .addCase(getDraft.fulfilled, (state, action) => {
         state.status = "resolved";
         state.productsInDraft = action.payload.productsInDraft;
@@ -157,16 +152,13 @@ const productSlice = createSlice({
           }));
 
           state.isProduct = state.isProduct.map((product) =>
-            productsArray.find((p) => p.id == product.id)
+            productsArray.find((p) => p.id === product.id)
               ? { ...product, isBoolean: true }
               : product
           );
-          state.render +=1;
-          console.log(`render.state ---- ${state.render}`);
-          console.log(`isProduct ---- ${ state.isProduct}`);
-          console.log(`productsInDraft  --- ${ state.productsInDraft}`);
         }
       })
+      
       .addCase(getDraft.rejected, (state, action) => {
         state.status = "rejected";
         state.error = action.payload;
@@ -182,8 +174,7 @@ export const {
   countClick,
   deleteCountClick,
   decrementCountClick,
-  renderIncrement
+  total,
 } = productSlice.actions;
 
 export default productSlice.reducer;
-

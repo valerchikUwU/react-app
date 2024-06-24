@@ -38,6 +38,7 @@ const productSlice = createSlice({
   initialState: {
     productsStart: [],
     isProduct: [],
+    isProductsDraft: [],
     productsInDraft: null,
     status: null,
     error: null,
@@ -57,7 +58,9 @@ const productSlice = createSlice({
     total(state) {
       if (state.totalCheck === true) {
         const count = state.productsInDraft?.split(",");
-        state.countButton += count?.length;
+        if (count?.length > 0) {
+          state.countButton += count?.length;
+        }
         state.totalCheck = false;
       }
     },
@@ -111,28 +114,47 @@ const productSlice = createSlice({
         state.productsStart = action.payload.productsList;
         // Получаем текущее состояние isProduct
         let currentIsProduct = [...state.isProduct];
-
+        let filteredIsProductsDraft = [];
+        
+        if(currentIsProduct != null){
+           filteredIsProductsDraft = currentIsProduct.map(product => {
+          const isInCurrentIsProduct = state.isProductsDraft.some(currentProduct => currentProduct.id === product.id);
+          return {
+           ...product,
+            isBoolean: isInCurrentIsProduct,
+          };
+        });
+        }
+        console.log('currentIsProduct');
+        console.log(filteredIsProductsDraft);
         // Добавляем новые продукты, убеждаясь, что они не являются дубликатами
         const newProducts = action.payload.productsList
-          .filter(
-            (product) =>
-              !currentIsProduct.some(
-                (currentProduct) => currentProduct.id == product.id
-              )
-          )
-          .map((product) => ({
+        .filter(
+           (product) =>
+            !currentIsProduct.some(
+               (currentProduct) => currentProduct.id === product.id
+             )
+         )
+        .map((product) => {
+           const isDraft = state.isProductsDraft.some(draft => draft.id === product.id);
+           return {
             ...product,
-            isBoolean: false,
-          }));
+             isBoolean: isDraft,
+           };
+         });
+       
 
         // Объединяем старые и новые продукты
-        state.isProduct = [...currentIsProduct, ...newProducts];
+        state.isProduct = [...filteredIsProductsDraft, ...newProducts];
+        console.log(`state.getProducts`);
+        console.log(state.isProduct);
       })
 
       .addCase(getProducts.rejected, (state, action) => {
         state.status = "rejected";
         state.error = action.payload;
       })
+
       //getDraft
       .addCase(getDraft.pending, (state) => {
         state.status = "loading";
@@ -151,14 +173,13 @@ const productSlice = createSlice({
             isBoolean: true,
           }));
 
-          state.isProduct = state.isProduct.map((product) =>
-            productsArray.find((p) => p.id === product.id)
-              ? { ...product, isBoolean: true }
-              : product
-          );
+          state.isProductsDraft = productsArray;
+
+          console.log(`state.getDraft`);
+          console.log(state.isProductsDraft);
         }
       })
-      
+
       .addCase(getDraft.rejected, (state, action) => {
         state.status = "rejected";
         state.error = action.payload;

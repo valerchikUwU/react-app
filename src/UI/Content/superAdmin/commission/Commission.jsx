@@ -27,6 +27,7 @@ import {
   getComission,
   getRules,
 } from "../../../../BLL/superAdmin/comissionSlice.js";
+import { getDepositBalance } from "../../../../BLL/superAdmin/depositSuperAdminSlice.js";
 
 // Создаем стилизованные компоненты с помощью styled
 const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
@@ -185,6 +186,7 @@ export default function Commission() {
                     fontWeight: 600,
                     color: "black",
                     textAlign: "center",
+                    
                   }}
                 >
                   {element.name}

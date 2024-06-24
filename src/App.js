@@ -11,8 +11,6 @@ import NavMain from "./UI/Navigation/NavMain.jsx";
 import NavAdmin from "./UI/Navigation/admin/NavAdmin.jsx";
 import { Navigate } from "react-router-dom";
 import StartPage from "./UI/Content/new/start/StartPage.jsx";
-import BasicPage from "./UI/Content/new/basic/BasicPage.jsx";
-import PersonalPage from "./UI/Content/new/personal/PersonalPage.jsx";
 import DepositPage from "./UI/Content/new/deposit/DepositPage.jsx";
 import Archive from "./UI/Content/admin/archive/Archive.jsx";
 import PriceList from "./UI/Content/admin/priceList/PriceList.jsx";
@@ -25,6 +23,7 @@ import Review from "./UI/Content/superAdmin/review/Review.jsx";
 import Reciever from "./UI/Content/superAdmin/reciever/Reciever.jsx";
 import NavSuperAdmin from "./UI/Navigation/superAdmin/NavSuperAdmin.jsx";
 import useNetwork from "./UI/Custom/useNetwork"; // Импорт хука
+import DepositsSuperAdmin from "./UI/Content/superAdmin/deposits/DepositsSuperAdmin.jsx";
 
 function App() {
   const isOnline = useNetwork();
@@ -53,7 +52,6 @@ function App() {
             path=":accountId/user"
             element={<Navigate replace to="new/start" />}
           ></Route>
-
           <Route
             path=":accountId/user/new"
             element={<Navigate replace to="start" />}
@@ -71,11 +69,11 @@ function App() {
                     ></Route>
                     <Route
                       path="basic"
-                      element={<BasicPage></BasicPage>}
+                      element={<StartPage></StartPage>}
                     ></Route>
                     <Route
                       path="personal"
-                      element={<PersonalPage></PersonalPage>}
+                      element={<StartPage></StartPage>}
                     ></Route>
                     <Route
                       path="deposit"
@@ -110,6 +108,7 @@ function App() {
             element={
               <Content>
                 <Routes>
+                  <Route path="deposits" element={<Deposits></Deposits>}></Route>
                   <Route path="orders" element={<Orders></Orders>}></Route>
                   <Route path="archive" element={<Archive></Archive>}></Route>
                   <Route
@@ -131,6 +130,7 @@ function App() {
             element={
               <Content>
                 <Routes>
+                <Route path="deposits" element={<DepositsSuperAdmin></DepositsSuperAdmin>}></Route>
                   <Route
                     path="comission"
                     element={<Commission></Commission>}

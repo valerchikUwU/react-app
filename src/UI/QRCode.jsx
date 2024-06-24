@@ -5,6 +5,7 @@ export default function QRCode({ value }) {
   const qrCodeRef = useRef(null);
 
   useEffect(() => {
+    console.log("Value received:", value); // Log the received value
     if (!qrCodeRef.current) return;
 
     const qrCode = new QRCodeStyling({

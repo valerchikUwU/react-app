@@ -46,19 +46,29 @@ export const postPrice = createAsyncThunk(
       priceAccess,
       priceBooklet,
       activationDate,
+      selectedFile
     },
     { rejectWithValue }
   ) => {
     try {
-      // Используем шаблонные строки для динамического формирования URL
-      const response = await instance.post(`${accountId}/prices/newPrice`, {
-        name,
-        productTypeId,
-        abbreviation,
-        priceAccess,
-        priceBooklet,
-        activationDate,
-      });
+    // Создаем экземпляр FormData
+    const formData = new FormData();
+      
+    // Добавляем все необходимые данные в formData
+    formData.append('name', name || '');
+    formData.append('productTypeId', productTypeId.toString());
+    formData.append('abbreviation', abbreviation);
+    formData.append('priceAccess', priceAccess);
+    formData.append('priceBooklet', priceBooklet);
+    formData.append('activationDate', activationDate.toISOString()); // Преобразование даты в строку ISO
+    formData.append('image', selectedFile); // Добавляем файл
+    
+    // Используем шаблонные строки для динамического формирования URL
+    const response = await instance.post(`${accountId}/prices/newPrice`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
       console.log(response.data);
       return response.data;
