@@ -34,6 +34,12 @@ export default function DepositsSuperAdmin() {
   const { accountId } = useParams(); // Извлекаем accountId из URL
   const [isLoading, setIsLoading] = useState(false);
   const [openStates, setOpenStates] = useState({});
+  const [dummyKey, setDummyKey] = useState(0);
+
+  const changeDummyKey = () => {
+    setDummyKey((prevState)=> prevState + 1);
+  }
+
   const deposits = useSelector((state) => state.superAdminDeposits.deposits);
   useEffect(() => {
     setIsLoading(true);
@@ -55,7 +61,7 @@ export default function DepositsSuperAdmin() {
         })
       );
     }
-  }, [openStates, dispatch]);
+  }, [openStates, dispatch, dummyKey]);
 
   const OpenModal = (id) => {
     return setOpenStates({ ...openStates, [id]: true });
@@ -152,6 +158,8 @@ export default function DepositsSuperAdmin() {
         openStates={openStates}
         close={handleCloseModal}
         deposits={deposits}
+        accountId={accountId}
+        changeDummyKey={changeDummyKey}
       ></Balance>
     </div>
   );

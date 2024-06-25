@@ -18,6 +18,8 @@ import { useDispatch, useSelector } from "react-redux";
 import add from "../commission/image/add.svg";
 import exit from "../commission/image/exit.svg";
 import { styled } from "@mui/system";
+import AddDeposit from "./AddDeposit";
+
 
 // Text Header
 const TextHeader = styled(TableCell)({
@@ -29,16 +31,21 @@ const TextHeader = styled(TableCell)({
   textAlign: "center",
 });
 
-export default function Balance({ openStates, close, deposits }) {
+export default function Balance({ openStates, close, deposits, accountId, changeDummyKey }) {
   const organization = useSelector(
     (state) => state.superAdminDeposits.organization
   );
   const orders = useSelector((state) => state.superAdminDeposits.orders);
-  const resetStates = () => {};
-  const handleSave = () => {};
+  const [modalAddDeposit, setModalAddDeposit] = useState(false);
+
+const openAddDeposit = () => {
+  setModalAddDeposit(true);
+}
+const closeAddDeposit = () => {
+  setModalAddDeposit(false);
+}
   return (
     <>
-      {" "}
       {deposits.map((element) => (
         <Modal open={openStates[element.id]} key={element.id}>
           <div
@@ -56,17 +63,6 @@ export default function Balance({ openStates, close, deposits }) {
               paddingTop: "5%",
             }}
           >
-            <IconButton
-              onClick={() => close(element.id)}
-              sx={{
-                gridArea: "icon",
-                position: "absolute", // Изменено на абсолютное позиционирование
-                marginLeft: "900px",
-              }}
-            >
-              <img src={exit} alt="закрыть" />
-            </IconButton>
-
             <Box
               sx={{
                 backgroundColor: "white",
@@ -75,13 +71,26 @@ export default function Balance({ openStates, close, deposits }) {
                 borderRadius: "10px",
                 gridArea: "box",
                 alignSelf: "center",
-                position: "relative",
+                position: "absolute",
                 maxHeight: "calc(100vh - 200px)",
-                overflow: "auto",
+                overflow: "visible",
                 scrollbarWidth: "thin",
                 scrollbarColor: "#005475 #FFFFFF",
               }}
             >
+
+          <IconButton
+              onClick={() => close(element.id)}
+              sx={{
+                position: "absolute",
+                float: "right",
+                top: "-38px",
+                right: "-40px",
+              }}
+            >
+              <img src={exit} alt="закрыть" />
+            </IconButton>
+
               <Box display="flex" justifyContent="center" alignItems="center">
                 <Typography
                   variant="body2"
@@ -167,7 +176,7 @@ export default function Balance({ openStates, close, deposits }) {
                           background: "#fff",
                         }}
                       >
-                        <IconButton>
+                        <IconButton onClick={() => openAddDeposit()}>
                           <img src={add} alt="плюс" />
                         </IconButton>
                       </TextHeader>
@@ -221,6 +230,17 @@ export default function Balance({ openStates, close, deposits }) {
                         >
                         {item.Spisanie}
                         </TableCell>
+                        <TableCell
+                          sx={{
+                            fontFamily: "Montserrat",
+                            fontSize: "16px",
+                            fontWeight: 600,
+                            color: index === 0 ? "#005475" : "#333333",
+                            textAlign: "center",
+                          }}
+                        >
+                        {}
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -237,48 +257,12 @@ export default function Balance({ openStates, close, deposits }) {
                   marginBottom: "20px",
                 }}
               >
-                <Button
-                  variant="contained"
-                  onClick={handleSave}
-                  sx={{
-                    textTransform: "none",
-                    backgroundColor: "#005475",
-                    color: "#FFFFFF",
-                    fontFamily: "Montserrat",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    "&:hover": {
-                      backgroundColor: "#00435d",
-                    },
-                  }}
-                >
-                  Сохранить
-                </Button>
-
-                <Button
-                  onClick={resetStates}
-                  sx={{
-                    variant: "contained",
-                    textTransform: "none",
-                    backgroundColor: "#CCCCCC",
-                    color: "#000000",
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    fontFamily: "Montserrat",
-                    border: 0,
-                    "&:hover": {
-                      backgroundColor: "#8E8E8E",
-                      border: 0,
-                    },
-                  }}
-                >
-                  Отменить
-                </Button>
               </Box>
             </Box>
           </div>
         </Modal>
       ))}
+    <AddDeposit open={modalAddDeposit} close={closeAddDeposit} organizationCustomerId={organization.id} accountId={accountId} changeDummyKey={changeDummyKey}></AddDeposit>
     </>
   );
 }

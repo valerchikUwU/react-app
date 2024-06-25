@@ -962,7 +962,6 @@ export default function Orders() {
                                         sx={{
                                           fontFamily: "Montserrat",
                                           fontSize: "16px",
-
                                           textAlign: "center",
                                           cursor: "pointer",
                                         }}
