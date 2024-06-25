@@ -26,12 +26,14 @@ import {
 import plus from "./image/add.svg";
 import check from "./image/checboxCheck.svg";
 import unCheck from "./image/checbox.svg";
+import cursor from "./image/cursor-click.svg";
 import exit from "./image/exit.svg";
 import IconButton from "@mui/material/IconButton";
 import TextField from "@mui/material/TextField";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import CircularProgressCustom from "../../styledComponents/CircularProgress";
+import EditUser from "./EditUser";
 
 // Создаем стилизованные компоненты с помощью styled
 const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
@@ -48,14 +50,11 @@ const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
   background: "#fff",
 }));
 
-const StyledTableCellBody = styled(TableCell)((open) => ({
+const StyledTableCellBody = styled(TableCell)(({ theme }) => ({
   fontFamily: '"Montserrat"',
   fontSize: "16px",
   color: "#333333BF",
   textAlign: "center",
-  backgroundColor: open
-  ? "#0031B01A"
-  : "",
 }));
 
 export default function Users() {
@@ -76,9 +75,13 @@ export default function Users() {
   const [isFormValid, setIsFormValid] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingModal, setIsLoadingModal] = useState(false);
   const [openStates, setOpenStates] = useState({});
+  const [dummyKey, setDummyKey] = useState(0);
 
-
+const changeDummyKey = () => {
+  setDummyKey((prevState) => prevState + 1);
+}
   useEffect(() => {
     // Find the first open modal
     let openModalId = Object.keys(openStates).find((id) => openStates[id]);
@@ -90,16 +93,16 @@ export default function Users() {
           accountId: accountId,
           accountFocusId: openModalId,
         })
-      );
+      ).then(() => {setIsLoadingModal(false)});
     }
   }, [openStates, dispatch]);
-   
+
   const OpenEdit = (id) => {
-    return setOpenStates({ ...openStates, [id]: true });
+    setIsLoadingModal(true);
+     setOpenStates({ ...openStates, [id]: true });
   };
 
-  const handleCloseEdit = (id) =>
-    setOpenStates({ ...openStates, [id]: false });
+  const handleCloseEdit = (id) => setOpenStates({ ...openStates, [id]: false });
 
   useEffect(() => {
     setIsLoading(true);
@@ -107,7 +110,7 @@ export default function Users() {
       setIsLoading(false);
     });
     // dispatch(getOrganizationList(accountId));
-  }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
+  }, [dispatch, accountId, dummyKey]); // Добавляем accountId в список зависимостей
 
   useEffect(() => {
     setSelectedOptions(organizations);
@@ -329,44 +332,142 @@ export default function Users() {
                 </StyledTableCellHead>
               </TableRow>
             </TableHead>
+
             <TableBody>
               {users.map((element) => (
                 <TableRow key={element.id}>
-                  <StyledTableCellBody>
+                  <TableCell
+                    onClick={() => OpenEdit(element.id)}
+                    sx={{
+                      fontFamily: '"Montserrat"',
+                      fontSize: "16px",
+                      color: "#333333BF",
+                      textAlign: "center",
+                      cursor:'pointer',
+                      backgroundColor: openStates[element.id]
+                        ? "#0031B01A"
+                        : "",
+                    }}
+                  >
                     {element.accountNumber}
-                  </StyledTableCellBody>
-                  <StyledTableCellBody>
+                  </TableCell>
+                  <TableCell
+                    onClick={() => OpenEdit(element.id)}
+                    sx={{
+                      fontFamily: '"Montserrat"',
+                      fontSize: "16px",
+                      color: "#333333BF",
+                      textAlign: "center",
+                      cursor:'pointer',
+                      backgroundColor: openStates[element.id]
+                        ? "#0031B01A"
+                        : "",
+                    }}
+                  >
                     {element.firstName + " " + element.lastName}
-                  </StyledTableCellBody>
-                  <StyledTableCellBody>
+                  </TableCell>
+                  <TableCell
+                    onClick={() => OpenEdit(element.id)}
+                    sx={{
+                      fontFamily: '"Montserrat"',
+                      fontSize: "16px",
+                      color: "#333333BF",
+                      textAlign: "center",
+                      backgroundColor: openStates[element.id]
+                        ? "#0031B01A"
+                        : "",
+                      cursor:'pointer',
+                    }}
+                  >
                     {element.organizationList.map(
                       (organization, index, array) =>
                         index === array.length - 1
                           ? organization
                           : `${organization}, `
                     )}
-                  </StyledTableCellBody>
-                  <StyledTableCellBody>
+                  </TableCell>
+                  <TableCell
+                    onClick={() => OpenEdit(element.id)}
+                    sx={{
+                      fontFamily: '"Montserrat"',
+                      fontSize: "16px",
+                      color: "#333333BF",
+                      textAlign: "center",
+                      backgroundColor: openStates[element.id]
+                        ? "#0031B01A"
+                        : "",
+                      cursor:'pointer',
+                    }}
+                  >
                     {element.formattedLastSeen}
-                  </StyledTableCellBody>
-                  <StyledTableCellBody>
+                  </TableCell>
+                  <TableCell
+                    onClick={() => OpenEdit(element.id)}
+                    sx={{
+                      fontFamily: '"Montserrat"',
+                      fontSize: "16px",
+                      color: "#333333BF",
+                      textAlign: "center",
+                      backgroundColor: openStates[element.id]
+                        ? "#0031B01A"
+                        : "",
+                      cursor:'pointer',
+                    }}
+                  >
                     {element.telephoneNumber}
-                  </StyledTableCellBody>
-                  <StyledTableCellBody>
+                  </TableCell>
+                  <TableCell
+                    onClick={() => OpenEdit(element.id)}
+                    sx={{
+                      fontFamily: '"Montserrat"',
+                      fontSize: "16px",
+                      color: "#333333BF",
+                      textAlign: "center",
+                      backgroundColor: openStates[element.id]
+                        ? "#0031B01A"
+                        : "",
+                      cursor:'pointer',
+                    }}
+                  >
                     {element.telegramId ? (
                       <img src={check} alt="есть" />
                     ) : (
                       <img src={unCheck} alt="нету" />
                     )}
-                  </StyledTableCellBody>
+                  </TableCell>
 
-                  <StyledTableCellBody></StyledTableCellBody>
+                  <TableCell
+                    onClick={() => OpenEdit(element.id)}
+                    sx={{
+                      fontFamily: '"Montserrat"',
+                      fontSize: "16px",
+                      color: "#333333BF",
+                      textAlign: "center",
+                      backgroundColor: openStates[element.id]
+                        ? "#0031B01A"
+                        : "",
+                      cursor:'pointer',
+                    }}
+                  >
+                    {openStates[element.id] ? (
+                      <img src={cursor} alt="курсор"></img>
+                    ) : null}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
       )}
+
+      <EditUser
+        openStates={openStates}
+        close={handleCloseEdit}
+        users={users}
+        isLoadingModal={isLoadingModal}
+        accountId={accountId}
+        changeDummyKey={changeDummyKey}
+      ></EditUser>
 
       <Modal open={isOpen}>
         <div

@@ -115,7 +115,7 @@ export default function PriceList() {
         const priceDate = new Date(price.activationDate);
         return (
           selectedDate.getFullYear() > priceDate.getFullYear() ||
-          (selectedDate.getMonth() >= priceDate.getMonth() &&
+          (selectedDate.getMonth() > priceDate.getMonth() &&
             selectedDate.getFullYear() >= priceDate.getFullYear()) ||
           (selectedDate.getDate() >= priceDate.getDate() &&
             selectedDate.getMonth() >= priceDate.getMonth() &&

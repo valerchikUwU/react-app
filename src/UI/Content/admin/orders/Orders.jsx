@@ -260,16 +260,16 @@ export default function Orders() {
     // Инициализация sumForOneTitle
     const initialSumForOneTitle = listModalTitles.reduce((acc, row) => {
       const price = selectedCheck[row.id]
-        ? selectedProduct[row.id]?.PriceDefinition?.priceBooklet ||
+        ? selectedProduct[row.id]?.priceBooklet ||
           row.price.priceBooklet
-        : selectedProduct[row.id]?.PriceDefinition?.priceAccess ||
+        : selectedProduct[row.id]?.priceAccess ||
           row.price.priceAccess;
       acc[row.id] = parseFloat(selectedInput[row.id] || 0) * price;
       return acc;
     }, {});
 
     setSumForOneTitle(initialSumForOneTitle);
-  }, [selectedCheck, selectedInput, listModalTitles, selectedProduct]);
+  }, [ selectedProduct, productId, selectedCheck, selectedInput, listModalTitles]);
 
   const OpenModal = (id) => {
     setIsLoadingModal(true);
@@ -954,8 +954,7 @@ export default function Orders() {
                                 )
                               }
                             >
-                              {ObjectModalOrder.accountId
-                                ? ObjectModalOrder.organizationList?.map(
+                              {ObjectModalOrder.organizationList?.map(
                                     (organization, index) => (
                                       <MenuItem
                                         key={index}
@@ -972,21 +971,7 @@ export default function Orders() {
                                       </MenuItem>
                                     )
                                   )
-                                : allOrganizationsModal?.map((organization) => (
-                                    <MenuItem
-                                      key={organization.id}
-                                      value={organization.organizationName}
-                                      sx={{
-                                        fontFamily: "Montserrat",
-                                        fontSize: "16px",
-
-                                        textAlign: "center",
-                                        cursor: "pointer",
-                                      }}
-                                    >
-                                      {organization.organizationName}
-                                    </MenuItem>
-                                  ))}
+                                }
                             </Select>
                           </TableCell>
 
@@ -1419,10 +1404,10 @@ export default function Orders() {
                                       row.id,
                                       selectedCheck[row.id]
                                         ? selectedProduct[row.id]
-                                            ?.PriceDefinition?.priceBooklet ||
+                                            ?.priceBooklet ||
                                             row.price.priceBooklet
                                         : selectedProduct[row.id]
-                                            ?.PriceDefinition?.priceAccess ||
+                                            ?.priceAccess ||
                                             row.price.priceAccess
                                     )
                                   }
@@ -1431,9 +1416,9 @@ export default function Orders() {
 
                               <TableCellModal>
                                 {selectedCheck[row.id]
-                                  ? selectedProduct[row.id]?.PriceDefinition
+                                  ? selectedProduct[row.id]
                                       ?.priceBooklet || row.price.priceBooklet
-                                  : selectedProduct[row.id]?.PriceDefinition
+                                  : selectedProduct[row.id]
                                       ?.priceAccess || row.price.priceAccess}
                                 &#x20bd;
                               </TableCellModal>
@@ -1619,7 +1604,7 @@ export default function Orders() {
                                           event.target.value;
                                         const product = ListProductsModal.find(
                                           (p) =>
-                                            p.abbreviation === newSelectedAbbr
+                                            p.abbreviation == newSelectedAbbr
                                         );
 
                                         setSelectedProduct((prevState) => ({
@@ -1642,7 +1627,6 @@ export default function Orders() {
                                           sx={{
                                             fontFamily: "Montserrat",
                                             fontSize: "16px",
-
                                             textAlign: "center",
                                             cursor: "pointer",
                                           }}
@@ -1837,11 +1821,9 @@ export default function Orders() {
                                           row.id,
                                           selectedCheck[row.id]
                                             ? selectedProduct[row.id]
-                                                ?.PriceDefinition
                                                 ?.priceBooklet ||
                                                 row.price.priceBooklet
                                             : selectedProduct[row.id]
-                                                ?.PriceDefinition
                                                 ?.priceAccess ||
                                                 row.price.priceAccess
                                         )
@@ -1851,10 +1833,10 @@ export default function Orders() {
 
                                   <TableCellModal>
                                     {selectedCheck[row.id]
-                                      ? selectedProduct[row.id]?.PriceDefinition
+                                      ? selectedProduct[row.id]
                                           ?.priceBooklet ||
                                         row.price.priceBooklet
-                                      : selectedProduct[row.id]?.PriceDefinition
+                                      : selectedProduct[row.id]
                                           ?.priceAccess ||
                                         row.price.priceAccess}
                                     &#x20bd;
