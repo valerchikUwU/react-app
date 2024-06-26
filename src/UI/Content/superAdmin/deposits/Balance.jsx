@@ -20,7 +20,6 @@ import exit from "../commission/image/exit.svg";
 import { styled } from "@mui/system";
 import AddDeposit from "./AddDeposit";
 
-
 // Text Header
 const TextHeader = styled(TableCell)({
   fontFamily: "Montserrat",
@@ -31,19 +30,27 @@ const TextHeader = styled(TableCell)({
   textAlign: "center",
 });
 
-export default function Balance({ openStates, close, deposits, accountId, changeDummyKey }) {
+export default function Balance({
+  openStates,
+  close,
+  deposits,
+  accountId,
+  changeDummyKey,
+}) {
   const organization = useSelector(
     (state) => state.superAdminDeposits.organization
   );
   const orders = useSelector((state) => state.superAdminDeposits.orders);
   const [modalAddDeposit, setModalAddDeposit] = useState(false);
 
-const openAddDeposit = () => {
-  setModalAddDeposit(true);
-}
-const closeAddDeposit = () => {
-  setModalAddDeposit(false);
-}
+  const openAddDeposit = () => {
+    setModalAddDeposit(true);
+  };
+  const closeAddDeposit = () => {
+    setModalAddDeposit(false);
+  };
+
+  let balance = 0;
   return (
     <>
       {deposits.map((element) => (
@@ -78,18 +85,17 @@ const closeAddDeposit = () => {
                 scrollbarColor: "#005475 #FFFFFF",
               }}
             >
-
-          <IconButton
-              onClick={() => close(element.id)}
-              sx={{
-                position: "absolute",
-                float: "right",
-                top: "-38px",
-                right: "-40px",
-              }}
-            >
-              <img src={exit} alt="закрыть" />
-            </IconButton>
+              <IconButton
+                onClick={() => close(element.id)}
+                sx={{
+                  position: "absolute",
+                  float: "right",
+                  top: "-38px",
+                  right: "-40px",
+                }}
+              >
+                <img src={exit} alt="закрыть" />
+              </IconButton>
 
               <Box display="flex" justifyContent="center" alignItems="center">
                 <Typography
@@ -108,7 +114,16 @@ const closeAddDeposit = () => {
                 </Typography>
               </Box>
 
-              <TableContainer component={Paper} sx={{ marginTop: "40px" }}>
+              <TableContainer
+                component={Paper}
+                sx={{
+                  marginTop: "40px",
+                  maxHeight: "calc(100vh - 350px)",
+                  overflow: "auto",
+                  scrollbarWidth: "thin",
+                  scrollbarColor: "#005475 #FFFFFF",
+                }}
+              >
                 <Table stickyHeader>
                   <TableHead>
                     <TableRow>
@@ -184,65 +199,75 @@ const closeAddDeposit = () => {
                   </TableHead>
 
                   <TableBody>
-                    {orders?.map((item, index) => (
-                      <TableRow>
-                        <TableCell
-                          sx={{
-                            fontFamily: "Montserrat",
-                            fontSize: "16px",
-                            fontWeight: 600,
-                            color: index === 0 ? "#005475" : "#333333",
-                            textAlign: "center",
-                          }}
-                        >
-                          {item.formattedDispatchDate}
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            fontFamily: "Montserrat",
-                            fontSize: "16px",
-                            fontWeight: 600,
-                            color: index === 0 ? "#005475" : "#333333",
-                            textAlign: "center",
-                          }}
-                        >
-                          {item.billNumber}
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            fontFamily: "Montserrat",
-                            fontSize: "16px",
-                            fontWeight: 600,
-                            color: index === 0 ? "#005475" : "#333333",
-                            textAlign: "center",
-                          }}
-                        >
-                          {item.Deposit}
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            fontFamily: "Montserrat",
-                            fontSize: "16px",
-                            fontWeight: 600,
-                            color: index === 0 ? "#005475" : "#333333",
-                            textAlign: "center",
-                          }}
-                        >
-                        {item.Spisanie}
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            fontFamily: "Montserrat",
-                            fontSize: "16px",
-                            fontWeight: 600,
-                            color: index === 0 ? "#005475" : "#333333",
-                            textAlign: "center",
-                          }}
-                        >
-                        {}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {orders?.map((item, index) => {
+
+                      if (item.Spisanie !== null) {
+                        balance += Number(item.Spisanie);
+                      }
+                      if (item.Deposit !== null) {
+                        balance += item.Deposit;
+                      }
+
+                      return (
+                        <TableRow key={index}>
+                          <TableCell
+                            sx={{
+                              fontFamily: "Montserrat",
+                              fontSize: "16px",
+                              fontWeight: 600,
+                              color: index === 0 ? "#005475" : "#333333",
+                              textAlign: "center",
+                            }}
+                          >
+                            {item.formattedDispatchDate}
+                          </TableCell>
+                          <TableCell
+                            sx={{
+                              fontFamily: "Montserrat",
+                              fontSize: "16px",
+                              fontWeight: 600,
+                              color: index === 0 ? "#005475" : "#333333",
+                              textAlign: "center",
+                            }}
+                          >
+                            {item.billNumber}
+                          </TableCell>
+                          <TableCell
+                            sx={{
+                              fontFamily: "Montserrat",
+                              fontSize: "16px",
+                              fontWeight: 600,
+                              color: index === 0 ? "#005475" : "#333333",
+                              textAlign: "center",
+                            }}
+                          >
+                            {item.Deposit}
+                          </TableCell>
+                          <TableCell
+                            sx={{
+                              fontFamily: "Montserrat",
+                              fontSize: "16px",
+                              fontWeight: 600,
+                              color: index === 0 ? "#005475" : "#333333",
+                              textAlign: "center",
+                            }}
+                          >
+                            {item.Spisanie}
+                          </TableCell>
+                          <TableCell
+                            sx={{
+                              fontFamily: "Montserrat",
+                              fontSize: "16px",
+                              fontWeight: 600,
+                              color: index === 0 ? "#005475" : "#333333",
+                              textAlign: "center",
+                            }}
+                          >
+                            {balance}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -256,13 +281,18 @@ const closeAddDeposit = () => {
                   gap: "15px",
                   marginBottom: "20px",
                 }}
-              >
-              </Box>
+              ></Box>
             </Box>
           </div>
         </Modal>
       ))}
-    <AddDeposit open={modalAddDeposit} close={closeAddDeposit} organizationCustomerId={organization.id} accountId={accountId} changeDummyKey={changeDummyKey}></AddDeposit>
+      <AddDeposit
+        open={modalAddDeposit}
+        close={closeAddDeposit}
+        organizationCustomerId={organization.id}
+        accountId={accountId}
+        changeDummyKey={changeDummyKey}
+      ></AddDeposit>
     </>
   );
 }

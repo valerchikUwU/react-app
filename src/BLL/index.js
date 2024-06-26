@@ -13,6 +13,7 @@ import commissionReducer from './superAdmin/comissionSlice';
 import payeeReducer from './superAdmin/payeeSlice';
 import reviewReducer from './superAdmin/reviewSlice';
 import depositSuperAdminReducer from './superAdmin/depositSuperAdminSlice';
+import usersSuperAdminReducer from './superAdmin/usersSuperAdminSlice';
 
 
 export default configureStore({
@@ -31,5 +32,6 @@ export default configureStore({
     superAdminPayee: payeeReducer,
     superAdminReview: reviewReducer,
     superAdminDeposits: depositSuperAdminReducer,
+    superAdminUsers: usersSuperAdminReducer,
   },
 });

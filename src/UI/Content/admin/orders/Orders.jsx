@@ -427,7 +427,7 @@ export default function Orders() {
         payeeId: payeeName[ObjectModalOrder.id]
           ? payeeName[ObjectModalOrder.id]
           : ObjectModalOrder.payeeId,
-        isFromDeposit: ObjectModalOrder.selectedCheckDeposit || false,
+        isFromDeposit:  selectedCheckDeposit || false,
         titlesToUpdate: titlesToUpdate,
         titlesToCreate: titlesToCreate,
       })

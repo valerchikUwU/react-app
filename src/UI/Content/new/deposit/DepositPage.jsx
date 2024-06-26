@@ -100,7 +100,7 @@ export default function DepositPage() {
           className={classes.scroll}
         >
           <Grid item>
-            {deposit.map((deposit) => (
+            {deposit?.map((deposit) => (
               <div className={classes.block}>
                 <div className={classes.cartGrid}>
                   <img src={logo} alt="logo" className={classes.logo} />
@@ -136,7 +136,7 @@ export default function DepositPage() {
                           label="Академия"
                           sx={{ width: "130px" }}
                         >
-                          {organizations.map((item) => (
+                          {organizations?.map((item) => (
                             <MenuItem value={item.id}>
                               {item.organizationName}
                             </MenuItem>

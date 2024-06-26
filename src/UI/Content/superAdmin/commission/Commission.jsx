@@ -191,6 +191,7 @@ export default function Commission() {
                 >
                   {element.name}
                 </TableCell>
+                
                 <TableCell
                   onClick={() => OpenModalRules(element.id)}
                   sx={{
@@ -204,6 +205,7 @@ export default function Commission() {
                 >
                   {element.rulesQuantity}
                 </TableCell>
+
                 <TableCell
                   onClick={() => OpenModalRemains(element.id)}
                   sx={{

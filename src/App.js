@@ -24,12 +24,17 @@ import Reciever from "./UI/Content/superAdmin/reciever/Reciever.jsx";
 import NavSuperAdmin from "./UI/Navigation/superAdmin/NavSuperAdmin.jsx";
 import useNetwork from "./UI/Custom/useNetwork"; // Импорт хука
 import DepositsSuperAdmin from "./UI/Content/superAdmin/deposits/DepositsSuperAdmin.jsx";
+import UsersSuperAdmin from "./UI/Content/superAdmin/users/UsersSuperAdmin.jsx";
+
 
 function App() {
   const isOnline = useNetwork();
 
   return (
-    <div className="app-wrapper" style={{background: isOnline ? '' :'#999999'}}>
+    <div
+      className="app-wrapper"
+      style={{ background: isOnline ? "" : "#999999" }}
+    >
       <Header></Header>
       <Routes>
         <Route path="/*" element={<NavMain></NavMain>}></Route>
@@ -40,8 +45,11 @@ function App() {
           path=":accountId/admin/*"
           element={<NavAdmin></NavAdmin>}
         ></Route>
-        
-        <Route path=":accountId/superAdmin/*" element={<NavSuperAdmin></NavSuperAdmin>}></Route>
+
+        <Route
+          path=":accountId/superAdmin/*"
+          element={<NavSuperAdmin></NavSuperAdmin>}
+        ></Route>
       </Routes>
 
       <div className="app-wrapper-content">
@@ -108,7 +116,6 @@ function App() {
             element={
               <Content>
                 <Routes>
-                  <Route path="deposits" element={<Deposits></Deposits>}></Route>
                   <Route path="orders" element={<Orders></Orders>}></Route>
                   <Route path="archive" element={<Archive></Archive>}></Route>
                   <Route
@@ -130,20 +137,27 @@ function App() {
             element={
               <Content>
                 <Routes>
-                <Route path="deposits" element={<DepositsSuperAdmin></DepositsSuperAdmin>}></Route>
+                  <Route path="orders" element={<Orders></Orders>}></Route>
+                  <Route path="archive" element={<Archive></Archive>}></Route>
+                  <Route
+                    path="priceList"
+                    element={<PriceList></PriceList>}
+                  ></Route>
+                  <Route path="users" element={<UsersSuperAdmin></UsersSuperAdmin>}></Route>
+                  <Route
+                    path="deposits"
+                    element={<DepositsSuperAdmin></DepositsSuperAdmin>}
+                  ></Route>
                   <Route
                     path="comission"
                     element={<Commission></Commission>}
                   ></Route>
-                   <Route
+                  <Route
                     path="statistics"
                     element={<Statistics></Statistics>}
                   ></Route>
-                   <Route
-                    path="review"
-                    element={<Review></Review>}
-                  ></Route>
-                   <Route
+                  <Route path="review" element={<Review></Review>}></Route>
+                  <Route
                     path="reciever"
                     element={<Reciever></Reciever>}
                   ></Route>
