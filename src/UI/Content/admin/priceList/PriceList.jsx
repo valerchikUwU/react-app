@@ -503,7 +503,7 @@ export default function PriceList() {
                         }
                         onInputChange={handleInputChange}
                         getOptionLabel={(option) =>
-                          option.name ? option.name : ""
+                          option.name ? option.name.split("&quot;").join('"') : ""
                         }
                         renderInput={(params) => (
                           <TextField

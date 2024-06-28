@@ -145,7 +145,7 @@ export default function AddTitlesOrders({
                       width: "70px",
                     }}
                   >
-                    {product.name}
+                    {product.name.split("&quot;").join('"')}
                   </TableCell>
 
                   <TableCell>

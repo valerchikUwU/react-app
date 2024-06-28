@@ -141,6 +141,7 @@ const changeDummyKey = () => {
       })
     ).then(() => {
       dispatch(getUser(accountId));
+      handleClose();
     });
     resetForm();
   };

@@ -66,6 +66,7 @@ export default function EditUser({ openStates, close, users, isLoadingModal, acc
     ).then(() => {
       changeDummyKey();
       closeModal(account.id);
+      console.log(account.id);
     });
   };
 
@@ -88,8 +89,6 @@ const closeModal = (id) => {
   const handleChange = (e, id) => {
     const { name, value } = e.target;
     let newValue;
-
-    console.log(id);
 
     if (value === "" && name === "name") {
       setIsFieldClearedName((prevState) => ({
@@ -172,7 +171,7 @@ const closeModal = (id) => {
 
     // Set form validity based on all fields' validity
     setIsFormValid(isValid);
-    console.log(`isFormValid ${isValid}`);
+    // console.log(`isFormValid ${isValid}`);
   };
 
   const resetStates = () => {
@@ -261,6 +260,7 @@ const closeModal = (id) => {
                   <IconButton
                     onClick={() => {
                       closeModal(element.id);
+                      console.log(element.id);
                     }}
                     sx={{
                       position: "absolute",
