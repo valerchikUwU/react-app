@@ -20,6 +20,7 @@ export default function Add({ isOpen, close }) {
     console.log(text);
     dispatch(postCommision({accountId, commisionRecieverName: text })).then(() => {
       setText('');
+      close(false);
       dispatch(incrementDummyKey()); 
     });
   };

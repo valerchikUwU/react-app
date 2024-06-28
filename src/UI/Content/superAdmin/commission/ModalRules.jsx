@@ -195,7 +195,7 @@ export default function ModalRules({
 
   // }, [groupProducts, productsAutocomplete]);
 
-  const handleSave = () => {
+  const handleSave = (id) => {
     const rulesToUpdate = [];
 
     rules.forEach((element) => {
@@ -225,7 +225,7 @@ export default function ModalRules({
     dispatch(
       putAccrualRule({
         accountId: accountId,
-        commisionRecieverId: rules[0].commisionRecieverId,
+        commisionRecieverId: id,
         rulesToUpdate: rulesToUpdate,
       })
     ).then(() => {
@@ -932,7 +932,7 @@ export default function ModalRules({
                   >
                     <Button
                       variant="contained"
-                      onClick={handleSave}
+                      onClick={() => handleSave(element.id)}
                       sx={{
                         textTransform: "none",
                         backgroundColor: "#005475",
