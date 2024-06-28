@@ -60,14 +60,13 @@ export default function Statistics() {
           fontSize: "16px",
           fontWeight: 600,
           color: "black",
-          textAlign: "center",
+          marginLeft:  "500px",
         }}
       >
         Все продажи
       </Typography>
-
       <LineChart
-        width={1600} // Увеличьте ширину
+        width={1000} // Увеличьте ширину
         height={450} // Увеличьте высоту
         data={transformedData}
         margin={{ top: 10, right: 40, left: 50, bottom: 80 }} // Уменьшите отступы

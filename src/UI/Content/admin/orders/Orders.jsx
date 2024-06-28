@@ -103,9 +103,6 @@ export default function Orders() {
           ? row.priceBooklet
           : row.priceAccess;
         acc[row.id] = (productInputQuantity[row.id] || 1) * price;
-        console.log(price);
-        console.log(acc[row.id]);
-        console.log(acc[row.id]);
         return acc;
       }, {});
 
@@ -382,7 +379,7 @@ export default function Orders() {
           ? selectedGeneration[row.id]
           : row.generation,
         quantity: selectedInput[row.id],
-        addBooklet: selectedCheck[row.id],
+        addBooklet: selectedCheck[row.id] === undefined ? row.addBooklet : selectedCheck[row.id],
       });
     });
 
@@ -405,12 +402,14 @@ export default function Orders() {
           ? productInputQuantity[item.id]
           : 1,
 
-        addBooklet: checkProductBooklet[item.id]
-          ? checkProductBooklet[item.id]
-          : false,
+      addBooklet: checkProductBooklet[item.id]  === undefined ? products.addBooklet : checkProductBooklet[item.id],
+       
+          // addBooklet: checkProductBooklet[item.id]
+        //   ? checkProductBooklet[item.id]
+        //   : false,
       });
     });
-
+    
     dispatch(
       updateTitleOrderAdmin({
         accountId: accountId,
@@ -427,15 +426,15 @@ export default function Orders() {
         payeeId: payeeName[ObjectModalOrder.id]
           ? payeeName[ObjectModalOrder.id]
           : ObjectModalOrder.payeeId,
-        isFromDeposit:  selectedCheckDeposit || false,
+        isFromDeposit:  selectedCheckDeposit === undefined ? ObjectModalOrder.isFromDeposit : selectedCheckDeposit,
         titlesToUpdate: titlesToUpdate,
         titlesToCreate: titlesToCreate,
       })
     ).then(() => {
       dispatch(getOrder(accountId));
       setOpenStates({ ...openStates, [exitID]: false });
+      handleCloseModal(exitID);
     });
-    handleCloseModal(exitID);
   };
 
   // Функция для сброса состояний
@@ -453,7 +452,7 @@ export default function Orders() {
 
     // Сброс selectedCheck
     const initialSelectedCheck = listModalTitles.reduce((acc, row) => {
-      acc[row.id] = row.addBooklet;
+      acc[row.id] = 8;
       return acc;
     }, {});
 
@@ -492,6 +491,7 @@ export default function Orders() {
     );
     setPayeeName({});
     setSelectStatus({});
+    setSelectedCheckDeposit();
     setInputAccountNumber(
       () => ({
         [ObjectModalOrder.id]: ObjectModalOrder.billNumber,
@@ -938,7 +938,6 @@ export default function Orders() {
                               sx={{
                                 fontFamily: "Montserrat",
                                 fontSize: "16px",
-
                                 textAlign: "center",
                                 cursor: "pointer",
                                 width: "150px",
@@ -1139,14 +1138,16 @@ export default function Orders() {
                               textAlign: "center",
                             }}
                           >
+                           
                             <CustomStyledCheckbox
                               sx={{ textAlign: "center" }}
-                              checked={selectedCheckDeposit} // Используйте false для неотмеченных чекбоксов
+                              checked={ selectedCheckDeposit === undefined ? ObjectModalOrder.isFromDeposit : selectedCheckDeposit } 
                               onChange={(event) =>
                                 handleCheckboxChangeDeposit(event)
                               }
                               size={1}
                             ></CustomStyledCheckbox>
+                     
                           </TableCell>
                         </TableRow>
                       </TableBody>
@@ -1793,15 +1794,14 @@ export default function Orders() {
 
                                   <TableCell sx={{ textAlign: "center" }}>
                                     <CustomStyledCheckbox
-                                      sx={{ textAlign: "center" }}
-                                      checked={selectedCheck[row.id] || false} // Используйте false для неотмеченных чекбоксов
+                                      sx={{ textAlign: "center" }}   
+                                      checked={selectedCheck[row.id] === 8 ? row.addBooklet : selectedCheck[row.id]} 
                                       onChange={(event) =>
                                         handleCheckboxChange(event, row.id)
-                                      }
+                                      }                                  
                                       size={1}
                                     ></CustomStyledCheckbox>
                                   </TableCell>
-
                                   <TableCell>
                                     <TextField
                                       variant="standard"
@@ -2001,7 +2001,7 @@ export default function Orders() {
                                     >
                                       <CustomStyledCheckbox
                                         checked={
-                                          checkProductBooklet[product.id]
+                                          checkProductBooklet[product.id]  === undefined ? products.addBooklet : checkProductBooklet[product.id] 
                                         }
                                         onChange={(event) =>
                                           handleChangeCheckboxBooklet(

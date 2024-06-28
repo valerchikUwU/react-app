@@ -28,6 +28,7 @@ import {
   getRules,
 } from "../../../../BLL/superAdmin/comissionSlice.js";
 import { getDepositBalance } from "../../../../BLL/superAdmin/depositSuperAdminSlice.js";
+import CircularProgressCustom from "../../styledComponents/CircularProgress.jsx";
 
 // Создаем стилизованные компоненты с помощью styled
 const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
@@ -61,6 +62,10 @@ export default function Commission() {
   const [openStatesRemains, setOpenStatesRemains] = useState({});
   const [modal, setModal] = useState();
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingRules, setIsLoadingRules] = useState();
+  const [isLoadingRemains, setIsLoadingRemains] = useState();
+
   const handleOpenDialog = () => {
     setOpenDialog(true);
   };
@@ -70,7 +75,9 @@ export default function Commission() {
   const dummyKey = useSelector((state) => state.superAdminCommision?.dummyKey);
 
   useEffect(() => {
-    dispatch(getComission(accountId));
+    dispatch(getComission(accountId)).then(() => {
+      setIsLoading(false);
+    });
   }, [dispatch, accountId, dummyKey]); // Добавляем accountId в список зависимостей
 
   useEffect(() => {
@@ -81,31 +88,35 @@ export default function Commission() {
 
       dispatch(
         getRules({ accountId: accountId, commisionRecieverId: openModalId })
-      );
+      ).then(() => setIsLoadingRules(false));
     }
   }, [openStates, dispatch, dummyKey]);
 
   useEffect(() => {
     // Find the first open modal
-    let openModalId = Object.keys(openStatesRemains).find((id) => openStatesRemains[id]);
+    let openModalId = Object.keys(openStatesRemains).find(
+      (id) => openStatesRemains[id]
+    );
     if (openModalId) {
       // Assuming you have the accountId available, replace "1" with the actual accountId
       dispatch(
         getBalance({ accountId: accountId, commisionRecieverId: openModalId })
-      );
+      ).then(() => setIsLoadingRemains(false));
     }
   }, [openStatesRemains, dispatch, dummyKey]);
 
   const OpenModalRules = (id) => {
+    setIsLoadingRules(true);
     setModal("rules");
     return setOpenStates({ ...openStates, [id]: true });
   };
 
-  const handleCloseModalRules = (id) =>
+  const handleCloseModalRules = (id) => {
     setOpenStates({ ...openStates, [id]: false });
+  };
 
-  
   const OpenModalRemains = (id) => {
+    setIsLoadingRemains(true);
     setModal("remains");
     return setOpenStatesRemains({ ...openStatesRemains, [id]: true });
   };
@@ -115,123 +126,130 @@ export default function Commission() {
 
   return (
     <div>
-      <TableContainer
-        component={Paper}
-        sx={{
-          height: "calc(100vh - 90px)",
-          overflow: "auto",
-          scrollbarWidth: "thin",
-          scrollbarColor: "#005475BF #FFFFFF",
-        }}
-      >
-        <Table stickyHeader sx={{ width: "50%" }} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Получатель
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Правила начисления
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Остаток
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                <IconButton onClick={() => handleOpenDialog()}>
-                  <img src={plus} alt="плюс" />
-                </IconButton>
-              </StyledTableCellHead>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {commision?.map((element) => (
+      {isLoading ? (
+        <CircularProgressCustom value={"55%"}></CircularProgressCustom>
+      ) : (
+        <TableContainer
+          component={Paper}
+          sx={{
+            height: "calc(100vh - 90px)",
+            overflow: "auto",
+            scrollbarWidth: "thin",
+            scrollbarColor: "#005475BF #FFFFFF",
+          }}
+        >
+          <Table stickyHeader sx={{ width: "50%" }} aria-label="simple table">
+            <TableHead>
               <TableRow>
-                <TableCell
+                <StyledTableCellHead
                   sx={{
-                    fontFamily: "Montserrat",
-                    fontSize: "16px",
-                    fontWeight: 600,
-                    color: "black",
-                    textAlign: "center",
-                    
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
                   }}
                 >
-                  {element.name}
-                </TableCell>
-                
-                <TableCell
-                  onClick={() => OpenModalRules(element.id)}
+                  Получатель
+                </StyledTableCellHead>
+                <StyledTableCellHead
                   sx={{
-                    fontFamily: "Montserrat",
-                    fontSize: "16px",
-                    fontWeight: 600,
-                    color: "black",
-                    textAlign: "center",
-                    cursor: "pointer",
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
                   }}
                 >
-                  {element.rulesQuantity}
-                </TableCell>
-
-                <TableCell
-                  onClick={() => OpenModalRemains(element.id)}
+                  Правила начисления
+                </StyledTableCellHead>
+                <StyledTableCellHead
                   sx={{
-                    fontFamily: "Montserrat",
-                    fontSize: "16px",
-                    fontWeight: 600,
-                    color: "black",
-                    textAlign: "center",
-                    cursor: "pointer",
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
                   }}
                 >
                   Остаток
-                </TableCell>
+                </StyledTableCellHead>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  <IconButton onClick={() => handleOpenDialog()}>
+                    <img src={plus} alt="плюс" />
+                  </IconButton>
+                </StyledTableCellHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+
+            <TableBody>
+              {commision?.map((element) => (
+                <TableRow>
+                  <TableCell
+                    sx={{
+                      fontFamily: "Montserrat",
+                      fontSize: "16px",
+                      fontWeight: 600,
+                      color: "black",
+                      textAlign: "center",
+                    }}
+                  >
+                    {element.name}
+                  </TableCell>
+
+                  <TableCell
+                    onClick={() => OpenModalRules(element.id)}
+                    sx={{
+                      fontFamily: "Montserrat",
+                      fontSize: "16px",
+                      fontWeight: 600,
+                      color: "black",
+                      textAlign: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {element.rulesQuantity}
+                  </TableCell>
+
+                  <TableCell
+                    onClick={() => OpenModalRemains(element.id)}
+                    sx={{
+                      fontFamily: "Montserrat",
+                      fontSize: "16px",
+                      fontWeight: 600,
+                      color: "black",
+                      textAlign: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Остаток
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       <Add isOpen={openDialog} close={setOpenDialog}></Add>
+
       <ModalRules
+        isLoadingRules={isLoadingRules}
         openStates={openStates}
         close={handleCloseModalRules}
         commision={commision}
       ></ModalRules>
+
       <ModalRemains
+        isLoadingRemains={isLoadingRemains}
         openStates={openStatesRemains}
         close={handleCloseModalRemains}
         commision={commision}

@@ -17,7 +17,10 @@ import {
 } from "@mui/material";
 import exit from "./image/exit.svg";
 import { styled } from "@mui/system";
-import { incrementDummyKey, postReciever } from "../../../../BLL/superAdmin/comissionSlice.js";
+import {
+  incrementDummyKey,
+  postReciever,
+} from "../../../../BLL/superAdmin/comissionSlice.js";
 // Text Header
 const TextHeader = styled(TableCell)({
   fontFamily: "Montserrat",
@@ -53,10 +56,12 @@ export default function AddReciever({ isOpen, close, commisionRecieverId }) {
         accountId: accountId,
         commisionRecieverId: commisionRecieverId,
         billNumber: billNumber,
-        Spisanie: spisanie,   
+        Spisanie: spisanie,
       })
     ).then(() => {
-      dispatch(incrementDummyKey())
+      dispatch(incrementDummyKey());
+      resetStates();
+      close(false);
     });
   };
 
@@ -78,17 +83,6 @@ export default function AddReciever({ isOpen, close, commisionRecieverId }) {
             paddingTop: "5%",
           }}
         >
-          <IconButton
-            onClick={() => close(false)}
-            sx={{
-              gridArea: "icon",
-              position: "absolute", // Изменено на абсолютное позиционирование
-              marginLeft: "900px",
-            }}
-          >
-            <img src={exit} alt="закрыть" />
-          </IconButton>
-
           <Box
             sx={{
               backgroundColor: "white",
@@ -99,11 +93,23 @@ export default function AddReciever({ isOpen, close, commisionRecieverId }) {
               alignSelf: "center",
               position: "relative",
               maxHeight: "calc(100vh - 200px)",
-              overflow: "auto",
               scrollbarWidth: "thin",
               scrollbarColor: "#005475 #FFFFFF",
+              overflow: "visible",
             }}
           >
+            <IconButton
+              onClick={() => {close(false); resetStates();}}
+              sx={{
+                position: "absolute",
+                float: "right",
+                top: "-38px",
+                right: "-40px",
+              }}
+            >
+              <img src={exit} alt="закрыть" />
+            </IconButton>
+
             <TableContainer
               component={Paper}
               sx={{ marginTop: "40px", width: "400px" }}

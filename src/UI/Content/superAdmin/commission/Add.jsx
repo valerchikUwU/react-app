@@ -39,7 +39,7 @@ export default function Add({ isOpen, close }) {
         open={isOpen}
         onClose={() => close(false)}
         hideBackdrop // Добавлено свойство для улучшения доступности
-        sx={{ marginBottom: "calc(100vh - 350px)", marginRight: "calc(100vw - 130%)"}}
+        sx={{ marginBottom: "calc(100vh - 350px)", marginRight:"calc(100vw - 130%)"}}
       >
         <DialogContent>
           <DialogContentText

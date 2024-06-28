@@ -140,7 +140,7 @@ const changeDummyKey = () => {
         lastName: lastName,
         telephoneNumber: telephone,
         organizationList: selectedValues,
-        roleId:role
+        roleId:role,
       })
     ).then(() => {
       dispatch(getUser(accountId));
@@ -348,7 +348,7 @@ const changeDummyKey = () => {
                     sx={{
                       fontFamily: '"Montserrat"',
                       fontSize: "16px",
-                      color: element.roleId == 2 ? "#005475" : "#333333BF",
+                      color: element.isBlocked  ? "#333333BF" : (element.roleId == 2 ? "#005475" : 'black'),
                       textAlign: "center",
                       cursor:'pointer',
                       backgroundColor: openStates[element.id]
@@ -363,7 +363,7 @@ const changeDummyKey = () => {
                     sx={{
                       fontFamily: '"Montserrat"',
                       fontSize: "16px",
-                      color: element.roleId == 2 ? "#005475" : "#333333BF",
+                      color: element.isBlocked  ? "#333333BF" : (element.roleId == 2 ? "#005475" : 'black'),
                       textAlign: "center",
                       cursor:'pointer',
                       backgroundColor: openStates[element.id]
@@ -378,7 +378,7 @@ const changeDummyKey = () => {
                     sx={{
                       fontFamily: '"Montserrat"',
                       fontSize: "16px",
-                      color: element.roleId == 2 ? "#005475" : "#333333BF",
+                      color: element.isBlocked  ? "#333333BF" : (element.roleId == 2 ? "#005475" : 'black'),
                       textAlign: "center",
                       backgroundColor: openStates[element.id]
                         ? "#0031B01A"
@@ -398,7 +398,7 @@ const changeDummyKey = () => {
                     sx={{
                       fontFamily: '"Montserrat"',
                       fontSize: "16px",
-                      color: element.roleId == 2 ? "#005475" : "#333333BF",
+                      color: element.isBlocked  ? "#333333BF" : (element.roleId == 2 ? "#005475" : 'black'),
                       textAlign: "center",
                       backgroundColor: openStates[element.id]
                         ? "#0031B01A"
@@ -413,7 +413,7 @@ const changeDummyKey = () => {
                     sx={{
                       fontFamily: '"Montserrat"',
                       fontSize: "16px",
-                      color: element.roleId == 2 ? "#005475" : "#333333BF",
+                      color: element.isBlocked  ? "#333333BF" : (element.roleId == 2 ? "#005475" : 'black'),
                       textAlign: "center",
                       backgroundColor: openStates[element.id]
                         ? "#0031B01A"
@@ -429,7 +429,7 @@ const changeDummyKey = () => {
                     sx={{
                       fontFamily: '"Montserrat"',
                       fontSize: "16px",
-                      color: element.roleId == 2 ? "#005475" : "#333333BF",
+                      color: element.isBlocked  ? "#333333BF" : (element.roleId == 2 ? "#005475" : 'black'),
                       textAlign: "center",
                       backgroundColor: openStates[element.id]
                         ? "#0031B01A"
@@ -617,7 +617,7 @@ const changeDummyKey = () => {
                           })
                         }
                         getOptionLabel={(option) => option.organizationName}
-                        onChange={handleSelectionChange}
+                        onChange={ handleSelectionChange}
                         renderOption={(props, option, { selected }) => (
                           <li {...props}>
                             <Checkbox

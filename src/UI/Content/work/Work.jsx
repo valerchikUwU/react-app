@@ -377,6 +377,7 @@ export default function Work() {
         ).then(() => {
           // После успешного выполнения updateTitleOrder вызываем getWork
           dispatch(getWork(accountId));
+          handleCloseModal(ObjectModalOrder.id)
         });
       } else {
         // Выводим сообщение или выполняем другую логику, если titlesToUpdate пуст
@@ -417,6 +418,7 @@ export default function Work() {
       ).then(() => {
         // После успешного выполнения updateTitleOrder вызываем getWork
         dispatch(getWork(accountId));
+        handleCloseModal(ObjectModalOrder.id)
       });
     }
   };
@@ -493,6 +495,9 @@ export default function Work() {
     marginRight: "15px",
     marginBottom: "15px",
   });
+
+  const [modal, setModal] = useState(false);
+
 
   return (
     <Box>

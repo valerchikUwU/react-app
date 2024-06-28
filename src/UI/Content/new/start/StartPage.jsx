@@ -176,7 +176,7 @@ export default function StartPage() {
                 <div className={classes.block}>
                   <div className={classes.cartGrid}>
                     <div className={classes.one}>
-                      <img src={order.path} alt="book" className={classes.book} />
+                      <img src={ order.imageId ? `https:24academy.ru${order.imagePath?.slice(2)}` : book} alt="book" className={classes.book} />
                     </div>
 
                     <div className={classes.two}>

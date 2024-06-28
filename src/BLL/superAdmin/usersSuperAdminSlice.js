@@ -37,10 +37,10 @@ export const getEditUser = createAsyncThunk(
 
 export const putEditUser = createAsyncThunk(
   "users/putEditUser",
-  async ({ accountId, accountFocusId, firstName,lastName, telephoneNumber, organizationList, roleId}, { rejectWithValue }) => {
+  async ({ accountId, accountFocusId, firstName,lastName, telephoneNumber, organizationList, roleId, isBlocked}, { rejectWithValue }) => {
     try {
       const response = await instance.put(
-        `${accountId}/superAdmin/accounts/${accountFocusId}/update`, {firstName,lastName, telephoneNumber, organizationList, roleId}
+        `${accountId}/superAdmin/accounts/${accountFocusId}/update`, {firstName,lastName, telephoneNumber, organizationList, roleId, isBlocked}
       );
       console.log(response.data);
     } catch (error) {

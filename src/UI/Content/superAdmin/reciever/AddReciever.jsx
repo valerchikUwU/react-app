@@ -20,6 +20,7 @@ export default function AddReciever({ isOpen, close }) {
     console.log(text);
     dispatch(postPayee({accountId: accountId, name: text})).then(() => {
       dispatch(incrementDummyKey());
+      close(false);
       setText('');
     });
   };
@@ -30,8 +31,6 @@ export default function AddReciever({ isOpen, close }) {
   const changeText = (event) => {
     setText(event.target.value);
   };
-
-
 
   return (
     <div>

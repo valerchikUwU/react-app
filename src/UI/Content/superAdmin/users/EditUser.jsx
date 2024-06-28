@@ -16,7 +16,7 @@ import {
   Autocomplete,
   Checkbox,
   MenuItem,
-  Select
+  Select,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,6 +26,7 @@ import { putEditUser } from "../../../../BLL/superAdmin/usersSuperAdminSlice.js"
 import CircularProgressCustom from "../../styledComponents/CircularProgress";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import CustomStyledCheckbox from "../../styledComponents/CustomStyledCheckbox.jsx";
 
 // Text Header
 const TextHeader = styled(TableCell)({
@@ -57,11 +58,16 @@ export default function EditUser({
   const [isFormValid, setIsFormValid] = useState(false);
   //Autocomplete
   const [selectedValues, setSelectedValues] = useState();
+  const [isBlocked, setIsBlocked] = useState();
 
   const [isFieldClearedName, setIsFieldClearedName] = useState({});
   const [isFieldClearedLastName, setIsFieldClearedLastName] = useState({});
   const [isFieldClearedTelephone, setIsFieldClearedTelephone] = useState({});
   const dispatch = useDispatch();
+
+useEffect(() => {
+  setIsBlocked(account.isBlocked);
+}, [account])
 
   const handleSave = () => {
     dispatch(
@@ -72,7 +78,8 @@ export default function EditUser({
         lastName: lastName || account.lastName,
         telephoneNumber: telephone || account.telephoneNumber,
         organizationList: selectedValues || account.organizationList,
-        roleId: role,
+        roleId: role || account.roleId,
+        isBlocked: isBlocked,
       })
     ).then(() => {
       changeDummyKey();
@@ -94,6 +101,7 @@ export default function EditUser({
     setTelephone("");
     setIsFormValid(true);
     setSelectedValues([]);
+    setIsBlocked();
   };
 
   const handleChangeRole = (e) => {
@@ -231,6 +239,9 @@ export default function EditUser({
     }
   };
 
+  const сhangeIsBlocked = (event) => {
+    setIsBlocked(event.target.checked);
+  }
   return (
     <>
       {isLoadingModal ? (
@@ -343,6 +354,17 @@ export default function EditUser({
                               background: "#fff",
                             }}
                           >
+                            Заблокировать
+                          </TextHeader>
+                          <TextHeader
+                            sx={{
+                              paddingY: 1,
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 100,
+                              background: "#fff",
+                            }}
+                          >
                             Организации
                           </TextHeader>
                         </TableRow>
@@ -429,6 +451,21 @@ export default function EditUser({
                                 Адимн
                               </MenuItem>
                             </Select>
+                          </TableCell>
+
+                          <TableCell
+                           sx={{
+                            fontFamily: "Montserrat",
+                            fontSize: "16px",
+                            fontWeight: 600,
+                            textAlign: "center",
+                          }}>
+                            <CustomStyledCheckbox
+                              sx={{ textAlign: "center" }}
+                              checked={ isBlocked }
+                              onChange={(event) => сhangeIsBlocked(event)}
+                              size={1}
+                            ></CustomStyledCheckbox>
                           </TableCell>
 
                           <TableCell

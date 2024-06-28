@@ -218,7 +218,7 @@ export default function DepositPage() {
                       autoHideDuration={2000}
                       onClose={handleClose}
                     >
-                      <Alert severity="error">Ошибка {errorDeposit}</Alert>
+                      <Alert severity="error">Ошибка</Alert>
                     </Snackbar>
                   )}
                 </div>
