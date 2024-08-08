@@ -9,12 +9,12 @@ export const getReview = createAsyncThunk(
       // Используем шаблонные строки для динамического формирования URL
       const response = await instance.get(`${accountId}/reviews`);
 
-      const priceDate = date[0];
-      const selectedDate = date[1]; // Преобразование строки даты в объект Date
+      const priceDate = new Date(date[0]);
+      const selectedDate = new Date(date[1]); // Преобразование строки даты в объект Date
 
       // Преобразуем даты из ответа сервера в объекты Date
       const filteredData = response.data.allPostyplenie.filter((item) => {
-        const itemDate = item.formattedDispatchDate;
+        const itemDate = item.timestamp;
         console.log(`itemDate ${itemDate}`);
         return itemDate >= priceDate && itemDate <= selectedDate;
       });
@@ -24,7 +24,7 @@ export const getReview = createAsyncThunk(
       let totalMainQuantity = 0;
       console.log(`date ${date}`);
       response.data.allPostyplenie.forEach((item) => {
-        const itemDate = item.formattedDispatchDate;
+        const itemDate = new Date(item.timestamp);
         console.log(` --------------------`);
         console.log(` itemDate ${itemDate}`);
         console.log(` priceDate ${priceDate}`);
