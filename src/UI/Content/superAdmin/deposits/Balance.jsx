@@ -50,7 +50,6 @@ export default function Balance({
     setModalAddDeposit(false);
   };
 
-  let balance = 0;
   return (
     <>
       {deposits.map((element) => (
@@ -200,12 +199,12 @@ export default function Balance({
 
                   <TableBody>
                     {orders?.map((item, index) => {
-
+                      let balance = 0;
                       if (item.Spisanie !== null) {
                         balance += Number(item.Spisanie);
                       }
                       if (item.Deposit !== null) {
-                        balance += item.Deposit;
+                        balance += Number(item.Deposit);
                       }
 
                       return (
