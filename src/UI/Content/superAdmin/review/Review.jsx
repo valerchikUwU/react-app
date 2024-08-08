@@ -76,7 +76,7 @@ export default function Review() {
           <DateRangePicker
             startText="Начальная дата"
             endText="Конечная дата"
-            format="DD/MM/YYYY"
+            format="DD.MM.YYYY"
             value={date}
             onChange={(newDates) => {
               // Обновляем состояние с новыми датами

@@ -11,16 +11,22 @@ export const getOrder = createAsyncThunk(
 
       console.log(response.data);
 
-      // Отсортировка массива orders_list по полю organizationName
       const sortedOrdersList = response.data.orders_list.sort((a, b) => {
+        // Сортировка по organizationName
         if (a.organizationName > b.organizationName) {
-          return 1; // a идет после b
+          return 1;
+        } else if (a.organizationName < b.organizationName) {
+          return -1;
         }
-        if (a.organizationName < b.organizationName) {
+        // Если organizationName равны, сортируем по formattedDispatchDate
+        if (a.formattedDispatchDate > b.formattedDispatchDate) {
+          return 1; // a идет после b
+        } else if (a.formattedDispatchDate < b.formattedDispatchDate) {
           return -1; // a идет перед b
         }
-        return 0; // a и b равны
+        return 0; // a и b равны по обоим полям
       });
+      
 
       return { orders_list: sortedOrdersList };
     } catch (error) {

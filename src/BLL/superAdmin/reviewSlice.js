@@ -9,8 +9,8 @@ export const getReview = createAsyncThunk(
       // Используем шаблонные строки для динамического формирования URL
       const response = await instance.get(`${accountId}/reviews`);
 
-      const priceDate = date[0].format("DD-MM-YYYY");
-      const selectedDate = date[1].format("DD-MM-YYYY"); // Преобразование строки даты в объект Date
+      const priceDate = date[0].format("DD.MM.YYYY");
+      const selectedDate = date[1].format("DD.MM.YYYY"); // Преобразование строки даты в объект Date
 
       // Преобразуем даты из ответа сервера в объекты Date
       const filteredData = response.data.allPostyplenie.filter((item) => {
@@ -22,12 +22,18 @@ export const getReview = createAsyncThunk(
       let totalSum = 0;
       let totalQuantity = 0;
       let totalMainQuantity = 0;
-
+console.log(`date ${date}`);
       response.data.allPostyplenie.forEach((item) => {
         const itemDate = item.formattedDispatchDate;
+        console.log(` --------------------`);
+        console.log(` itemDate ${itemDate}`);
+        console.log(` priceDate ${priceDate}`);
+        console.log(` selectedDate ${selectedDate}`);
         if (itemDate >= priceDate && itemDate <= selectedDate) {
+
           if (item.SUM !== null) {
             totalSum += parseFloat(item.SUM);
+            console.log(` SUM`);
           }
 
           if (item.totalQuantity !== null) {
@@ -40,15 +46,16 @@ export const getReview = createAsyncThunk(
         }
       });
 
-      console.log(`priceDate${priceDate}`);
-      console.log(`selectedDate${selectedDate}`);
-      console.log(response.data.allPostyplenie);
-      console.log(filteredData);
+      // console.log(`priceDate${priceDate}`);
+      // console.log(`selectedDate${selectedDate}`);
+      // console.log(response.data.allPostyplenie);
+      // console.log(filteredData);
       return {
         reviews: filteredData,
         SUM: totalSum,
         totalQuantity: totalQuantity,
         totalMainQuantity: totalMainQuantity,
+        response: response,
       };
     } catch (error) {
       return rejectWithValue(error.message);
