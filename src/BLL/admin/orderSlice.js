@@ -19,9 +19,9 @@ export const getOrder = createAsyncThunk(
           return -1;
         }
         // Если organizationName равны, сортируем по formattedDispatchDate
-        if (a.formattedDispatchDate > b.formattedDispatchDate) {
+        if (a.dispatchDate > b.dispatchDate) {
           return 1; // a идет после b
-        } else if (a.formattedDispatchDate < b.formattedDispatchDate) {
+        } else if (a.dispatchDate < b.dispatchDate) {
           return -1; // a идет перед b
         }
         return 0; // a и b равны по обоим полям
