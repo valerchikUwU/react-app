@@ -24,6 +24,7 @@ export const getDepositBalance = createAsyncThunk(
       );
       const sortedOrders = response.data.orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       console.log(response.data);
+      console.log(sortedOrders);
       return {
         organization: response.data.organization,
         orders: sortedOrders,

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -19,6 +19,7 @@ import add from "../commission/image/add.svg";
 import exit from "../commission/image/exit.svg";
 import { styled } from "@mui/system";
 import AddDeposit from "./AddDeposit";
+import { memo } from "react";
 
 // Text Header
 const TextHeader = styled(TableCell)({
@@ -30,7 +31,7 @@ const TextHeader = styled(TableCell)({
   textAlign: "center",
 });
 
-export default function Balance({
+const Balance = memo(function Balance({
   openStates,
   close,
   deposits,
@@ -46,245 +47,260 @@ export default function Balance({
   const openAddDeposit = () => {
     setModalAddDeposit(true);
   };
-  const closeAddDeposit = () => {
+  const closeAddDeposit = useCallback(() => {
     setModalAddDeposit(false);
-  };
+  });
+  // let totalBalance = 0; // Инициализируем переменную вне цикла
+
+  // orders?.forEach((item) => {
+  //   if (item.Spisanie !== null) {
+  //     totalBalance += Number(item.Spisanie);
+  //   }
+  //   if (item.Deposit !== null) {
+  //     totalBalance += Number(item.Deposit);
+  //   }
+  // });
 
   return (
     <>
-      {deposits.map((element) => (
-        <Modal open={openStates[element.id]} key={element.id}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateAreas: '"icon" "box"',
-              gridGap: "10px",
-              placeItems: "center",
-              height: "auto",
-              position: "absolute",
-              top: "45%",
-              left: "55%",
-              transform: "translate(-50%, -50%)",
-              width: "100%",
-              paddingTop: "5%",
-            }}
-          >
-            <Box
-              sx={{
-                backgroundColor: "white",
-                boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
-                padding: "4px",
-                borderRadius: "10px",
-                gridArea: "box",
-                alignSelf: "center",
+      {deposits.map((element) => {
+        let balance = 0;
+        return (
+          <Modal open={openStates[element.id]} key={element.id}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateAreas: '"icon" "box"',
+                gridGap: "10px",
+                placeItems: "center",
+                height: "auto",
                 position: "absolute",
-                maxHeight: "calc(100vh - 200px)",
-                overflow: "visible",
-                scrollbarWidth: "thin",
-                scrollbarColor: "#005475 #FFFFFF",
+                top: "45%",
+                left: "55%",
+                transform: "translate(-50%, -50%)",
+                width: "100%",
+                paddingTop: "5%",
               }}
             >
-              <IconButton
-                onClick={() => close(element.id)}
+              <Box
                 sx={{
+                  backgroundColor: "white",
+                  boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
+                  padding: "4px",
+                  borderRadius: "10px",
+                  gridArea: "box",
+                  alignSelf: "center",
                   position: "absolute",
-                  float: "right",
-                  top: "-38px",
-                  right: "-40px",
-                }}
-              >
-                <img src={exit} alt="закрыть" />
-              </IconButton>
-
-              <Box display="flex" justifyContent="center" alignItems="center">
-                <Typography
-                  variant="body2"
-                  component="span"
-                  sx={{
-                    fontFamily: "Montserrat",
-                    fontSize: "16px",
-                    fontWeight: 600,
-                    color: "#005475",
-                    borderBottom: "3px solid #005475",
-                    marginTop: "10px",
-                  }}
-                >
-                  Получатель {organization.organizationName}
-                </Typography>
-              </Box>
-
-              <TableContainer
-                component={Paper}
-                sx={{
-                  marginTop: "40px",
-                  maxHeight: "calc(100vh - 350px)",
-                  overflow: "auto",
+                  maxHeight: "calc(100vh - 200px)",
+                  overflow: "visible",
                   scrollbarWidth: "thin",
                   scrollbarColor: "#005475 #FFFFFF",
                 }}
               >
-                <Table stickyHeader>
-                  <TableHead>
-                    <TableRow>
-                      <TextHeader
-                        sx={{
-                          paddingY: 1,
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 100,
-                          background: "#fff",
-                        }}
-                      >
-                        Дата
-                      </TextHeader>
-                      <TextHeader
-                        sx={{
-                          paddingY: 1,
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 100,
-                          background: "#fff",
-                        }}
-                      >
-                        Счёт №
-                      </TextHeader>
-                      <TextHeader
-                        sx={{
-                          paddingY: 1,
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 100,
-                          background: "#fff",
-                        }}
-                      >
-                        Поступление
-                      </TextHeader>
-                      <TextHeader
-                        sx={{
-                          paddingY: 1,
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 100,
-                          background: "#fff",
-                        }}
-                      >
-                        Списание
-                      </TextHeader>
-                      <TextHeader
-                        sx={{
-                          paddingY: 1,
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 100,
-                          background: "#fff",
-                        }}
-                      >
-                        Остаток
-                      </TextHeader>
-                      <TextHeader
-                        sx={{
-                          paddingY: 1,
-                          position: "sticky",
-                          top: 0,
-                          zIndex: 100,
-                          background: "#fff",
-                        }}
-                      >
-                        <IconButton onClick={() => openAddDeposit()}>
-                          <img src={add} alt="плюс" />
-                        </IconButton>
-                      </TextHeader>
-                    </TableRow>
-                  </TableHead>
+                <IconButton
+                  onClick={() => close(element.id)}
+                  sx={{
+                    position: "absolute",
+                    float: "right",
+                    top: "-38px",
+                    right: "-40px",
+                  }}
+                >
+                  <img src={exit} alt="закрыть" />
+                </IconButton>
 
-                  <TableBody>
-                    {orders?.map((item, index) => {
-                      let balance = 0;
-                      if (item.Spisanie !== null) {
-                        balance += Number(item.Spisanie);
-                      }
-                      if (item.Deposit !== null) {
-                        balance += Number(item.Deposit);
-                      }
+                <Box display="flex" justifyContent="center" alignItems="center">
+                  <Typography
+                    variant="body2"
+                    component="span"
+                    sx={{
+                      fontFamily: "Montserrat",
+                      fontSize: "16px",
+                      fontWeight: 600,
+                      color: "#005475",
+                      borderBottom: "3px solid #005475",
+                      marginTop: "10px",
+                    }}
+                  >
+                    Получатель {organization.organizationName}
+                  </Typography>
+                </Box>
 
-                      return (
-                        <TableRow key={index}>
-                          <TableCell
-                            sx={{
-                              fontFamily: "Montserrat",
-                              fontSize: "16px",
-                              fontWeight: 600,
-                              color: index === 0 ? "#005475" : "#333333",
-                              textAlign: "center",
-                            }}
-                          >
-                            {item.formattedDispatchDate}
-                          </TableCell>
-                          <TableCell
-                            sx={{
-                              fontFamily: "Montserrat",
-                              fontSize: "16px",
-                              fontWeight: 600,
-                              color: index === 0 ? "#005475" : "#333333",
-                              textAlign: "center",
-                            }}
-                          >
-                            {item.billNumber}
-                          </TableCell>
-                          <TableCell
-                            sx={{
-                              fontFamily: "Montserrat",
-                              fontSize: "16px",
-                              fontWeight: 600,
-                              color: index === 0 ? "#005475" : "#333333",
-                              textAlign: "center",
-                            }}
-                          >
-                            {item.Deposit}
-                          </TableCell>
-                          <TableCell
-                            sx={{
-                              fontFamily: "Montserrat",
-                              fontSize: "16px",
-                              fontWeight: 600,
-                              color: index === 0 ? "#005475" : "#333333",
-                              textAlign: "center",
-                            }}
-                          >
-                            {item.Spisanie}
-                          </TableCell>
-                          <TableCell
-                            sx={{
-                              fontFamily: "Montserrat",
-                              fontSize: "16px",
-                              fontWeight: 600,
-                              color: index === 0 ? "#005475" : "#333333",
-                              textAlign: "center",
-                            }}
-                          >
-                            {balance}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                <TableContainer
+                  component={Paper}
+                  sx={{
+                    marginTop: "40px",
+                    maxHeight: "calc(100vh - 350px)",
+                    overflow: "auto",
+                    scrollbarWidth: "thin",
+                    scrollbarColor: "#005475 #FFFFFF",
+                  }}
+                >
+                  <Table stickyHeader>
+                    <TableHead>
+                      <TableRow>
+                        <TextHeader
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Дата
+                        </TextHeader>
+                        <TextHeader
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Счёт №
+                        </TextHeader>
+                        <TextHeader
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Поступление
+                        </TextHeader>
+                        <TextHeader
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Списание
+                        </TextHeader>
+                        <TextHeader
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          Остаток
+                        </TextHeader>
+                        <TextHeader
+                          sx={{
+                            paddingY: 1,
+                            position: "sticky",
+                            top: 0,
+                            zIndex: 100,
+                            background: "#fff",
+                          }}
+                        >
+                          <IconButton onClick={() => openAddDeposit()}>
+                            <img src={add} alt="плюс" />
+                          </IconButton>
+                        </TextHeader>
+                      </TableRow>
+                    </TableHead>
 
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "flex-end", // Плавное выравнивание кнопок справа
-                  marginTop: "60px",
-                  marginRight: "10px",
-                  gap: "15px",
-                  marginBottom: "20px",
-                }}
-              ></Box>
-            </Box>
-          </div>
-        </Modal>
-      ))}
+                    <TableBody> 
+                      {orders?.map((item, index) => {
+                        //orders.length и index
+                        if (item.Spisanie !== null) {
+                          balance += Number(item.Spisanie);
+                          console.log(`balance Spisanie ${balance}`);
+                        }
+                        if (item.Deposit !== null) {
+                          balance += Number(item.Deposit);
+                          console.log(`balance Deposit ${balance}`);
+                        }
+                        console.log(`Пиздец ${balance}`);
+                        return (
+                          <TableRow key={item.id}>
+                            <TableCell
+                              sx={{
+                                fontFamily: "Montserrat",
+                                fontSize: "16px",
+                                fontWeight: 600,
+                                color: index === 0 ? "#005475" : "#333333",
+                                textAlign: "center",
+                              }}
+                            >
+                              {item.formattedDispatchDate}
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                fontFamily: "Montserrat",
+                                fontSize: "16px",
+                                fontWeight: 600,
+                                color: index === 0 ? "#005475" : "#333333",
+                                textAlign: "center",
+                              }}
+                            >
+                              {item.billNumber}
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                fontFamily: "Montserrat",
+                                fontSize: "16px",
+                                fontWeight: 600,
+                                color: index === 0 ? "#005475" : "#333333",
+                                textAlign: "center",
+                              }}
+                            >
+                              {item.Deposit}
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                fontFamily: "Montserrat",
+                                fontSize: "16px",
+                                fontWeight: 600,
+                                color: index === 0 ? "#005475" : "#333333",
+                                textAlign: "center",
+                              }}
+                            >
+                              {item.Spisanie}
+                            </TableCell>
+                            <TableCell
+                              sx={{
+                                fontFamily: "Montserrat",
+                                fontSize: "16px",
+                                fontWeight: 600,
+                                color: index === 0 ? "#005475" : "#333333",
+                                textAlign: "center",
+                              }}
+                            >
+                              {balance}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end", // Плавное выравнивание кнопок справа
+                    marginTop: "60px",
+                    marginRight: "10px",
+                    gap: "15px",
+                    marginBottom: "20px",
+                  }}
+                ></Box>
+              </Box>
+            </div>
+          </Modal>
+        );
+      })}
       <AddDeposit
         open={modalAddDeposit}
         close={closeAddDeposit}
@@ -294,4 +310,6 @@ export default function Balance({
       ></AddDeposit>
     </>
   );
-}
+});
+
+export default Balance;

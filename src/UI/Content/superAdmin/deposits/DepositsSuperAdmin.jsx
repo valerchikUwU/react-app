@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback} from "react";
+import { useMemo } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import {
@@ -36,18 +37,22 @@ export default function DepositsSuperAdmin() {
   const [openStates, setOpenStates] = useState({});
   const [dummyKey, setDummyKey] = useState(0);
 
-  const changeDummyKey = () => {
-    setDummyKey((prevState)=> prevState + 1);
-  }
+  const changeDummyKey = useCallback(() => {
+    setDummyKey((prevState) => prevState + 1);
+  });
+  const depositsData = useSelector((state) => state.superAdminDeposits.deposits);
+  
+  const deposits = useMemo(() => {
+    return depositsData; 
+  }, [depositsData]);
 
-  const deposits = useSelector((state) => state.superAdminDeposits.deposits);
   const sortDeposit = [...deposits].sort((a, b) => {
     if (a.organizationName > b.organizationName) {
       return 1;
     } else if (a.organizationName < b.organizationName) {
       return -1;
     }
-    return 0; 
+    return 0;
   });
 
   useEffect(() => {
@@ -76,8 +81,12 @@ export default function DepositsSuperAdmin() {
     return setOpenStates({ ...openStates, [id]: true });
   };
 
-  const handleCloseModal = (id) =>
-    setOpenStates({ ...openStates, [id]: false });
+  const handleCloseModal = useCallback(
+    (id) => {
+      setOpenStates({ ...openStates, [id]: false });
+    },
+    []
+  );
 
   return (
     <div>
@@ -122,43 +131,50 @@ export default function DepositsSuperAdmin() {
             </TableHead>
 
             <TableBody>
-              {sortDeposit.map((element) => (
-                <TableRow key={element.id}>
-                  <TableCell
-                    sx={{
-                      fontFamily: '"Montserrat"',
-                      fontSize: "16px",
-                      color: "#005475",
-                      textAlign: "center",
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "",
-                      transition: "color 0.5s ease",
-                    }}
-                    onClick={() => OpenModal(element.id)}
-                  >
-                    {openStates[element.id] ?<img src={cursor} alt="курсор" style={{float:"left"}}></img> : null }
-                    {element.organizationName}
-                  </TableCell>
+              {sortDeposit.map((element) => {
+                return (
+                  <TableRow key={element.id}>
+                    <TableCell
+                      sx={{
+                        fontFamily: '"Montserrat"',
+                        fontSize: "16px",
+                        color: "#005475",
+                        textAlign: "center",
+                        backgroundColor: openStates[element.id]
+                          ? "#0031B01A"
+                          : "",
+                        transition: "color 0.5s ease",
+                      }}
+                      onClick={() => OpenModal(element.id)}
+                    >
+                      {openStates[element.id] ? (
+                        <img
+                          src={cursor}
+                          alt="курсор"
+                          style={{ float: "left" }}
+                        ></img>
+                      ) : null}
+                      {element.organizationName}
+                    </TableCell>
 
-                  <TableCell
-                    sx={{
-                      fontFamily: '"Montserrat"',
-                      fontSize: "16px",
-                      color: "#005475",
-                      textAlign: "center",
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "",
-                      transition: "color 0.5s ease",
-                    }}
-                    onClick={() => OpenModal(element.id)}
-                  >
-                    {element.allDeposits - element.SUM}
-                  </TableCell>
-
-                </TableRow>
-              ))}
+                    <TableCell
+                      sx={{
+                        fontFamily: '"Montserrat"',
+                        fontSize: "16px",
+                        color: "#005475",
+                        textAlign: "center",
+                        backgroundColor: openStates[element.id]
+                          ? "#0031B01A"
+                          : "",
+                        transition: "color 0.5s ease",
+                      }}
+                      onClick={() => OpenModal(element.id)}
+                    >
+                      {element.allDeposits - element.SUM}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>

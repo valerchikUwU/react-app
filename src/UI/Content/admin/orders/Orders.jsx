@@ -1877,7 +1877,7 @@ export default function Orders() {
                                         width: "70px",
                                       }}
                                     >
-                                      {product.name}
+                                      {product.name.split("&quot;").join('"')}
                                     </TableCell>
 
                                     <TableCell>

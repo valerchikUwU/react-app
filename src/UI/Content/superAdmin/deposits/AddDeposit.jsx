@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
+import {memo} from "react"
 import {
   Table,
   TableBody,
@@ -29,7 +30,7 @@ const TextHeader = styled(TableCell)({
   textAlign: "center",
 });
 
-export default function AddDeposit({
+const AddDeposit = memo (function AddDeposit({
   open,
   close,
   organizationCustomerId,
@@ -296,4 +297,6 @@ export default function AddDeposit({
       </Modal>
     </div>
   );
-}
+})
+
+export default  AddDeposit;

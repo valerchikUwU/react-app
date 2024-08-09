@@ -633,7 +633,7 @@ export default function Add({
                               width: "70px",
                             }}
                           >
-                            {product.name}
+                            {product.name.split("&quot;").join('"')}
                           </TableCell>
 
                           <TableCell sx={{ textAlign: "center" }}>
@@ -801,7 +801,7 @@ export default function Add({
                               width: "70px",
                             }}
                           >
-                            {product.name}
+                            {product.name.split("&quot;").join('"')}
                           </TableCell>
 
                           <TableCell>
