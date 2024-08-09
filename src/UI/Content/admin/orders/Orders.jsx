@@ -257,16 +257,20 @@ export default function Orders() {
     // Инициализация sumForOneTitle
     const initialSumForOneTitle = listModalTitles.reduce((acc, row) => {
       const price = selectedCheck[row.id]
-        ? selectedProduct[row.id]?.priceBooklet ||
-          row.price.priceBooklet
-        : selectedProduct[row.id]?.priceAccess ||
-          row.price.priceAccess;
+        ? selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet
+        : selectedProduct[row.id]?.priceAccess || row.price.priceAccess;
       acc[row.id] = parseFloat(selectedInput[row.id] || 0) * price;
       return acc;
     }, {});
 
     setSumForOneTitle(initialSumForOneTitle);
-  }, [ selectedProduct, productId, selectedCheck, selectedInput, listModalTitles]);
+  }, [
+    selectedProduct,
+    productId,
+    selectedCheck,
+    selectedInput,
+    listModalTitles,
+  ]);
 
   const OpenModal = (id) => {
     setIsLoadingModal(true);
@@ -379,7 +383,10 @@ export default function Orders() {
           ? selectedGeneration[row.id]
           : row.generation,
         quantity: selectedInput[row.id],
-        addBooklet: selectedCheck[row.id] === undefined ? row.addBooklet : selectedCheck[row.id],
+        addBooklet:
+          selectedCheck[row.id] === undefined
+            ? row.addBooklet
+            : selectedCheck[row.id],
       });
     });
 
@@ -402,14 +409,17 @@ export default function Orders() {
           ? productInputQuantity[item.id]
           : 1,
 
-      addBooklet: checkProductBooklet[item.id]  === undefined ? products.addBooklet : checkProductBooklet[item.id],
-       
-          // addBooklet: checkProductBooklet[item.id]
+        addBooklet:
+          checkProductBooklet[item.id] === undefined
+            ? products.addBooklet
+            : checkProductBooklet[item.id],
+
+        // addBooklet: checkProductBooklet[item.id]
         //   ? checkProductBooklet[item.id]
         //   : false,
       });
     });
-    
+
     dispatch(
       updateTitleOrderAdmin({
         accountId: accountId,
@@ -426,7 +436,10 @@ export default function Orders() {
         payeeId: payeeName[ObjectModalOrder.id]
           ? payeeName[ObjectModalOrder.id]
           : ObjectModalOrder.payeeId,
-        isFromDeposit:  selectedCheckDeposit === undefined ? ObjectModalOrder.isFromDeposit : selectedCheckDeposit,
+        isFromDeposit:
+          selectedCheckDeposit === undefined
+            ? ObjectModalOrder.isFromDeposit
+            : selectedCheckDeposit,
         titlesToUpdate: titlesToUpdate,
         titlesToCreate: titlesToCreate,
       })
@@ -571,7 +584,6 @@ export default function Orders() {
 
   // const sortedOrganizationList = [...ObjectModalOrder.organizationList].sort();
 
-
   return (
     <Box>
       {isLoading ? (
@@ -613,6 +625,17 @@ export default function Orders() {
                     background: "#fff",
                   }}
                 >
+                  №
+                </TextHeader>
+                <TextHeader
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
                   Заказчик
                 </TextHeader>
                 <TextHeader
@@ -627,6 +650,7 @@ export default function Orders() {
                   Академия
                 </TextHeader>
                 <TextHeader
+                  onClick={sortedNumber}
                   sx={{
                     paddingY: 1,
                     position: "sticky",
@@ -638,7 +662,6 @@ export default function Orders() {
                   Дата
                 </TextHeader>
                 <TextHeader
-                  onClick={sortedNumber}
                   sx={{
                     paddingY: 1,
                     position: "sticky",
@@ -647,7 +670,7 @@ export default function Orders() {
                     background: "#fff",
                   }}
                 >
-                  №
+                  № счета
                 </TextHeader>
                 <TextHeader
                   sx={{
@@ -680,18 +703,7 @@ export default function Orders() {
                     background: "#fff",
                   }}
                 >
-                  Состояние
-                </TextHeader>
-                <TextHeader
-                  sx={{
-                    paddingY: 1,
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 100,
-                    background: "#fff",
-                  }}
-                >
-                  № счета
+                 Состояние
                 </TextHeader>
                 <TextHeader
                   sx={{
@@ -724,11 +736,24 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
+
+                      textAlign: "center",
+                    }}
+                  >
+                    {order.orderNumber}
+                  </TableCell>
+
+                  <TableCell
+                    onClick={() => OpenModal(order.id)}
+                    sx={{
+                      fontFamily: "Montserrat",
+                      fontSize: "16px",
                       textAlign: "center",
                     }}
                   >
                     {order.fullName}
                   </TableCell>
+
                   <TableCell
                     onClick={() => OpenModal(order.id)}
                     sx={{
@@ -740,6 +765,7 @@ export default function Orders() {
                   >
                     {order.organizationName}
                   </TableCell>
+
                   <TableCell
                     onClick={() => OpenModal(order.id)}
                     sx={{
@@ -751,6 +777,7 @@ export default function Orders() {
                   >
                     {order.formattedDispatchDate}
                   </TableCell>
+
                   <TableCell
                     onClick={() => OpenModal(order.id)}
                     sx={{
@@ -760,8 +787,9 @@ export default function Orders() {
                       textAlign: "center",
                     }}
                   >
-                    {order.orderNumber}
+                    {order.billNumber}
                   </TableCell>
+
                   <TableCell
                     onClick={() => OpenModal(order.id)}
                     sx={{
@@ -773,6 +801,7 @@ export default function Orders() {
                   >
                     {order.SUM}&#x20bd;
                   </TableCell>
+
                   <TableCell
                     onClick={() => OpenModal(order.id)}
                     sx={{
@@ -797,17 +826,6 @@ export default function Orders() {
                     {order.status}
                   </TableCell>
 
-                  <TableCell
-                    onClick={() => OpenModal(order.id)}
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-
-                      textAlign: "center",
-                    }}
-                  >
-                    {order.billNumber}
-                  </TableCell>
 
                   <TableCell align="center" onClick={() => OpenModal(order.id)}>
                     {openStates[order.id] && <img src={cursor} alt="курсор" />}
@@ -954,23 +972,22 @@ export default function Orders() {
                                 )
                               }
                             >
-                              {[...allOrganizationsModal]?.sort()?.map(
-                                    (organization, index) => (
-                                      <MenuItem
-                                        key={index}
-                                        value={organization}
-                                        sx={{
-                                          fontFamily: "Montserrat",
-                                          fontSize: "16px",
-                                          textAlign: "center",
-                                          cursor: "pointer",
-                                        }}
-                                      >
-                                        {organization}
-                                      </MenuItem>
-                                    )
-                                  )
-                                }
+                              {[...allOrganizationsModal]
+                                ?.sort()
+                                ?.map((organization, index) => (
+                                  <MenuItem
+                                    key={index}
+                                    value={organization}
+                                    sx={{
+                                      fontFamily: "Montserrat",
+                                      fontSize: "16px",
+                                      textAlign: "center",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    {organization}
+                                  </MenuItem>
+                                ))}
                             </Select>
                           </TableCell>
 
@@ -1139,16 +1156,18 @@ export default function Orders() {
                               textAlign: "center",
                             }}
                           >
-                           
                             <CustomStyledCheckbox
                               sx={{ textAlign: "center" }}
-                              checked={ selectedCheckDeposit === undefined ? ObjectModalOrder.isFromDeposit : selectedCheckDeposit } 
+                              checked={
+                                selectedCheckDeposit === undefined
+                                  ? ObjectModalOrder.isFromDeposit
+                                  : selectedCheckDeposit
+                              }
                               onChange={(event) =>
                                 handleCheckboxChangeDeposit(event)
                               }
                               size={1}
                             ></CustomStyledCheckbox>
-                     
                           </TableCell>
                         </TableRow>
                       </TableBody>
@@ -1373,8 +1392,7 @@ export default function Orders() {
                                 zIndex: 100,
                                 background: "#fff",
                               }}
-                            >
-                            </TextHeader>
+                            ></TextHeader>
                           ) : (
                             ""
                           )}
@@ -1417,10 +1435,10 @@ export default function Orders() {
 
                               <TableCellModal>
                                 {selectedCheck[row.id]
-                                  ? selectedProduct[row.id]
-                                      ?.priceBooklet || row.price.priceBooklet
-                                  : selectedProduct[row.id]
-                                      ?.priceAccess || row.price.priceAccess}
+                                  ? selectedProduct[row.id]?.priceBooklet ||
+                                    row.price.priceBooklet
+                                  : selectedProduct[row.id]?.priceAccess ||
+                                    row.price.priceAccess}
                                 &#x20bd;
                               </TableCellModal>
 
@@ -1795,11 +1813,15 @@ export default function Orders() {
 
                                   <TableCell sx={{ textAlign: "center" }}>
                                     <CustomStyledCheckbox
-                                      sx={{ textAlign: "center" }}   
-                                      checked={selectedCheck[row.id] === 8 ? row.addBooklet : selectedCheck[row.id]} 
+                                      sx={{ textAlign: "center" }}
+                                      checked={
+                                        selectedCheck[row.id] === 8
+                                          ? row.addBooklet
+                                          : selectedCheck[row.id]
+                                      }
                                       onChange={(event) =>
                                         handleCheckboxChange(event, row.id)
-                                      }                                  
+                                      }
                                       size={1}
                                     ></CustomStyledCheckbox>
                                   </TableCell>
@@ -1833,11 +1855,9 @@ export default function Orders() {
 
                                   <TableCellModal>
                                     {selectedCheck[row.id]
-                                      ? selectedProduct[row.id]
-                                          ?.priceBooklet ||
+                                      ? selectedProduct[row.id]?.priceBooklet ||
                                         row.price.priceBooklet
-                                      : selectedProduct[row.id]
-                                          ?.priceAccess ||
+                                      : selectedProduct[row.id]?.priceAccess ||
                                         row.price.priceAccess}
                                     &#x20bd;
                                   </TableCellModal>
@@ -2002,7 +2022,10 @@ export default function Orders() {
                                     >
                                       <CustomStyledCheckbox
                                         checked={
-                                          checkProductBooklet[product.id]  === undefined ? products.addBooklet : checkProductBooklet[product.id] 
+                                          checkProductBooklet[product.id] ===
+                                          undefined
+                                            ? products.addBooklet
+                                            : checkProductBooklet[product.id]
                                         }
                                         onChange={(event) =>
                                           handleChangeCheckboxBooklet(
