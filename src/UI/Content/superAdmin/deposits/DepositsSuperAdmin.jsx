@@ -41,6 +41,15 @@ export default function DepositsSuperAdmin() {
   }
 
   const deposits = useSelector((state) => state.superAdminDeposits.deposits);
+  const sortDeposit = [...deposits].sort((a, b) => {
+    if (a.organizationName > b.organizationName) {
+      return 1;
+    } else if (a.organizationName < b.organizationName) {
+      return -1;
+    }
+    return 0; 
+  });
+
   useEffect(() => {
     setIsLoading(true);
     dispatch(getDeposit(accountId)).then(() => {
@@ -113,7 +122,7 @@ export default function DepositsSuperAdmin() {
             </TableHead>
 
             <TableBody>
-              {deposits.map((element) => (
+              {sortDeposit.map((element) => (
                 <TableRow key={element.id}>
                   <TableCell
                     sx={{

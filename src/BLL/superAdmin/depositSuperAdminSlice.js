@@ -22,7 +22,7 @@ export const getDepositBalance = createAsyncThunk(
       const response = await instance.get(
         `${accountId}/deposits/${organizationCustomerId}`
       );
-      const sortedOrders = response.data.orders.sort((a, b) => new Date(b.dispatchDate) - new Date(a.dispatchDate));
+      const sortedOrders = response.data.orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       console.log(response.data);
       return {
         organization: response.data.organization,

@@ -496,22 +496,66 @@ export default function PriceList() {
                         id="size-small-standard"
                         size="small"
                         freeSolo
-                        options={nameСourses || []}
+                        options={
+                          [...nameСourses].sort((a, b) => {
+                            if (
+                              a.productTypeId === 1 &&
+                              b.productTypeId !== 1
+                            ) {
+                              return -1;
+                            } else if (
+                              a.productTypeId !== 1 &&
+                              b.productTypeId === 1
+                            ) {
+                              return 1;
+                            } else if (a.productTypeId > b.productTypeId) {
+                              return 1;
+                            } else if (a.productTypeId < b.productTypeId) {
+                              return -1;
+                            } else {
+                              // If productTypeId values are equal, sort by the first letter of name
+                              const firstLetterA = a.name
+                                .charAt(0)
+                                .toUpperCase();
+                              const firstLetterB = b.name
+                                .charAt(0)
+                                .toUpperCase();
+
+                              if (firstLetterA > firstLetterB) {
+                                return 1;
+                              } else if (firstLetterA < firstLetterB) {
+                                return -1;
+                              } else {
+                                // If first letters are equal, names are considered equal in this context
+                                return 0;
+                              }
+                            }
+                          }).map(option => ({ ...option, groupTitle: option.productTypeId === 1 ? "Начальные" : option.productTypeId === 2 ? "Основные" :  option.productTypeId === 3 ? "Для персонала" : "Депозит"})) || []
+                        }
                         value={name || ""}
                         onChange={(event, newValue) =>
                           handleSelectName(event, newValue)
                         }
                         onInputChange={handleInputChange}
                         getOptionLabel={(option) =>
-                          option.name ? option.name.split("&quot;").join('"') : ""
+                          option.name
+                            ? option.name.split("&quot;").join('"')
+                            : ""
                         }
                         renderInput={(params) => (
                           <TextField
                             {...params}
                             variant="standard"
-                            label="Size small"
-                            placeholder="Favorites"
+                            label="Курс"
+                            placeholder="Имя курса"
                           />
+                        )}
+                        groupBy={(option) => option.groupTitle}
+                     
+                        renderOption={(props, option) => (
+                          <li {...props} key={option.id}>
+                            {option.name.split("&quot;").join('"')}
+                          </li>
                         )}
                       />
                     </StyledTableCellBody>

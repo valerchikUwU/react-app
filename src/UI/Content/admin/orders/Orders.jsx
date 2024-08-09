@@ -569,6 +569,9 @@ export default function Orders() {
 
   const sortedNumber = () => {};
 
+  // const sortedOrganizationList = [...ObjectModalOrder.organizationList].sort();
+
+
   return (
     <Box>
       {isLoading ? (
@@ -951,7 +954,7 @@ export default function Orders() {
                                 )
                               }
                             >
-                              {ObjectModalOrder.organizationList?.map(
+                              {[...allOrganizationsModal]?.sort()?.map(
                                     (organization, index) => (
                                       <MenuItem
                                         key={index}

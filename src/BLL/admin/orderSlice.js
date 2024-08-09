@@ -68,7 +68,7 @@ export const getOrderModal = createAsyncThunk(
         titles: response.data.titles,
         products: response.data.products,
         payees: response.data.payees,
-        allOrganizationsModal: response.data.allOrganizations,
+        allOrganizationsModal: response.data.order.organizationList,
       };
     } catch (error) {
       return rejectWithValue(error.message);
