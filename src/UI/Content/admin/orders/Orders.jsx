@@ -71,6 +71,7 @@ export default function Orders() {
   const [isInputCleared, setIsInputCleared] = useState();
   const [selectedCheckDeposit, setSelectedCheckDeposit] = useState();
   const [isLoadingModal, setIsLoadingModal] = useState(false);
+  const [isLoadingModalSave, setIsLoadingModalSave] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // AddTitlesOrders.jsx
@@ -370,6 +371,7 @@ export default function Orders() {
   };
 
   const handleSave = (exitID) => {
+    setIsLoadingModalSave(true);
     const titlesToUpdate = [];
     listModalTitles.forEach((row) => {
       titlesToUpdate.push({
@@ -379,8 +381,8 @@ export default function Orders() {
         accessType: selectedCheck[row.id]
           ? null
           : selectedAccessType[row.id]
-          ? selectedAccessType[row.id]
-          : row.accessType,
+             ? selectedAccessType[row.id]
+             : row.accessType,
 
         generation: selectedGeneration[row.id]
           ? selectedGeneration[row.id]
@@ -401,16 +403,23 @@ export default function Orders() {
       titlesToCreate.push({
         productId: item.id,
 
+        // accessType: checkProductBooklet[item.id]
+        //   ? null
+        //   : selectProductAccessType[item.id]
+        //    ? selectProductAccessType[item.id]
+        //    : "Электронный",
+
         accessType: checkProductBooklet[item.id]
-          ? null
-          : selectProductAccessType[item.id]
-          ? selectProductAccessType[item.id]
-          : "Электронный",
+           ? null
+           : selectProductAccessType[item.id]
+            ? selectProductAccessType[item.id]
+            : "Электронный",
 
         generation: selectProductGeneration[item.id]
-          ? selectProductGeneration[item.id]
-          : "Второе поколение",
+           ? selectProductGeneration[item.id]
+           : "Второе поколение",
 
+      
         quantity: productInputQuantity[item.id]
           ? productInputQuantity[item.id]
           : 1,
@@ -420,9 +429,7 @@ export default function Orders() {
             ? products.addBooklet
             : checkProductBooklet[item.id],
 
-        // addBooklet: checkProductBooklet[item.id]
-        //   ? checkProductBooklet[item.id]
-        //   : false,
+        // addBooklet: checkProductBooklet[item.id] ? true : false, 
       });
     });
 
@@ -453,6 +460,7 @@ export default function Orders() {
       dispatch(getOrder(accountId));
       setOpenStates({ ...openStates, [exitID]: false });
       handleCloseModal(exitID);
+      setIsLoadingModalSave(false);
     });
   };
 
@@ -843,7 +851,15 @@ export default function Orders() {
         </TableContainer>
       )}
 
-      {isLoadingModal ? (
+      {
+      
+      isLoadingModalSave ? (
+        <Modal open={true}>
+          <CircularProgressCustom></CircularProgressCustom>
+        </Modal>
+      ) : (
+      
+      isLoadingModal ? (
         <Modal open={true}>
           <CircularProgressCustom></CircularProgressCustom>
         </Modal>
@@ -1961,7 +1977,6 @@ export default function Orders() {
                                           sx={{
                                             fontFamily: "Montserrat",
                                             fontSize: "16px",
-
                                             color: "#999999",
                                             textAlign: "center",
                                             cursor: "pointer",
@@ -1974,7 +1989,6 @@ export default function Orders() {
                                           sx={{
                                             fontFamily: "Montserrat",
                                             fontSize: "16px",
-
                                             color: "#999999",
                                             textAlign: "center",
                                             cursor: "pointer",
@@ -2040,12 +2054,23 @@ export default function Orders() {
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-
                                         color: "black",
                                         textAlign: "center",
                                       }}
                                     >
-                                      <CustomStyledCheckbox
+                                      {/* <CustomStyledCheckbox
+                                        checked={
+                                          checkProductBooklet[product.id] 
+                                        }
+                                        onChange={(event) =>
+                                          handleChangeCheckboxBooklet(
+                                            event,
+                                            product.id
+                                          )
+                                        }
+                                      ></CustomStyledCheckbox> */}
+
+                                         <CustomStyledCheckbox
                                         checked={
                                           checkProductBooklet[product.id] ===
                                           undefined
@@ -2059,6 +2084,7 @@ export default function Orders() {
                                           )
                                         }
                                       ></CustomStyledCheckbox>
+
                                     </TableCell>
 
                                     <TableCell>
@@ -2215,7 +2241,7 @@ export default function Orders() {
             </div>
           </Modal>
         ))
-      )}
+      ))}
 
       <AddSelectProduct
         isOpenModalUpdate={isOpenModalUpdate}

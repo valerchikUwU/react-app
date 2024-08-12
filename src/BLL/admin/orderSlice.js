@@ -26,7 +26,6 @@ export const getOrder = createAsyncThunk(
         }
         return 0; // a и b равны по обоим полям
       });
-      
 
       return { orders_list: sortedOrdersList };
     } catch (error) {
@@ -41,11 +40,22 @@ export const getNewOrder = createAsyncThunk(
     try {
       // Используем шаблонные строки для динамического формирования URL
       const response = await instance.get(`${accountId}/orders/admin/newOrder`);
-
+      const organizationsSort = response.data.allOrganizations.sort((a,b) => {
+        if(a.organizationName > b.organizationName){
+          return 1;
+        } 
+        else if (a.organizationName < b.organizationName){
+          return -1;
+        } else {
+          return 0;
+        }
+      });
       console.log(response.data);
+      console.log("organizationsSort");
+      console.log(organizationsSort);
       return {
         allProducts: response.data.allProducts,
-        allOrganizations: response.data.allOrganizations,
+        allOrganizations: organizationsSort,
         allPayees: response.data.allPayees,
       };
     } catch (error) {
@@ -121,7 +131,7 @@ export const updateTitleOrderAdmin = createAsyncThunk(
       payeeId,
       isFromDeposit,
       titlesToUpdate,
-      titlesToCreate
+      titlesToCreate,
     },
     { rejectWithValue }
   ) => {
@@ -136,7 +146,7 @@ export const updateTitleOrderAdmin = createAsyncThunk(
           payeeId,
           isFromDeposit,
           titlesToUpdate,
-          titlesToCreate
+          titlesToCreate,
         }
       );
       console.log(response.data.organizationName);

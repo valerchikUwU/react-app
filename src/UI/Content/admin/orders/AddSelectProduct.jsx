@@ -34,7 +34,6 @@ export default function AddSelectProduct({
   selectProducts,
   exitAddSelectProduct,
   resetAddSelectProduct,
-
   deleteTitles,
   stateDeleteTitles,
   updateProductDelete,
