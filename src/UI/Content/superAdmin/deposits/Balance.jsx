@@ -20,6 +20,7 @@ import exit from "../commission/image/exit.svg";
 import { styled } from "@mui/system";
 import AddDeposit from "./AddDeposit";
 import { memo } from "react";
+import CircularProgressCustom from "../../styledComponents/CircularProgress";
 
 // Text Header
 const TextHeader = styled(TableCell)({
@@ -37,6 +38,7 @@ const Balance = memo(function Balance({
   deposits,
   accountId,
   changeDummyKey,
+  isLoadingModal,
 }) {
   const organization = useSelector(
     (state) => state.superAdminDeposits.organization
@@ -65,7 +67,11 @@ const Balance = memo(function Balance({
     <>
       {deposits.map((element) => {
         let balance = 0;
-        return (
+        return (isLoadingModal ? (
+          <Modal open={true}>
+            <CircularProgressCustom></CircularProgressCustom>
+          </Modal>
+        ) : (
           <Modal open={openStates[element.id]} key={element.id}>
             <div
               style={{
@@ -210,9 +216,10 @@ const Balance = memo(function Balance({
                       </TableRow>
                     </TableHead>
 
-                    <TableBody> 
+                    <TableBody>
                       {orders?.map((item, index) => {
                         //orders.length и index
+                       
                         if (item.Spisanie !== null) {
                           balance += Number(item.Spisanie);
                           console.log(`balance Spisanie ${balance}`);
@@ -277,12 +284,13 @@ const Balance = memo(function Balance({
                                 textAlign: "center",
                               }}
                             >
-                              {balance}
+                              {item.balance}
                             </TableCell>
                           </TableRow>
                         );
                       })}
                     </TableBody>
+
                   </Table>
                 </TableContainer>
 
@@ -299,8 +307,9 @@ const Balance = memo(function Balance({
               </Box>
             </div>
           </Modal>
-        );
+        ));
       })}
+
       <AddDeposit
         open={modalAddDeposit}
         close={closeAddDeposit}

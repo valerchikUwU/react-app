@@ -23,11 +23,31 @@ export const getDepositBalance = createAsyncThunk(
         `${accountId}/deposits/${organizationCustomerId}`
       );
       const sortedOrders = response.data.orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      const reverseArray = sortedOrders.reverse();
+       
+      let balance = 0;
+      const updatedArray = reverseArray.map((item) => {
+        if (item.Spisanie !== null) {
+          balance += Number(item.Spisanie);
+          console.log(`balance Spisanie ${balance}`);
+        }
+        if (item.Deposit !== null) {
+          balance += Number(item.Deposit);
+          console.log(`balance Deposit ${balance}`);
+        }
+      
+        // Возвращаем новый объект, содержащий все свойства оригинального объекта + поле balance
+        return {
+          ...item,
+          balance: balance,
+        };
+      });
+
       console.log(response.data);
       console.log(sortedOrders);
       return {
         organization: response.data.organization,
-        orders: sortedOrders,
+        orders: updatedArray.reverse(),
       };
     } catch (error) {
       return rejectWithValue(error.message);

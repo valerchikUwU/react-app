@@ -381,8 +381,8 @@ export default function Orders() {
         accessType: selectedCheck[row.id]
           ? null
           : selectedAccessType[row.id]
-             ? selectedAccessType[row.id]
-             : row.accessType,
+          ? selectedAccessType[row.id]
+          : row.accessType,
 
         generation: selectedGeneration[row.id]
           ? selectedGeneration[row.id]
@@ -410,16 +410,15 @@ export default function Orders() {
         //    : "Электронный",
 
         accessType: checkProductBooklet[item.id]
-           ? null
-           : selectProductAccessType[item.id]
-            ? selectProductAccessType[item.id]
-            : "Электронный",
+          ? null
+          : selectProductAccessType[item.id]
+          ? selectProductAccessType[item.id]
+          : "Электронный",
 
         generation: selectProductGeneration[item.id]
-           ? selectProductGeneration[item.id]
-           : "Второе поколение",
+          ? selectProductGeneration[item.id]
+          : "Второе поколение",
 
-      
         quantity: productInputQuantity[item.id]
           ? productInputQuantity[item.id]
           : 1,
@@ -429,7 +428,7 @@ export default function Orders() {
             ? products.addBooklet
             : checkProductBooklet[item.id],
 
-        // addBooklet: checkProductBooklet[item.id] ? true : false, 
+        // addBooklet: checkProductBooklet[item.id] ? true : false,
       });
     });
 
@@ -495,7 +494,7 @@ export default function Orders() {
 
     // Сброс selectedGeneration
     const initialSelectedGeneration = listModalTitles.reduce((acc, row) => {
-      acc[row.id] = '';
+      acc[row.id] = "";
       return acc;
     }, {});
 
@@ -851,15 +850,11 @@ export default function Orders() {
         </TableContainer>
       )}
 
-      {
-      
-      isLoadingModalSave ? (
+      {isLoadingModalSave ? (
         <Modal open={true}>
           <CircularProgressCustom></CircularProgressCustom>
         </Modal>
-      ) : (
-      
-      isLoadingModal ? (
+      ) : isLoadingModal ? (
         <Modal open={true}>
           <CircularProgressCustom></CircularProgressCustom>
         </Modal>
@@ -1695,11 +1690,11 @@ export default function Orders() {
                                           value={
                                             selectedCheck[row.id]
                                               ? selectedCheck[row.id] === 5
-                                                ? row.accessType 
+                                                ? row.accessType
                                                 : null
                                               : selectedAccessType[row.id]
-                                                ? selectedAccessType[row.id]
-                                                : row.accessType // не может быть
+                                              ? selectedAccessType[row.id]
+                                              : row.accessType // не может быть
                                           }
                                           onChange={(e) =>
                                             handleChangeAccessType(e, row.id)
@@ -1707,18 +1702,19 @@ export default function Orders() {
                                           disabled={
                                             selectedCheck[row.id]
                                               ? selectedCheck[row.id] === 5
-                                                ? row.addBooklet === true ?  true : false
+                                                ? row.addBooklet === true
+                                                  ? true
+                                                  : false
                                                 : true
                                               : null // не можект быть
-                                          } 
-                                          
-                                         // Добавляем условие для отключения
+                                          }
+
+                                          // Добавляем условие для отключения
                                           // displayEmpty
                                           // renderValue={(selected) =>
                                           //   selected === null ? null : selected
                                           // }
                                         >
-                                       
                                           <MenuItem
                                             value="Электронный"
                                             sx={{
@@ -1779,7 +1775,7 @@ export default function Orders() {
                                             value={null}
                                             disabled
                                           ></MenuItem> */}
-                                          
+
                                           <MenuItem
                                             value="Электронный"
                                             sx={{
@@ -2070,7 +2066,7 @@ export default function Orders() {
                                         }
                                       ></CustomStyledCheckbox> */}
 
-                                         <CustomStyledCheckbox
+                                      <CustomStyledCheckbox
                                         checked={
                                           checkProductBooklet[product.id] ===
                                           undefined
@@ -2084,7 +2080,6 @@ export default function Orders() {
                                           )
                                         }
                                       ></CustomStyledCheckbox>
-
                                     </TableCell>
 
                                     <TableCell>
@@ -2241,7 +2236,7 @@ export default function Orders() {
             </div>
           </Modal>
         ))
-      ))}
+      )}
 
       <AddSelectProduct
         isOpenModalUpdate={isOpenModalUpdate}

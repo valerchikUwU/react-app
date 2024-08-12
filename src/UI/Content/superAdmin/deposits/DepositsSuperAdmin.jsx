@@ -36,7 +36,7 @@ export default function DepositsSuperAdmin() {
   const [isLoading, setIsLoading] = useState(false);
   const [openStates, setOpenStates] = useState({});
   const [dummyKey, setDummyKey] = useState(0);
-
+  const [isLoadingModal, setIsLoadingModal] = useState(false);
   const changeDummyKey = useCallback(() => {
     setDummyKey((prevState) => prevState + 1);
   });
@@ -66,6 +66,7 @@ export default function DepositsSuperAdmin() {
     // Find the first open modal
     let openModalId = Object.keys(openStates).find((id) => openStates[id]);
     if (openModalId) {
+      setIsLoadingModal(true);
       console.log(openModalId);
       // Assuming you have the accountId available, replace "1" with the actual accountId
       dispatch(
@@ -73,7 +74,9 @@ export default function DepositsSuperAdmin() {
           accountId: accountId,
           organizationCustomerId: openModalId,
         })
-      );
+      ).then(() => {
+        setIsLoadingModal(false);
+      });
     }
   }, [openStates, dispatch, dummyKey]);
 
@@ -140,6 +143,7 @@ export default function DepositsSuperAdmin() {
                         fontSize: "16px",
                         color: "#005475",
                         textAlign: "center",
+                        cursor:"pointer",
                         backgroundColor: openStates[element.id]
                           ? "#0031B01A"
                           : "",
@@ -163,6 +167,7 @@ export default function DepositsSuperAdmin() {
                         fontSize: "16px",
                         color: "#005475",
                         textAlign: "center",
+                        cursor:"pointer",
                         backgroundColor: openStates[element.id]
                           ? "#0031B01A"
                           : "",
@@ -185,6 +190,7 @@ export default function DepositsSuperAdmin() {
         deposits={deposits}
         accountId={accountId}
         changeDummyKey={changeDummyKey}
+        isLoadingModal={isLoadingModal}
       ></Balance>
     </div>
   );
