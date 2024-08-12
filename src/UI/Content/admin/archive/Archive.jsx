@@ -72,6 +72,17 @@ export default function Archive() {
                     background: "#fff",
                   }}
                 >
+                  №
+                </StyledTableCellHead>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
                   Заказчик
                 </StyledTableCellHead>
                 <StyledTableCellHead
@@ -105,18 +116,7 @@ export default function Archive() {
                     background: "#fff",
                   }}
                 >
-                  №
-                </StyledTableCellHead>
-                <StyledTableCellHead
-                  sx={{
-                    paddingY: 1,
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 100,
-                    background: "#fff",
-                  }}
-                >
-                  Сумма
+                  № Счета
                 </StyledTableCellHead>
 
                 <StyledTableCellHead
@@ -128,28 +128,28 @@ export default function Archive() {
                     background: "#fff",
                   }}
                 >
-                  № Счета
+                  Сумма
                 </StyledTableCellHead>
               </TableRow>
             </TableHead>
             <TableBody>
               {archive.map((element) => (
                 <TableRow key={element.id}>
+                   <StyledTableCellBody>
+                    {element.orderNumber}
+                  </StyledTableCellBody>
                   <StyledTableCellBody>{element.fullName}</StyledTableCellBody>
                   <StyledTableCellBody>
                     {element.organizationName}
                   </StyledTableCellBody>
                   <StyledTableCellBody>
                     {element.formattedDispatchDate}
-                  </StyledTableCellBody>
+                  </StyledTableCellBody> 
                   <StyledTableCellBody>
-                    {element.orderNumber}
+                    {element.billNumber}
                   </StyledTableCellBody>
                   <StyledTableCellBody>
                     {element.SUM} &#x20bd;
-                  </StyledTableCellBody>
-                  <StyledTableCellBody>
-                    {element.billNumber}
                   </StyledTableCellBody>
                 </TableRow>
               ))}
