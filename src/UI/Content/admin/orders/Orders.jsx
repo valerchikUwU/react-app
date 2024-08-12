@@ -240,6 +240,7 @@ export default function Orders() {
     const newErrors = {};
     listModalTitles.forEach((row) => {
       const isChecked = selectedCheck[row.id];
+      // const isChecked = selectedCheck[row.id] === 5 ? false : selectedCheck[row.id];
       const isSelectEmpty = !selectedAccessType[row.id];
       const isSelectEmpty1 = !row.accessType;
 
@@ -374,19 +375,24 @@ export default function Orders() {
       titlesToUpdate.push({
         id: row.id,
         productId: productId[row.id] ? productId[row.id] : row.productId,
+
         accessType: selectedCheck[row.id]
           ? null
           : selectedAccessType[row.id]
           ? selectedAccessType[row.id]
           : row.accessType,
+
         generation: selectedGeneration[row.id]
           ? selectedGeneration[row.id]
           : row.generation,
+
         quantity: selectedInput[row.id],
         addBooklet:
-          selectedCheck[row.id] === undefined
-            ? row.addBooklet
-            : selectedCheck[row.id],
+          selectedCheck[row.id] === 5 ? row.addBooklet : selectedCheck[row.id],
+        // addBooklet:
+        //   selectedCheck[row.id] === undefined
+        //     ? row.addBooklet
+        //     : selectedCheck[row.id],
       });
     });
 
@@ -465,7 +471,7 @@ export default function Orders() {
 
     // Сброс selectedCheck
     const initialSelectedCheck = listModalTitles.reduce((acc, row) => {
-      acc[row.id] = 8;
+      acc[row.id] = 5;
       return acc;
     }, {});
 
@@ -481,7 +487,7 @@ export default function Orders() {
 
     // Сброс selectedGeneration
     const initialSelectedGeneration = listModalTitles.reduce((acc, row) => {
-      acc[row.id] = row.generation;
+      acc[row.id] = '';
       return acc;
     }, {});
 
@@ -703,7 +709,7 @@ export default function Orders() {
                     background: "#fff",
                   }}
                 >
-                 Состояние
+                  Состояние
                 </TextHeader>
                 <TextHeader
                   sx={{
@@ -825,7 +831,6 @@ export default function Orders() {
                   >
                     {order.status}
                   </TableCell>
-
 
                   <TableCell align="center" onClick={() => OpenModal(order.id)}>
                     {openStates[order.id] && <img src={cursor} alt="курсор" />}
@@ -1667,32 +1672,59 @@ export default function Orders() {
                                           sx={{
                                             fontFamily: "Montserrat",
                                             fontSize: "16px",
-
                                             textAlign: "center",
                                             cursor: "pointer",
                                             width: "150px",
                                           }}
                                           value={
                                             selectedCheck[row.id]
-                                              ? null
-                                              : selectedAccessType[row.id] ||
-                                                row.accessType
+                                              ? selectedCheck[row.id] === 5
+                                                ? row.accessType 
+                                                : null
+                                              : selectedAccessType[row.id]
+                                                ? selectedAccessType[row.id]
+                                                : row.accessType // не может быть
                                           }
                                           onChange={(e) =>
                                             handleChangeAccessType(e, row.id)
                                           }
                                           disabled={
-                                            selectedCheck[row.id] || false
-                                          } // Добавляем условие для отключения
-                                          displayEmpty
-                                          renderValue={(selected) =>
-                                            selected === null ? null : selected
-                                          }
+                                            selectedCheck[row.id]
+                                              ? selectedCheck[row.id] === 5
+                                                ? row.addBooklet === true ?  true : false
+                                                : true
+                                              : null // не можект быть
+                                          } 
+                                          
+                                         // Добавляем условие для отключения
+                                          // displayEmpty
+                                          // renderValue={(selected) =>
+                                          //   selected === null ? null : selected
+                                          // }
                                         >
+                                       
                                           <MenuItem
-                                            value={null}
-                                            disabled
-                                          ></MenuItem>
+                                            value="Электронный"
+                                            sx={{
+                                              fontFamily: "Montserrat",
+                                              fontSize: "16px",
+                                              textAlign: "center",
+                                              cursor: "pointer",
+                                            }}
+                                          >
+                                            Электронный
+                                          </MenuItem>
+                                          <MenuItem
+                                            value="Бумажный"
+                                            sx={{
+                                              fontFamily: "Montserrat",
+                                              fontSize: "16px",
+                                              textAlign: "center",
+                                              cursor: "pointer",
+                                            }}
+                                          >
+                                            Бумажный
+                                          </MenuItem>
                                         </Select>
                                         <FormHelperText error>
                                           {errors[row.id]}
@@ -1708,7 +1740,6 @@ export default function Orders() {
                                           sx={{
                                             fontFamily: "Montserrat",
                                             fontSize: "16px",
-
                                             textAlign: "center",
                                             cursor: "pointer",
                                             width: "150px",
@@ -1720,25 +1751,24 @@ export default function Orders() {
                                           onChange={(e) =>
                                             handleChangeAccessType(e, row.id)
                                           }
-                                          disabled={
-                                            selectedCheck[row.id] || false
-                                          } // Добавляем условие для отключения
-                                          displayEmpty
-                                          renderValue={(selected) =>
-                                            selected === null ? null : selected
-                                          }
+                                          // disabled={
+                                          //   selectedCheck[row.id] || false
+                                          // } // Добавляем условие для отключения
+                                          // displayEmpty
+                                          // renderValue={(selected) =>
+                                          //   selected === null ? null : selected
+                                          // }
                                         >
-                                          <MenuItem
+                                          {/* <MenuItem
                                             value={null}
                                             disabled
-                                          ></MenuItem>
-
+                                          ></MenuItem> */}
+                                          
                                           <MenuItem
                                             value="Электронный"
                                             sx={{
                                               fontFamily: "Montserrat",
                                               fontSize: "16px",
-
                                               textAlign: "center",
                                               cursor: "pointer",
                                             }}
@@ -1750,7 +1780,6 @@ export default function Orders() {
                                             sx={{
                                               fontFamily: "Montserrat",
                                               fontSize: "16px",
-
                                               textAlign: "center",
                                               cursor: "pointer",
                                             }}
@@ -1771,7 +1800,6 @@ export default function Orders() {
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-
                                         textAlign: "center",
                                         cursor: "pointer",
                                         width: "200px",
@@ -1789,7 +1817,6 @@ export default function Orders() {
                                         sx={{
                                           fontFamily: "Montserrat",
                                           fontSize: "16px",
-
                                           textAlign: "center",
                                           cursor: "pointer",
                                         }}
@@ -1801,7 +1828,6 @@ export default function Orders() {
                                         sx={{
                                           fontFamily: "Montserrat",
                                           fontSize: "16px",
-
                                           textAlign: "center",
                                           cursor: "pointer",
                                         }}
@@ -1815,7 +1841,7 @@ export default function Orders() {
                                     <CustomStyledCheckbox
                                       sx={{ textAlign: "center" }}
                                       checked={
-                                        selectedCheck[row.id] === 8
+                                        selectedCheck[row.id] === 5
                                           ? row.addBooklet
                                           : selectedCheck[row.id]
                                       }
@@ -1924,7 +1950,6 @@ export default function Orders() {
                                         sx={{
                                           fontFamily: "Montserrat",
                                           fontSize: "16px",
-
                                           color: "black",
                                           textAlign: "center",
                                           cursor: "pointer",
@@ -2070,7 +2095,6 @@ export default function Orders() {
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-
                                         color: "black",
                                         textAlign: "center",
                                       }}
