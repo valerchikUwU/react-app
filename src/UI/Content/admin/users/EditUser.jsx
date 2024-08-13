@@ -35,7 +35,14 @@ const TextHeader = styled(TableCell)({
   textAlign: "center",
 });
 
-export default function EditUser({ openStates, close, users, isLoadingModal, accountId, changeDummyKey}) {
+export default function EditUser({
+  openStates,
+  close,
+  users,
+  isLoadingModal,
+  accountId,
+  changeDummyKey,
+}) {
   const account = useSelector((state) => state.adminUser.editAccount);
   const organizations = useSelector(
     (state) => state.adminUser.editOrganizations
@@ -45,20 +52,21 @@ export default function EditUser({ openStates, close, users, isLoadingModal, acc
   const [lastName, setLastName] = useState("");
   const [telephone, setTelephone] = useState("");
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isLoadingModalSave, setIsLoadingModalSave] = useState(false);
   //Autocomplete
   const [selectedValues, setSelectedValues] = useState();
-
   const [isFieldClearedName, setIsFieldClearedName] = useState({});
   const [isFieldClearedLastName, setIsFieldClearedLastName] = useState({});
   const [isFieldClearedTelephone, setIsFieldClearedTelephone] = useState({});
   const dispatch = useDispatch();
 
   const handleSave = () => {
+    setIsLoadingModalSave(true);
     dispatch(
       putEditUser({
-        accountId: accountId, 
-        accountFocusId: account.id, 
-        firstName: name || account.firstName, 
+        accountId: accountId,
+        accountFocusId: account.id,
+        firstName: name || account.firstName,
         lastName: lastName || account.lastName,
         telephoneNumber: telephone || account.telephoneNumber,
         organizationList: selectedValues || account.organizationList,
@@ -66,14 +74,14 @@ export default function EditUser({ openStates, close, users, isLoadingModal, acc
     ).then(() => {
       changeDummyKey();
       closeModal(account.id);
-      console.log(account.id);
+      setIsLoadingModalSave(false);
     });
   };
 
-const closeModal = (id) => {
-  resetInput();
-  close(id);
-}
+  const closeModal = (id) => {
+    resetInput();
+    close(id);
+  };
   useEffect(() => {
     setSelectedValues(account.organizationList);
   }, [account]);
@@ -178,7 +186,7 @@ const closeModal = (id) => {
     setName(account.firstName);
     setLastName(account.lastName);
     setTelephone(account.telephoneNumber);
-    setSelectedValues( account.organizationList);
+    setSelectedValues(account.organizationList);
   };
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [inputValue, setInputValue] = useState("");
@@ -217,13 +225,14 @@ const closeModal = (id) => {
 
   return (
     <>
-      {isLoadingModal ? (
+      {
+      
+      (isLoadingModalSave || isLoadingModal) ? (
         <Modal open={true}>
           <CircularProgressCustom></CircularProgressCustom>
         </Modal>
       ) : (
         <>
-          {" "}
           {users?.map((element) => (
             <Modal open={openStates[element.id]} key={element.id}>
               <div
@@ -511,7 +520,8 @@ const closeModal = (id) => {
             </Modal>
           ))}
         </>
-      )}
+      )
+      }
     </>
   );
 }

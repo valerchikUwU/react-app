@@ -180,6 +180,8 @@ export default function Orders() {
     0
   );
 
+  const [sortedOrders, setSortedOrders] = useState([...orders]);
+  
   useEffect(() => {
     setIsLoading(true);
     dispatch(getOrder(accountId)).then(() => setIsLoading(false));
@@ -574,6 +576,13 @@ export default function Orders() {
     color: "#005475",
     borderBottom: "3px solid #005475",
     textAlign: "center",
+      // Добавляем класс hoverEffect для применения стилей при наведении
+  "&.hoverEffect": {
+    transition: "background-color 0.3s ease",
+  },
+  "&.hoverEffect:hover": {
+    backgroundColor: "#47bcd6", // Более темный оттенок #005475
+  },
   });
 
   const TableCellModal = styled(TableCell)({
@@ -593,9 +602,76 @@ export default function Orders() {
     marginBottom: "15px",
   });
 
-  const sortedNumber = () => {};
+  const sortNumber = (name) => {
+    const sortedData = [...sortedOrders];
+    switch (name) {
+      case "Number":
+        sortedData.sort((a, b) => {
+          if (a.orderNumber > b.orderNumber) {
+            return 1;
+          } else if (a.orderNumber < b.orderNumber) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedOrders(sortedData);
+        break;
 
-  // const sortedOrganizationList = [...ObjectModalOrder.organizationList].sort();
+      case "fullName":
+        sortedData.sort((a, b) => {
+          if (a.fullName > b.fullName) {
+            return 1;
+          } else if (a.fullName < b.fullName) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedOrders(sortedData);
+        break;
+
+      case "organizationName":
+        sortedData.sort((a, b) => {
+          if (a.organizationName > b.organizationName) {
+            return 1;
+          } else if (a.organizationName < b.organizationName) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedOrders(sortedData);
+        break;
+
+      case "formattedDispatchDate":
+        sortedData.sort((a, b) => {
+          if (a.formattedDispatchDate > b.formattedDispatchDate) {
+            return 1;
+          } else if (a.formattedDispatchDate < b.formattedDispatchDate) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedOrders(sortedData);
+        break;
+
+      case "billNumber":
+        sortedData.sort((a, b) => {
+          if (a.billNumber > b.billNumber) {
+            return 1;
+          } else if (a.billNumber < b.billNumber) {
+            return -1;
+          } else {
+            if (a.formattedDispatchDate > b.formattedDispatchDate) {
+              return 1;
+            } else if (a.formattedDispatchDate < b.formattedDispatchDate) {
+              return -1;
+            }
+            return 0;
+          }
+        });
+        setSortedOrders(sortedData);
+        break;
+    }
+  };
 
   return (
     <Box>
@@ -630,57 +706,81 @@ export default function Orders() {
             <TableHead>
               <TableRow>
                 <TextHeader
+                 className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
                     top: 0,
                     zIndex: 100,
                     background: "#fff",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    sortNumber("Number");
                   }}
                 >
                   №
                 </TextHeader>
                 <TextHeader
+                 className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
                     top: 0,
                     zIndex: 100,
                     background: "#fff",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    sortNumber("fullName");
                   }}
                 >
                   Заказчик
                 </TextHeader>
                 <TextHeader
+                 className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
                     top: 0,
                     zIndex: 100,
                     background: "#fff",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    sortNumber("organizationName");
                   }}
                 >
                   Академия
                 </TextHeader>
                 <TextHeader
-                  onClick={sortedNumber}
+                 className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
                     top: 0,
                     zIndex: 100,
                     background: "#fff",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    sortNumber("formattedDispatchDate");
                   }}
                 >
                   Дата
                 </TextHeader>
                 <TextHeader
+                 className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
                     top: 0,
                     zIndex: 100,
                     background: "#fff",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    sortNumber("billNumber");
                   }}
                 >
                   № счета
@@ -735,7 +835,7 @@ export default function Orders() {
             </TableHead>
 
             <TableBody>
-              {orders.map((order) => (
+              {sortedOrders.map((order) => (
                 <TableRow
                   key={order.id}
                   onClick={() => OpenModal(order.id)}

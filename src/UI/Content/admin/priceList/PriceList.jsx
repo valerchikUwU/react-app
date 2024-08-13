@@ -32,6 +32,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
+import CircularProgressCustom from "../../styledComponents/CircularProgress";
 
 dayjs.locale("ru");
 
@@ -79,6 +80,7 @@ export default function PriceList() {
   const [type, setType] = useState("");
   const [date, setDate] = useState(dayjs());
   const [modalDate, setModalDate] = useState(dayjs());
+  const [isLoadingModalSave, setIsLoadingModalSave] = useState(false);
 
   const nameСourses = useSelector((state) => state.adminPriceList.nameСourses);
 
@@ -134,6 +136,7 @@ export default function PriceList() {
   }, [type, name, abbreviation, priceAccess, priceBooklet]); // Зависимости useEffect
 
   const handleAdd = () => {
+    setIsLoadingModalSave(true);
     dispatch(
       postPrice({
         accountId: accountId,
@@ -147,6 +150,8 @@ export default function PriceList() {
       })
     ).then(() => {
       dispatch(getPriceList(accountId));
+      handleClose();
+      setIsLoadingModalSave(false);
     });
 
     resetForm();
@@ -402,6 +407,12 @@ export default function PriceList() {
         </Table>
       </TableContainer>
 
+
+      {isLoadingModalSave ? (
+        <Modal open={true}> 
+          <CircularProgressCustom></CircularProgressCustom>
+        </Modal>
+      ) : (
       <Modal open={isOpen}>
         <div
           style={{
@@ -651,7 +662,7 @@ export default function PriceList() {
             </Button>
           </Box>
         </div>
-      </Modal>
+      </Modal>)}
     </div>
   );
 }

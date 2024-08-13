@@ -11,6 +11,7 @@ export default function ErrorHandler({error, snackbarOpen, close, text}) {
 
   return (
     <>
+    {console.log(`error ${error}`)}
       {error === 200 && (
         <Snackbar
           open={snackbarOpen}

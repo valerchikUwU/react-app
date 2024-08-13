@@ -121,7 +121,7 @@ export const updateTitleOrder = createAsyncThunk(
       );
       return response.data.titlesToUpdate;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.response.status);
     }
   }
 );
@@ -153,6 +153,7 @@ const workSlice = createSlice({
     products:[],
     status: null,
     error: null,
+    errorUpdateTitleOrder: null,
 
   },
   reducers: {
@@ -239,6 +240,7 @@ const workSlice = createSlice({
     })
     .addCase(updateTitleOrder.fulfilled, (state, action) => {
       console.log('updateTitleOrder fulfilled', action.payload);
+      state.errorUpdateTitleOrder = 200;
       state.status = 'resolved';
       // state.drafts = action.payload;
     })
@@ -246,6 +248,7 @@ const workSlice = createSlice({
       console.log('updateTitleOrder rejected', action.payload);
       state.status = 'rejected';
       state.error = action.payload;
+      state.errorUpdateTitleOrder = action.payload;
     })
      //deleteTitleOrder
      .addCase(deleteTitleOrder.pending, (state) => {
