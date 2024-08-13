@@ -23,14 +23,13 @@ const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
   borderBottom: "3px solid #005475BF",
   textAlign: "center",
   opacity: "0.75",
-    // Добавляем класс hoverEffect для применения стилей при наведении
-    '&.hoverEffect': {
-      transition: 'background-color 0.3s ease',
-    },
-    '&.hoverEffect:hover': {
-      backgroundColor: '#afeeee', // Более темный оттенок #005475
-    },
-  
+  // Добавляем класс hoverEffect для применения стилей при наведении
+  "&.hoverEffect": {
+    transition: "background-color 0.3s ease",
+  },
+  "&.hoverEffect:hover": {
+    backgroundColor: "#afeeee", // Более темный оттенок #005475
+  },
 }));
 
 const StyledTableCellBody = styled(TableCell)(({ theme }) => ({
@@ -45,7 +44,6 @@ export default function Archive() {
   const dispatch = useDispatch();
   const { accountId } = useParams(); // Извлекаем accountId из URL
   const [isLoading, setIsLoading] = useState(false);
-  const [dummyKey, setDummyKey] = useState(0); // Dummy state to force re-render
   useEffect(() => {
     setIsLoading(true);
     dispatch(getArchive(accountId)).then(() => {
@@ -53,73 +51,77 @@ export default function Archive() {
     });
   }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
 
-
-
   const archive = useSelector((state) => state.adminArchive.archive);
   const [sortedArchive, setSortedArchive] = useState([...archive]);
 
   const sortNumber = (name) => {
     const sortedData = [...sortedArchive];
-    switch(name){
-      case 'Number': 
-          sortedData.sort((a, b) => {
+    switch (name) {
+      case "Number":
+        sortedData.sort((a, b) => {
           if (a.orderNumber > b.orderNumber) {
-          return 1;
+            return 1;
           } else if (a.orderNumber < b.orderNumber) {
             return -1;
           }
           return 0;
-          });
-          setSortedArchive(sortedData);
-          break;
+        });
+        setSortedArchive(sortedData);
+        break;
 
-      case 'fullName': 
-          sortedData.sort((a, b) => {
+      case "fullName":
+        sortedData.sort((a, b) => {
           if (a.fullName > b.fullName) {
-          return 1;
+            return 1;
           } else if (a.fullName < b.fullName) {
             return -1;
           }
           return 0;
-          });
-          setSortedArchive(sortedData);
-          break;
+        });
+        setSortedArchive(sortedData);
+        break;
 
-      case 'organizationName': 
-          sortedData.sort((a, b) => {
+      case "organizationName":
+        sortedData.sort((a, b) => {
           if (a.organizationName > b.organizationName) {
-          return 1;
+            return 1;
           } else if (a.organizationName < b.organizationName) {
             return -1;
           }
           return 0;
-          });
-          setSortedArchive(sortedData);
-          break;
+        });
+        setSortedArchive(sortedData);
+        break;
 
-      case 'formattedDispatchDate': 
-          sortedData.sort((a, b) => {
+      case "formattedDispatchDate":
+        sortedData.sort((a, b) => {
           if (a.formattedDispatchDate > b.formattedDispatchDate) {
-          return 1;
+            return 1;
           } else if (a.formattedDispatchDate < b.formattedDispatchDate) {
             return -1;
           }
           return 0;
-          });
-          setSortedArchive(sortedData);
-          break;
-          
-      case 'billNumber': 
-          sortedData.sort((a, b) => {
+        });
+        setSortedArchive(sortedData);
+        break;
+
+      case "billNumber":
+        sortedData.sort((a, b) => {
           if (a.billNumber > b.billNumber) {
-          return 1;
+            return 1;
           } else if (a.billNumber < b.billNumber) {
             return -1;
+          } else {
+            if (a.formattedDispatchDate > b.formattedDispatchDate) {
+              return 1;
+            } else if (a.formattedDispatchDate < b.formattedDispatchDate) {
+              return -1;
+            }
+            return 0;
           }
-          return 0;
-          });
-          setSortedArchive(sortedData);
-          break;
+        });
+        setSortedArchive(sortedData);
+        break;
     }
   };
 
@@ -150,12 +152,14 @@ export default function Archive() {
                     background: "#fff",
                     cursor: "pointer",
                   }}
-                  onClick={() => {sortNumber('Number')}}
+                  onClick={() => {
+                    sortNumber("Number");
+                  }}
                 >
                   №
                 </StyledTableCellHead>
                 <StyledTableCellHead
-                 className="hoverEffect"
+                  className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
@@ -164,12 +168,14 @@ export default function Archive() {
                     background: "#fff",
                     cursor: "pointer",
                   }}
-                  onClick={() => {sortNumber('fullName')}}
+                  onClick={() => {
+                    sortNumber("fullName");
+                  }}
                 >
                   Заказчик
                 </StyledTableCellHead>
                 <StyledTableCellHead
-                 className="hoverEffect"
+                  className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
@@ -178,12 +184,14 @@ export default function Archive() {
                     background: "#fff",
                     cursor: "pointer",
                   }}
-                  onClick={() => {sortNumber('organizationName')}}
+                  onClick={() => {
+                    sortNumber("organizationName");
+                  }}
                 >
                   Академия
                 </StyledTableCellHead>
                 <StyledTableCellHead
-                 className="hoverEffect"
+                  className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
@@ -192,12 +200,14 @@ export default function Archive() {
                     background: "#fff",
                     cursor: "pointer",
                   }}
-                  onClick={() => {sortNumber('formattedDispatchDate')}}
+                  onClick={() => {
+                    sortNumber("formattedDispatchDate");
+                  }}
                 >
                   Дата
                 </StyledTableCellHead>
                 <StyledTableCellHead
-                 className="hoverEffect"
+                  className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
@@ -206,7 +216,9 @@ export default function Archive() {
                     background: "#fff",
                     cursor: "pointer",
                   }}
-                  onClick={() => {sortNumber('billNumber')}}
+                  onClick={() => {
+                    sortNumber("billNumber");
+                  }}
                 >
                   № Счета
                 </StyledTableCellHead>

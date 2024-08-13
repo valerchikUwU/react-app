@@ -73,6 +73,7 @@ export default function Orders() {
   const [isLoadingModal, setIsLoadingModal] = useState(false);
   const [isLoadingModalSave, setIsLoadingModalSave] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingDelete, setIsLoadingDelete] = useState(false);
 
   // AddTitlesOrders.jsx
   const [checkProductBooklet, setcheckProductBooklet] = useState({});
@@ -181,7 +182,7 @@ export default function Orders() {
   );
 
   const [sortedOrders, setSortedOrders] = useState([...orders]);
-  
+
   useEffect(() => {
     setIsLoading(true);
     dispatch(getOrder(accountId)).then(() => setIsLoading(false));
@@ -305,6 +306,7 @@ export default function Orders() {
   };
 
   const handleDeleteOrder = (orderId, titleId) => {
+    setIsLoadingDelete(true);
     dispatch(
       deleteTitleOrder({
         accountId: accountId,
@@ -314,6 +316,7 @@ export default function Orders() {
     ).then(() => {
       dispatch(getOrder(accountId));
       setIsDeleteClicked(true);
+      setIsLoadingDelete(false);
     });
   };
 
@@ -576,13 +579,13 @@ export default function Orders() {
     color: "#005475",
     borderBottom: "3px solid #005475",
     textAlign: "center",
-      // Добавляем класс hoverEffect для применения стилей при наведении
-  "&.hoverEffect": {
-    transition: "background-color 0.3s ease",
-  },
-  "&.hoverEffect:hover": {
-    backgroundColor: "#47bcd6", // Более темный оттенок #005475
-  },
+    // Добавляем класс hoverEffect для применения стилей при наведении
+    "&.hoverEffect": {
+      transition: "background-color 0.3s ease",
+    },
+    "&.hoverEffect:hover": {
+      backgroundColor: "#47bcd6", // Более темный оттенок #005475
+    },
   });
 
   const TableCellModal = styled(TableCell)({
@@ -706,7 +709,7 @@ export default function Orders() {
             <TableHead>
               <TableRow>
                 <TextHeader
-                 className="hoverEffect"
+                  className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
@@ -722,7 +725,7 @@ export default function Orders() {
                   №
                 </TextHeader>
                 <TextHeader
-                 className="hoverEffect"
+                  className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
@@ -738,7 +741,7 @@ export default function Orders() {
                   Заказчик
                 </TextHeader>
                 <TextHeader
-                 className="hoverEffect"
+                  className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
@@ -754,7 +757,7 @@ export default function Orders() {
                   Академия
                 </TextHeader>
                 <TextHeader
-                 className="hoverEffect"
+                  className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
@@ -770,7 +773,7 @@ export default function Orders() {
                   Дата
                 </TextHeader>
                 <TextHeader
-                 className="hoverEffect"
+                  className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
@@ -955,6 +958,10 @@ export default function Orders() {
           <CircularProgressCustom></CircularProgressCustom>
         </Modal>
       ) : isLoadingModal ? (
+        <Modal open={true}>
+          <CircularProgressCustom></CircularProgressCustom>
+        </Modal>
+      ) : handleDeleteOrder ? (
         <Modal open={true}>
           <CircularProgressCustom></CircularProgressCustom>
         </Modal>

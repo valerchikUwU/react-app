@@ -86,7 +86,14 @@ export default function Deposits() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {deposits.map((element) => (
+              {[...deposits].sort((a,b) => {
+                if (a.organizationName > b.organizationName) {
+                  return 1;
+                } else if (a.organizationName < b.organizationName) {
+                  return -1;
+                }
+                return 0;
+              }).map((element) => (
                 <TableRow key={element.id}>
                   <StyledTableCellBody>
                     {element.organizationName}
