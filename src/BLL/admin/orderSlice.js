@@ -175,6 +175,8 @@ const orderSlice = createSlice({
     allPayees: [],
     status: null,
     error: null,
+    errorUpdateTitleOrderAdmin: null,
+    errorPutNewOrder: null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -229,16 +231,35 @@ const orderSlice = createSlice({
         console.log("updateTitleOrderAdmin pending");
         state.status = "loading";
         state.error = null;
+        state.errorUpdateTitleOrderAdmin = null;
       })
       .addCase(updateTitleOrderAdmin.fulfilled, (state, action) => {
         console.log("updateTitleOrderAdmin fulfilled", action.payload);
         state.status = "resolved";
+        state.errorUpdateTitleOrderAdmin = 200;
       })
       .addCase(updateTitleOrderAdmin.rejected, (state, action) => {
         console.log("updateTitleOrderAdmin rejected", action.payload);
         state.status = "rejected";
         state.error = action.payload;
-      });
+        state.errorUpdateTitleOrderAdmin = "что-то пошло не так";
+      })
+          //putNewOrder
+          .addCase(putNewOrder.pending, (state) => {
+            state.status = "loading";
+            state.error = null;
+            state.errorPutNewOrder = null;
+          })
+          .addCase(putNewOrder.fulfilled, (state, action) => {
+            state.status = "resolved";
+            state.errorPutNewOrder = 200;
+          })
+          .addCase(putNewOrder.rejected, (state, action) => {
+        
+            state.status = "rejected";
+            state.error = action.payload;
+            state.errorPutNewOrder = "что-то пошло не так";
+          });
   },
 });
 

@@ -16,6 +16,7 @@ import exit from "./image/exit.svg";
 import { styled } from "@mui/system";
 import { useState, useEffect, useRef } from "react";
 import CustomStyledCheckbox from "../../styledComponents/CustomStyledCheckbox";
+import ErrorHandler from "../../../Custom/ErrorHandler";
 
 // Text Header
 const TextHeader = styled(TableCell)({
@@ -135,6 +136,7 @@ export default function AddSelectProduct({
   };
 
   return (
+   
     <Modal open={isOpenModalUpdate}>
       <div
         style={{
@@ -409,5 +411,7 @@ export default function AddSelectProduct({
         </Box>
       </div>
     </Modal>
+
+    
   );
 }

@@ -33,6 +33,7 @@ import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import dayjs from "dayjs";
 import "dayjs/locale/ru";
 import CircularProgressCustom from "../../styledComponents/CircularProgress";
+import ErrorHandler from "../../../Custom/ErrorHandler";
 
 dayjs.locale("ru");
 
@@ -84,6 +85,8 @@ export default function PriceList() {
   const [isLoadingModalSave, setIsLoadingModalSave] = useState(false);
 
   const nameСourses = useSelector((state) => state.adminPriceList.nameСourses);
+  const errorPostPrice = useSelector((state) => state.adminPriceList.errorPostPrice);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const pricesInit = useSelector((state) => state.adminPriceList.pricesInit);
   const pricesMain = useSelector((state) => state.adminPriceList.pricesMain);
@@ -177,7 +180,8 @@ export default function PriceList() {
       dispatch(getPriceList(accountId));
       handleClose();
       setIsLoadingModalSave(false);
-    }, () => {setIsLoadingModalSave(false);});
+      setSnackbarOpen(true);
+    }, () => {setIsLoadingModalSave(false);  setSnackbarOpen(true);});
 
     resetForm();
   };
@@ -441,7 +445,6 @@ export default function PriceList() {
 }
   
 
-
       {isLoadingModalSave ? (
         <Modal open={true}> 
           <CircularProgressCustom></CircularProgressCustom>
@@ -697,6 +700,13 @@ export default function PriceList() {
           </Box>
         </div>
       </Modal>)}
+
+      <ErrorHandler
+        error={errorPostPrice}
+        snackbarOpen={snackbarOpen}
+        close={setSnackbarOpen}
+        text={"Прайс-лист добавлен"}
+      ></ErrorHandler>
     </div>
   );
 }

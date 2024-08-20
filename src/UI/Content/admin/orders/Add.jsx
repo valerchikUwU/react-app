@@ -28,6 +28,7 @@ import SelectProduct from "./SelectProduct";
 import FormControl from "@mui/material/FormControl";
 import FormHelperText from "@mui/material/FormHelperText";
 import CircularProgressCustom from "../../styledComponents/CircularProgress";
+import ErrorHandler from "../../../Custom/ErrorHandler";
 
 // Text Header
 const TextHeader = styled(TableCell)({
@@ -81,6 +82,9 @@ export default function Add({
 
   const [exitAddSelectProduct, setExitAddSelectProduct] = useState(false);
   const [isLoadingModalSave, setIsLoadingModalSave] = useState(false);
+
+  const errorPutNewOrder = useSelector((state) => state.adminOrder.errorPutNewOrder);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const allIds = Array.isArray(products) && products.map((row) => row.id);
   const totalSum =
@@ -210,7 +214,8 @@ export default function Add({
         resetStates();
         setIsOpen(false);
         setIsLoadingModalSave(false);
-      }, () => { setIsLoadingModalSave(false);});
+        setSnackbarOpen(true);
+      }, () => { setIsLoadingModalSave(false);  setSnackbarOpen(true);});
     }
   };
 
@@ -1027,6 +1032,12 @@ export default function Add({
           </div>
         </Modal>
       )}
+  <ErrorHandler
+        error={errorPutNewOrder}
+        snackbarOpen={snackbarOpen}
+        close={setSnackbarOpen}
+        text={"Заказ создан"}
+      ></ErrorHandler>
 
       <SelectProduct
         openModalProduct={openModalAddProduct}

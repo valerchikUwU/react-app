@@ -27,22 +27,52 @@ export default function Statistics() {
   );
   const [date, setDate] = useState(dayjs());
   const [maxSum, setMaxSum] = useState(0); // Добавляем состояние для хранения максимального значения SUM
-  
+
   useEffect(() => {
-    dispatch(getStatistics({ accountId: accountId, date: date }));
-  }, [accountId, date]); 
+    dispatch(getStatistics({ accountId: accountId }));
+  }, [accountId]);
+
+  const [statisticsFilter, setStatisticsFilter] = useState([]);
+
+  useEffect(() => {
+    setStatisticsFilter([...statistics]);
+  }, [statistics]);
+
+  useEffect(() => {
+    const array = [...statistics].filter((item) => {
+      const itemDate = new Date(item.timestamp);
+      const selectedDate = new Date(date); // Преобразование строки даты в объект Date
+      console.log(selectedDate);
+      return (
+        selectedDate.getFullYear() <= itemDate.getFullYear() &&
+        selectedDate.getMonth() <= itemDate.getMonth() && // Месяцы индексируются с 0
+        selectedDate.getDate() <= itemDate.getDate()
+      );
+    });
+
+    array.sort((a, b) => {
+      if (a.timestamp > b.timestamp) {
+        return 1;
+      } else if (a.timestamp < b.timestamp) {
+        return -1;
+      }
+      return 0;
+    });
+
+    setStatisticsFilter(array);
+  }, [date]);
 
   useEffect(() => {
     const max = Math.max(...transformedData.map((data) => data.SUM));
     setMaxSum(max);
-  }, [accountId, statistics]); 
+  }, [accountId, statisticsFilter]);
 
   const transformedData = useMemo(() => {
-    return statistics.map((stat, index) => ({
+    return statisticsFilter.map((stat, index) => ({
       date: `${dayjs(stat.timestamp).format("DD-MM-YYYY")}`,
       SUM: stat.SUM,
     }));
-  }, [statistics]);
+  }, [statisticsFilter]);
 
   return (
     <div>
@@ -61,7 +91,7 @@ export default function Statistics() {
           fontSize: "16px",
           fontWeight: 600,
           color: "black",
-          marginLeft:  "500px",
+          marginLeft: "500px",
         }}
       >
         Все продажи

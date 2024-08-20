@@ -36,10 +36,21 @@ export const getEditUser = createAsyncThunk(
 
 export const putEditUser = createAsyncThunk(
   "order/putEditUser",
-  async ({ accountId, accountFocusId, firstName,lastName, telephoneNumber, organizationList}, { rejectWithValue }) => {
+  async (
+    {
+      accountId,
+      accountFocusId,
+      firstName,
+      lastName,
+      telephoneNumber,
+      organizationList,
+    },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await instance.put(
-        `${accountId}/accounts/${accountFocusId}/update`, {firstName,lastName, telephoneNumber, organizationList}
+        `${accountId}/accounts/${accountFocusId}/update`,
+        { firstName, lastName, telephoneNumber, organizationList }
       );
       console.log(response.data);
     } catch (error) {
@@ -95,6 +106,8 @@ const userSlice = createSlice({
     editOrganizations: [],
     status: null,
     error: null,
+    errorPostAccount: null,
+    errorPutEditUser: null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -138,6 +151,34 @@ const userSlice = createSlice({
       .addCase(getOrganizationList.rejected, (state, action) => {
         state.status = "rejected";
         state.error = action.payload;
+      })
+      //postAccount
+      .addCase(postAccount.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+        state.errorPostAccount = null;
+      })
+      .addCase(postAccount.fulfilled, (state, action) => {
+        state.status = "resolved";
+        state.errorPostAccount = 200;
+      })
+      .addCase(postAccount.rejected, (state, action) => {
+        state.status = "rejected";
+        state.errorPostAccount = "в чем-то проблема";
+      })
+       //putEditUser
+       .addCase(putEditUser.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+        state.errorPutEditUser = null;
+      })
+      .addCase(putEditUser.fulfilled, (state, action) => {
+        state.status = "resolved";
+        state.errorPutEditUser = 200;
+      })
+      .addCase(putEditUser.rejected, (state, action) => {
+        state.status = "rejected";
+        state.errorPutEditUser ="в чем-то проблема";
       });
   },
 });

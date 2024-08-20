@@ -24,6 +24,7 @@ import { putEditUser } from "../../../../BLL/admin/userSlice";
 import CircularProgressCustom from "../../styledComponents/CircularProgress";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import ErrorHandler from "../../../Custom/ErrorHandler";
 
 // Text Header
 const TextHeader = styled(TableCell)({
@@ -44,9 +45,11 @@ export default function EditUser({
   changeDummyKey,
 }) {
   const account = useSelector((state) => state.adminUser.editAccount);
+  const errorPutEditUser = useSelector((state) => state.adminUser.errorPutEditUser);
   const organizations = useSelector(
     (state) => state.adminUser.editOrganizations
   );
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -75,6 +78,9 @@ export default function EditUser({
       changeDummyKey();
       closeModal(account.id);
       setIsLoadingModalSave(false);
+      setSnackbarOpen(true);
+    }, () => {
+      setSnackbarOpen(true);
     });
   };
 
@@ -521,6 +527,13 @@ export default function EditUser({
         </>
       )
       }
+            <ErrorHandler
+        error={errorPutEditUser}
+        snackbarOpen={snackbarOpen}
+        close={setSnackbarOpen}
+        text={"Пользователь редактирован"}
+      ></ErrorHandler>
+  
     </>
   );
 }

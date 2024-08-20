@@ -46,6 +46,7 @@ import FloatingScrollToTopButton from "../../styledComponents/FloatingScrollToTo
 import CircularProgressCustom from "../../styledComponents/CircularProgress.jsx";
 import AddSelectProduct from "./AddSelectProduct.jsx";
 import AddTitlesOrders from "./AddTitlesOrders.jsx";
+import ErrorHandler from "../../../Custom/ErrorHandler.jsx";
 
 export default function Orders() {
   const dispatch = useDispatch();
@@ -74,7 +75,7 @@ export default function Orders() {
   const [isLoadingModalSave, setIsLoadingModalSave] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
-
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   // AddTitlesOrders.jsx
   const [checkProductBooklet, setcheckProductBooklet] = useState({});
   const [selectProductGeneration, setSelectProductGeneration] = useState({});
@@ -161,6 +162,7 @@ export default function Orders() {
   };
 
   const orders = useSelector((state) => state.adminOrder.orders);
+  const errorUpdateTitleOrderAdmin = useSelector((state) => state.adminOrder.errorUpdateTitleOrderAdmin);
   const ListProductsModal = useSelector((state) => state.adminOrder?.products);
   const listModalTitles = useSelector((state) => state.adminOrder?.modalTitles);
   const ObjectModalOrder = useSelector((state) => state.adminOrder?.modalOrder);
@@ -478,7 +480,8 @@ export default function Orders() {
       setOpenStates({ ...openStates, [exitID]: false });
       handleCloseModal(exitID);
       setIsLoadingModalSave(false);
-    }, () => {setIsLoadingModalSave(false);} );
+      setSnackbarOpen(true);
+    }, () => {setIsLoadingModalSave(false);   setSnackbarOpen(true);} );
   };
 
   // Функция для сброса состояний
@@ -2364,6 +2367,13 @@ export default function Orders() {
         ))
       )}
 
+      <ErrorHandler
+        error={errorUpdateTitleOrderAdmin}
+        snackbarOpen={snackbarOpen}
+        close={setSnackbarOpen}
+        text={"Заказ обновлен"}
+      ></ErrorHandler>
+    
       <AddSelectProduct
         isOpenModalUpdate={isOpenModalUpdate}
         allProducts={sortAllProducts}

@@ -34,7 +34,7 @@ import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import CircularProgressCustom from "../../styledComponents/CircularProgress";
 import EditUser from "./EditUser";
-
+import ErrorHandler from "../../../Custom/ErrorHandler.jsx";
 // Создаем стилизованные компоненты с помощью styled
 const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
   fontFamily: '"Montserrat"',
@@ -71,6 +71,9 @@ export default function Users() {
 
   const users = useSelector((state) => state.adminUser?.users);
   const organizations = useSelector((state) => state.adminUser.organizations);
+  const errorPostAccount = useSelector(
+    (state) => state.adminUser.errorPostAccount
+  );
 
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -88,16 +91,17 @@ export default function Users() {
   const [openStates, setOpenStates] = useState({});
   const [dummyKey, setDummyKey] = useState(0);
 
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const [sortedUsers, setSortedUsers] = useState([...users]);
   useEffect(() => {
     setSortedUsers([...users]);
-  }, [users])
+  }, [users]);
 
   const changeDummyKey = () => {
     setDummyKey((prevState) => prevState + 1);
   };
-  
+
   useEffect(() => {
     // Find the first open modal
     let openModalId = Object.keys(openStates).find((id) => openStates[id]);
@@ -109,11 +113,14 @@ export default function Users() {
           accountId: accountId,
           accountFocusId: openModalId,
         })
-      ).then(() => {
-        setIsLoadingModal(false);
-      }, () => {
-        setIsLoadingModal(false);
-      });
+      ).then(
+        () => {
+          setIsLoadingModal(false);
+        },
+        () => {
+          setIsLoadingModal(false);
+        }
+      );
     }
   }, [openStates, dispatch]);
 
@@ -161,14 +168,19 @@ export default function Users() {
         telephoneNumber: "+" + telephone,
         organizationList: selectedValues,
       })
-    ).then(() => {
-      setDummyKey((prevState) => prevState + 1);
-      handleClose();
-      setIsLoadingModalSave(false);
-      resetForm();
-    }, () => {
-      setIsLoadingModalSave(false);
-    });  
+    ).then(
+      () => {
+        setDummyKey((prevState) => prevState + 1);
+        handleClose();
+        setIsLoadingModalSave(false);
+        setSnackbarOpen(true);
+        resetForm();
+      },
+      () => {
+        setIsLoadingModalSave(false);
+        setSnackbarOpen(true);
+      }
+    );
   };
 
   const handleChange = (e) => {
@@ -551,7 +563,7 @@ export default function Users() {
       ></EditUser>
 
       {isLoadingModalSave ? (
-        <Modal open = {true}>
+        <Modal open={true}>
           <CircularProgressCustom value={"55%"}></CircularProgressCustom>
         </Modal>
       ) : (
@@ -738,6 +750,13 @@ export default function Users() {
           </div>
         </Modal>
       )}
+
+      <ErrorHandler
+        error={errorPostAccount}
+        snackbarOpen={snackbarOpen}
+        close={setSnackbarOpen}
+        text={"Пользователь добавлен"}
+      ></ErrorHandler>
     </div>
   );
 }

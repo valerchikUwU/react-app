@@ -19,10 +19,10 @@ export const getModalAbbrevation = createAsyncThunk(
 
 export const getPriceList = createAsyncThunk(
   "priceList/getPriceList",
-  async ({accountId}, { rejectWithValue }) => {
+  async ({ accountId }, { rejectWithValue }) => {
     try {
       const response = await instance.get(`${accountId}/prices`);
-      
+
       console.log(response.data);
       return {
         pricesInit: response.data.pricesInit,
@@ -46,29 +46,33 @@ export const postPrice = createAsyncThunk(
       priceAccess,
       priceBooklet,
       activationDate,
-      selectedFile
+      selectedFile,
     },
     { rejectWithValue }
   ) => {
     try {
-    // Создаем экземпляр FormData
-    const formData = new FormData();
-      
-    // Добавляем все необходимые данные в formData
-    formData.append('name', name || '');
-    formData.append('productTypeId', productTypeId.toString());
-    formData.append('abbreviation', abbreviation);
-    formData.append('priceAccess', priceAccess);
-    formData.append('priceBooklet', priceBooklet);
-    formData.append('activationDate', activationDate.toISOString()); // Преобразование даты в строку ISO
-    formData.append('image', selectedFile); // Добавляем файл
-    
-    // Используем шаблонные строки для динамического формирования URL
-    const response = await instance.post(`${accountId}/prices/newPrice`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+      // Создаем экземпляр FormData
+      const formData = new FormData();
+
+      // Добавляем все необходимые данные в formData
+      formData.append("name", name || "");
+      formData.append("productTypeId", productTypeId.toString());
+      formData.append("abbreviation", abbreviation);
+      formData.append("priceAccess", priceAccess);
+      formData.append("priceBooklet", priceBooklet);
+      formData.append("activationDate", activationDate.toISOString()); // Преобразование даты в строку ISO
+      formData.append("image", selectedFile); // Добавляем файл
+
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.post(
+        `${accountId}/prices/newPrice`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       console.log(response.data);
       return response.data;
@@ -88,6 +92,7 @@ const userSlice = createSlice({
     nameСourses: [],
     status: null,
     error: null,
+    errorPostPrice: null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -119,6 +124,21 @@ const userSlice = createSlice({
       .addCase(getModalAbbrevation.rejected, (state, action) => {
         state.status = "rejected";
         state.error = action.payload;
+      })
+      //postPrice
+      .addCase(postPrice.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+        state.errorPostPrice = null;
+      })
+      .addCase(postPrice.fulfilled, (state, action) => {
+        state.status = "resolved";
+        state.errorPostPrice = 200;
+      })
+      .addCase(postPrice.rejected, (state, action) => {
+        state.status = "rejected";
+        state.error = action.payload;
+        state.errorPostPrice = "в чем-то проблема";
       });
   },
 });
