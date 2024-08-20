@@ -154,6 +154,7 @@ const workSlice = createSlice({
     status: null,
     error: null,
     errorUpdateTitleOrder: null,
+    errorDelete: null,
 
   },
   reducers: {
@@ -237,6 +238,7 @@ const workSlice = createSlice({
       console.log('updateTitleOrder pending');
       state.status = 'loading';
       state.error = null;
+      state.errorUpdateTitleOrder = null;
     })
     .addCase(updateTitleOrder.fulfilled, (state, action) => {
       console.log('updateTitleOrder fulfilled', action.payload);
@@ -255,15 +257,18 @@ const workSlice = createSlice({
       console.log('deleteTitleOrder pending');
       state.status = 'loading';
       state.error = null;
+      state.errorDelete = null;
     })
    .addCase(deleteTitleOrder.fulfilled, (state, action) => {
       console.log('deleteTitleOrder fulfilled', action.payload);
       state.status = 'resolved';
+      state.errorDelete = 200;
     })
    .addCase(deleteTitleOrder.rejected, (state, action) => {
       console.log('deleteTitleOrder rejected', action.payload);
       state.status = 'rejected';
       state.error = action.payload;
+      state.errorDelete = action.payload;
     });
  },
 });

@@ -75,7 +75,8 @@ export default function Work() {
   const [productId, setProductId] = useState({});
   const [isDeleteClicked, setIsDeleteClicked] = useState(false);
   const [isLoadingModal, setIsLoadingModal] = useState(false);
-  const [isLoadingModalSave, setIsLoadingModalSave] = useState(false);
+  const [isLoadingModalSaveAndDelete, setIsLoadingModalSaveAndDelete] = useState(false);
+  const [isLoadingModaдDelete, setIsLoadingModalDelete] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const list = useSelector((state) => state.work?.work || []);
@@ -88,8 +89,10 @@ export default function Work() {
     (state) => state.work?.workModalOrder || {}
   );
 
- const error = useSelector((state) => state.work.errorUpdateTitleOrder);
- const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const error = useSelector((state) => state.work.errorUpdateTitleOrder);
+  const errorDelete = useSelector((state) => state.work.errorDelete);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarOpenDelete, setSnackbarOpenDelete] = useState(false);
 
   const allIds = listModalTitles.map((row) => row.id);
   const totalSum = allIds.reduce(
@@ -222,25 +225,35 @@ export default function Work() {
   const handleCloseModal = (id) =>
     setOpenStates({ ...openStates, [id]: false });
 
-  const handleDeleteOrder = (orderId, titleId, productId) => {
+  const handleDeleteOrder = (orderId, titleId, productId, status) => {
+    setIsLoadingModalSaveAndDelete(true);
     dispatch(
       deleteTitleOrder({
         accountId: accountId,
         orderId: orderId,
         titleId: titleId,
       })
-    ).then(() => {
-      dispatch(deletePress({ id: productId }));
-      dispatch(decrementCountClick());
-      console.log("productId");
-      console.log(productId);
-      // После успешного выполнения deleteTitleOrder вызываем getWork
-      dispatch(getWork(accountId)); // для обновления полей когда еще пользователь находится в модальном окне на самой странице уже меняется
-      setIsDeleteClicked(true);
-    });
+    )
+      .then(() => {
+        if (status === "Черновик") {
+          dispatch(deletePress({ id: productId }));
+          dispatch(decrementCountClick());
+        }
+        setIsLoadingModalSaveAndDelete(false);
+        console.log("productId");
+        console.log(productId);
+        // После успешного выполнения deleteTitleOrder вызываем getWork
+        dispatch(getWork(accountId)); // для обновления полей когда еще пользователь находится в модальном окне на самой странице уже меняется
+        setIsDeleteClicked(true);
+        setSnackbarOpenDelete(true);
+      })
+      .catch(() => {
+        setIsLoadingModalSaveAndDelete(false);
+        setSnackbarOpenDelete(true);
+      });
   };
 
-  const handleIconClick = (orderId, organizationName) => {
+  const handleIconClick = (orderId, organizationName, status) => {
     dispatch(
       updateDraft({
         accountId: accountId,
@@ -249,8 +262,10 @@ export default function Work() {
       })
     ).then(() => {
       dispatch(getWork(accountId));
-      dispatch(deletePressSend());
-      dispatch(deleteCountClick());
+      if (status === "Черновик") {
+        dispatch(deletePressSend());
+        dispatch(deleteCountClick());
+      }
     });
     setDummyKey((prevKey) => prevKey + 1);
     setIsIconVisibleSend((prevState) => ({
@@ -340,7 +355,7 @@ export default function Work() {
   };
 
   const handleSave = () => {
-    setIsLoadingModalSave(true);
+    setIsLoadingModalSaveAndDelete(true);
     // Проверяем, есть ли хотя бы одна ошибка в массиве errors
     const hasErrors = Object.values(errors).some((error) => error !== null);
 
@@ -348,7 +363,7 @@ export default function Work() {
       // Создаем пустой массив для titlesToUpdate
       const titlesToUpdate = [];
       const changeProduct = [];
-     
+
       // Проходим по listModalTitles и проверяем условия для каждого элемента
       listModalTitles.forEach((row) => {
         titlesToUpdate.push({
@@ -382,13 +397,18 @@ export default function Work() {
             orderId: ObjectModalOrder.id,
             titlesToUpdate: titlesToUpdate, // titlesToUpdate теперь является массивом объектов
           })
-        ).then(() => {
-          // После успешного выполнения updateTitleOrder вызываем getWork
-          dispatch(getWork(accountId));
-          handleCloseModal(ObjectModalOrder.id);
-          setIsLoadingModalSave(false);
-          setSnackbarOpen(true);
-        }, () => { setSnackbarOpen(true);});
+        ).then(
+          () => {
+            // После успешного выполнения updateTitleOrder вызываем getWork
+            dispatch(getWork(accountId));
+            handleCloseModal(ObjectModalOrder.id);
+            setIsLoadingModalSaveAndDelete(false);
+            setSnackbarOpen(true);
+          },
+          () => {
+            setSnackbarOpen(true);
+          }
+        );
       } else {
         // Выводим сообщение или выполняем другую логику, если titlesToUpdate пуст
         console.log("Нет элементов для сохранения");
@@ -400,10 +420,9 @@ export default function Work() {
   };
 
   const handleSaveDeposit = () => {
-    setIsLoadingModalSave(true);
+    setIsLoadingModalSaveAndDelete(true);
     // Создаем пустой массив для titlesToUpdate
     const titlesToUpdate = [];
-    
 
     // Проходим по listModalTitles и проверяем условия для каждого элемента
     listModalTitles.forEach((row) => {
@@ -427,13 +446,18 @@ export default function Work() {
           orderId: ObjectModalOrder.id,
           titlesToUpdate: titlesToUpdate, // titlesToUpdate теперь является массивом объектов
         })
-      ).then(() => {
-        // После успешного выполнения updateTitleOrder вызываем getWork
-        dispatch(getWork(accountId));
-        handleCloseModal(ObjectModalOrder.id);
-        setIsLoadingModalSave(false);
-        setSnackbarOpen(true);
-      }, () => { setSnackbarOpen(true);});
+      ).then(
+        () => {
+          // После успешного выполнения updateTitleOrder вызываем getWork
+          dispatch(getWork(accountId));
+          handleCloseModal(ObjectModalOrder.id);
+          setIsLoadingModalSaveAndDelete(false);
+          setSnackbarOpen(true);
+        },
+        () => {
+          setSnackbarOpen(true);
+        }
+      );
     }
   };
 
@@ -484,16 +508,24 @@ export default function Work() {
   const TextHeader = styled(TableCell)({
     fontFamily: "Montserrat",
     fontSize: "16px",
-    fontWeight: 600,
+    fontWeight: "600",
     color: "#005475",
     borderBottom: "3px solid #005475",
     textAlign: "center",
+
+    // Добавляем класс hoverEffect для применения стилей при наведении
+    "&.hoverEffect": {
+      transition: "background-color 0.3s ease",
+    },
+    "&.hoverEffect:hover": {
+      backgroundColor: "#47bcd6", // Более темный оттенок #005475
+    },
   });
 
   const TableCellModal = styled(TableCell)({
     fontFamily: "Montserrat",
     fontSize: "16px",
-    fontWeight: 600,
+
     color: "#333333",
     textAlign: "center",
   });
@@ -509,6 +541,155 @@ export default function Work() {
     marginRight: "15px",
     marginBottom: "15px",
   });
+
+  const [sortedOrders, setSortedOrders] = useState([...list]);
+
+  useEffect(() => {
+    setSortedOrders([...list].sort(sortElementsByStatus));
+  }, [list]);
+
+  const sortNumber = (name) => {
+    const sortedData = [...sortedOrders];
+    switch (name) {
+      case "Number":
+        sortedData.sort((a, b) => {
+          // Сначала проверяем статус
+          if (a.status === "Черновик" && b.status !== "Черновик") {
+            return -1;
+          }
+          if (a.status !== "Черновик" && b.status === "Черновик") {
+            return 1;
+          }
+          if (
+            a.status === "Черновик депозита" &&
+            b.status !== "Черновик депозита"
+          ) {
+            return -1;
+          }
+          if (
+            a.status !== "Черновик депозита" &&
+            b.status === "Черновик депозита"
+          ) {
+            return 1;
+          }
+
+          // Затем сортируем по номеру заказа
+          if (a.orderNumber > b.orderNumber) {
+            return 1;
+          } else if (a.orderNumber < b.orderNumber) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedOrders(sortedData);
+        break;
+
+      case "organizationName":
+        sortedData.sort((a, b) => {
+          // Сначала проверяем статус
+          if (a.status === "Черновик" && b.status !== "Черновик") {
+            return -1;
+          }
+          if (a.status !== "Черновик" && b.status === "Черновик") {
+            return 1;
+          }
+          if (
+            a.status === "Черновик депозита" &&
+            b.status !== "Черновик депозита"
+          ) {
+            return -1;
+          }
+          if (
+            a.status !== "Черновик депозита" &&
+            b.status === "Черновик депозита"
+          ) {
+            return 1;
+          }
+
+          // Затем сортируем по полному имени
+          if (a.organizationName > b.organizationName) {
+            return 1;
+          } else if (a.organizationName < b.organizationName) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedOrders(sortedData);
+        break;
+
+      // Аналогично добавьте проверку статуса в остальные случаи...
+
+      case "billNumber":
+        sortedData.sort((a, b) => {
+          // Сначала проверяем статус
+          if (a.status === "Черновик" && b.status !== "Черновик") {
+            return -1;
+          }
+          if (a.status !== "Черновик" && b.status === "Черновик") {
+            return 1;
+          }
+          if (
+            a.status === "Черновик депозита" &&
+            b.status !== "Черновик депозита"
+          ) {
+            return -1;
+          }
+          if (
+            a.status !== "Черновик депозита" &&
+            b.status === "Черновик депозита"
+          ) {
+            return 1;
+          }
+
+          // Затем сортируем по номеру счета
+          if (a.billNumber > b.billNumber) {
+            return 1;
+          } else if (a.billNumber < b.billNumber) {
+            return -1;
+          } else {
+            if (a.formattedDispatchDate > b.formattedDispatchDate) {
+              return 1;
+            } else if (a.formattedDispatchDate < b.formattedDispatchDate) {
+              return -1;
+            }
+            return 0;
+          }
+        });
+        setSortedOrders(sortedData);
+        break;
+
+      case "formattedDispatchDate":
+        sortedData.sort((a, b) => {
+          if (a.status === "Черновик" && b.status !== "Черновик") {
+            return -1;
+          }
+          if (a.status !== "Черновик" && b.status === "Черновик") {
+            return 1;
+          }
+          if (
+            a.status === "Черновик депозита" &&
+            b.status !== "Черновик депозита"
+          ) {
+            return -1;
+          }
+          if (
+            a.status !== "Черновик депозита" &&
+            b.status === "Черновик депозита"
+          ) {
+            return 1;
+          }
+
+          if (a.dispatchDate > b.dispatchDate) {
+            return 1;
+          } else if (a.dispatchDate < b.dispatchDate) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedOrders(sortedData);
+        break;
+    }
+  };
 
   return (
     <>
@@ -548,34 +729,49 @@ export default function Work() {
               <TableHead>
                 <TableRow>
                   <TextHeader
+                    className="hoverEffect"
                     sx={{
                       paddingY: 1,
                       position: "sticky",
                       top: 0,
                       zIndex: 100,
                       background: "#fff",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      sortNumber("Number");
                     }}
                   >
                     №
                   </TextHeader>
                   <TextHeader
+                    className="hoverEffect"
                     sx={{
                       paddingY: 1,
                       position: "sticky",
                       top: 0,
                       zIndex: 100,
                       background: "#fff",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      sortNumber("organizationName");
                     }}
                   >
                     Академия
                   </TextHeader>
                   <TextHeader
+                    className="hoverEffect"
                     sx={{
                       paddingY: 1,
                       position: "sticky",
                       top: 0,
                       zIndex: 100,
                       background: "#fff",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      sortNumber("formattedDispatchDate");
                     }}
                   >
                     Дата
@@ -603,12 +799,17 @@ export default function Work() {
                     Состояние
                   </TextHeader>
                   <TextHeader
+                    className="hoverEffect"
                     sx={{
                       paddingY: 1,
                       position: "sticky",
                       top: 0,
                       zIndex: 100,
                       background: "#fff",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      sortNumber("billNumber");
                     }}
                   >
                     № счета
@@ -628,7 +829,7 @@ export default function Work() {
               </TableHead>
 
               <TableBody>
-                {sortedList.map((element) =>
+                {sortedOrders.map((element) =>
                   element.status === "Черновик" ||
                   element.status === "Черновик депозита" ? (
                     <TableRow key={element.id}>
@@ -637,7 +838,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: isTextBlack[element.id] ? "black" : "#999999",
                           textAlign: "center",
                           cursor: "pointer",
@@ -663,7 +864,7 @@ export default function Work() {
                             sx={{
                               fontFamily: "Montserrat",
                               fontSize: "16px",
-                              fontWeight: 600,
+
                               color: isTextBlack[element.id]
                                 ? "black"
                                 : "#999999",
@@ -683,7 +884,7 @@ export default function Work() {
                                 sx={{
                                   fontFamily: "Montserrat",
                                   fontSize: "16px",
-                                  fontWeight: 600,
+
                                   color: isTextBlack[element.id]
                                     ? "black"
                                     : "#999999",
@@ -703,7 +904,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: isTextBlack[element.id] ? "black" : "#999999",
                           textAlign: "center",
                           cursor: "pointer",
@@ -720,7 +921,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: isTextBlack[element.id] ? "black" : "#999999",
                           textAlign: "center",
                           cursor: "pointer",
@@ -737,7 +938,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: isTextBlack[element.id] ? "black" : "#999999",
                           textAlign: "center",
                           cursor: "pointer",
@@ -754,7 +955,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: isTextBlack[element.id] ? "black" : "#999999",
                           textAlign: "center",
                           cursor: "pointer",
@@ -785,7 +986,8 @@ export default function Work() {
                                   handleIconClick(
                                     element.id,
                                     selectedValues[element.id] ||
-                                      element.organizationName
+                                      element.organizationName,
+                                    element.status
                                   )
                                 }
                               >
@@ -802,7 +1004,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: "black",
                           textAlign: "center",
                           cursor: "pointer",
@@ -818,7 +1020,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: "black",
                           textAlign: "center",
                           cursor: "pointer",
@@ -834,7 +1036,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: "black",
                           textAlign: "center",
                           cursor: "pointer",
@@ -850,7 +1052,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: "black",
                           textAlign: "center",
                           cursor: "pointer",
@@ -866,7 +1068,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: "black",
                           textAlign: "center",
                           cursor: "pointer",
@@ -882,7 +1084,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: "black",
                           textAlign: "center",
                           cursor: "pointer",
@@ -927,7 +1129,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: "black",
                           textAlign: "center",
                         }}
@@ -939,7 +1141,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: "black",
                           textAlign: "center",
                         }}
@@ -951,7 +1153,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: "black",
                           textAlign: "center",
                         }}
@@ -963,7 +1165,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: "black",
                           textAlign: "center",
                         }}
@@ -975,7 +1177,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: "black",
                           textAlign: "center",
                         }}
@@ -987,7 +1189,7 @@ export default function Work() {
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: "black",
                           textAlign: "center",
                         }}
@@ -1018,7 +1220,7 @@ export default function Work() {
               }}
             />
           </Modal>
-        ) : isLoadingModalSave ? (
+        ) : isLoadingModalSaveAndDelete  ? (
           <Modal open={true}>
             <CircularProgress
               sx={{
@@ -1318,7 +1520,7 @@ export default function Work() {
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    fontWeight: 600,
+
                                     color: "black",
                                     textAlign: "center",
                                     cursor: "pointer",
@@ -1354,7 +1556,7 @@ export default function Work() {
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        fontWeight: 600,
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -1377,7 +1579,7 @@ export default function Work() {
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        fontWeight: 600,
+
                                         color: "black",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -1417,7 +1619,7 @@ export default function Work() {
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        fontWeight: 600,
+
                                         color: "black",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -1446,7 +1648,7 @@ export default function Work() {
                                         sx={{
                                           fontFamily: "Montserrat",
                                           fontSize: "16px",
-                                          fontWeight: 600,
+
                                           color: "#999999",
                                           textAlign: "center",
                                           cursor: "pointer",
@@ -1459,7 +1661,7 @@ export default function Work() {
                                         sx={{
                                           fontFamily: "Montserrat",
                                           fontSize: "16px",
-                                          fontWeight: 600,
+
                                           color: "#999999",
                                           textAlign: "center",
                                           cursor: "pointer",
@@ -1481,7 +1683,7 @@ export default function Work() {
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    fontWeight: 600,
+
                                     color: "black",
                                     textAlign: "center",
                                     cursor: "pointer",
@@ -1499,7 +1701,7 @@ export default function Work() {
                                     sx={{
                                       fontFamily: "Montserrat",
                                       fontSize: "16px",
-                                      fontWeight: 600,
+
                                       color: "#999999",
                                       textAlign: "center",
                                       cursor: "pointer",
@@ -1512,7 +1714,7 @@ export default function Work() {
                                     sx={{
                                       fontFamily: "Montserrat",
                                       fontSize: "16px",
-                                      fontWeight: 600,
+
                                       color: "#999999",
                                       textAlign: "center",
                                       cursor: "pointer",
@@ -1579,7 +1781,8 @@ export default function Work() {
                                     handleDeleteOrder(
                                       element.id,
                                       row.id,
-                                      productId[element.id] || row.productId
+                                      productId[element.id] || row.productId,
+                                      element.status
                                     )
                                   }
                                 >
@@ -1597,7 +1800,7 @@ export default function Work() {
                                 sx={{
                                   fontFamily: "Montserrat",
                                   fontSize: "16px",
-                                  fontWeight: 600,
+
                                   color: "#333333",
                                   textAlign: "center",
                                 }}
@@ -1632,15 +1835,18 @@ export default function Work() {
                                 {sumForOneTitle[row.id]} &#x20bd;
                               </TableCellModal>
 
-                              <TableCellModal>
-                                <IconButton
-                                  onClick={
-                                    () => handleDeleteOrder(element.id, row.id) //уточнить
-                                  }
-                                >
-                                  <img src={deleteGrey} alt="удалить" />
-                                </IconButton>
-                              </TableCellModal>
+                            
+                                <TableCellModal>
+                                  <IconButton
+                                    onClick={
+                                      () =>
+                                        handleDeleteOrder(element.id, row.id) //уточнить
+                                    }
+                                  >
+                                    <img src={deleteGrey} alt="удалить" />
+                                  </IconButton>
+                                </TableCellModal>
+                           
                             </TableRow>
                           ))}
                         </TableBody>
@@ -1700,7 +1906,7 @@ export default function Work() {
                           color: "#FFFFFF",
                           fontFamily: "Montserrat",
                           fontSize: "14px",
-                          fontWeight: 600,
+
                           "&:hover": {
                             backgroundColor: "#00435d",
                           },
@@ -1716,7 +1922,7 @@ export default function Work() {
                           backgroundColor: "#CCCCCC",
                           color: "#000000",
                           fontSize: "14px",
-                          fontWeight: 600,
+
                           fontFamily: "Montserrat",
                           border: 0,
                           "&:hover": {
@@ -1750,7 +1956,7 @@ export default function Work() {
                           color: "#FFFFFF",
                           fontFamily: "Montserrat",
                           fontSize: "14px",
-                          fontWeight: 600,
+
                           "&:hover": {
                             backgroundColor: "#00435d",
                           },
@@ -1767,7 +1973,7 @@ export default function Work() {
                           backgroundColor: "#CCCCCC",
                           color: "#000000",
                           fontSize: "14px",
-                          fontWeight: 600,
+
                           fontFamily: "Montserrat",
                           border: 0,
                           "&:hover": {
@@ -1792,6 +1998,13 @@ export default function Work() {
         snackbarOpen={snackbarOpen}
         close={setSnackbarOpen}
         text={"Черновик обновлен"}
+      ></ErrorHandler>
+
+<ErrorHandler
+        error={errorDelete}
+        snackbarOpen={snackbarOpenDelete}
+        close={setSnackbarOpenDelete}
+        text={"Удален"}
       ></ErrorHandler>
     </>
   );

@@ -8,8 +8,37 @@ export const getComission = createAsyncThunk(
     try {
       // Используем шаблонные строки для динамического формирования URL
       const response = await instance.get(`${accountId}/commisionRecievers`);
-      console.log(response.data.allCommisionRecievers);
-      return response.data.allCommisionRecievers;
+      const comision = [];
+
+      response.data.allCommisionRecievers.map((allCommisionRecievers) => {
+        response.data.commisionReceiverOperations.map(
+          (commisionReceiverOperations) => {
+            if (
+              allCommisionRecievers.id ===
+              commisionReceiverOperations.commisionRecieverId
+            ) {
+              comision.push({
+                ...allCommisionRecievers,
+                balance:
+                  commisionReceiverOperations.allPostyplenie -
+                  commisionReceiverOperations.allSpisanie,
+              });
+            }
+          }
+        );
+      });
+
+      const missingItems = response.data.allCommisionRecievers.filter(
+        (receiver) =>
+          !comision.some((commission) => commission.id === receiver.id)
+      );
+
+      const endArray = comision.concat(missingItems);
+
+      return {
+        commision: endArray,
+        response: response,
+      };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -28,6 +57,7 @@ export const getRules = createAsyncThunk(
       return {
         rules: response.data.allRules,
         allProducts: response.data.allProducts,
+        response: response,
       };
     } catch (error) {
       return rejectWithValue(error.message);
@@ -43,11 +73,35 @@ export const getBalance = createAsyncThunk(
       const response = await instance.get(
         `${accountId}/commisionRecievers/${commisionRecieverId}/balanceDetails`
       );
-      console.log(response.data);
+
+      const sortedOperations = [...response.data.operations].sort(
+        (a, b) => new Date(b.dateOfOperation) - new Date(a.dateOfOperation)
+      );
+
+      const reverseArray = sortedOperations.reverse();
+
+      let balance = 0;
+      const updatedArray = reverseArray.map((item) => {
+        if (item.Spisanie !== undefined) {
+          balance -= Number(item.Spisanie);
+          console.log(`balance Spisanie ${balance}`);
+        }
+        if (item.Postyplenie !== undefined) {
+          balance += Number(item.Postyplenie);
+          console.log(`balance Postyplenie ${balance}`);
+        }
+        return {
+          ...item,
+          balance: balance,
+        };
+      });
+
+      console.log(`updatedArray ${updatedArray}`);
+
       return {
         commisionReciever: response.data.commisionReceiver,
-        allPostyplenie: response.data.allPostyplenie,
-        operations: response.data.operations,
+        operations: updatedArray.reverse(),
+        response: response,
       };
     } catch (error) {
       return rejectWithValue(error.message);
@@ -76,12 +130,15 @@ export const postCommision = createAsyncThunk(
 
 export const postReciever = createAsyncThunk(
   "commision/postReciever",
-  async ({ accountId, commisionRecieverId, billNumber, Spisanie }, { rejectWithValue }) => {
+  async (
+    { accountId, commisionRecieverId, billNumber, Spisanie },
+    { rejectWithValue }
+  ) => {
     try {
       // Используем шаблонные строки для динамического формирования URL
       const response = await instance.post(
         `${accountId}/commisionRecievers/${commisionRecieverId}/balanceDetails/newOperation`,
-        {billNumber, Spisanie}
+        { billNumber, Spisanie }
       );
 
       console.log(response.data);
@@ -141,6 +198,7 @@ const commisionSlice = createSlice({
     commisionReceiver: {},
     allPostyplenie: [],
     operations: [],
+    combine: [],
     dummyKey: 0,
     status: null,
     error: null,
@@ -159,7 +217,7 @@ const commisionSlice = createSlice({
       })
       .addCase(getComission.fulfilled, (state, action) => {
         state.status = "resolved";
-        state.commision = action.payload;
+        state.commision = action.payload.commision;
       })
       .addCase(getComission.rejected, (state, action) => {
         state.status = "rejected";
@@ -189,6 +247,7 @@ const commisionSlice = createSlice({
         state.commisionReceiver = action.payload.commisionReciever;
         state.allPostyplenie = action.payload.allPostyplenie;
         state.operations = action.payload.operations;
+        state.combine = action.payload.combine;
       })
       .addCase(getBalance.rejected, (state, action) => {
         state.status = "rejected";

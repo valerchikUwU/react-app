@@ -42,6 +42,7 @@ export default function AddSelectProduct({
   const [active, setActive] = useState(false);
   const [activeDeposit, setActiveDeposit] = useState(false);
 
+
   useEffect(() => {
     const hasChecked = Object.values(check).some((value) => {
       return (

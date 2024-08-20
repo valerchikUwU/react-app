@@ -181,12 +181,25 @@ export default function Orders() {
     0
   );
 
+  const sortAllProducts = [...allProducts].sort((a, b) => {
+    if (a.abbreviation > b.abbreviation) {
+      return 1;
+    } else if (a.abbreviation < b.abbreviation) {
+      return -1;
+    }
+    return 0;
+  });
+
   const [sortedOrders, setSortedOrders] = useState([...orders]);
 
   useEffect(() => {
     setIsLoading(true);
     dispatch(getOrder(accountId)).then(() => setIsLoading(false));
-  }, [accountId]);
+  }, [accountId, dispatch]);
+
+  useEffect(() => {
+    setSortedOrders([...orders]);
+  }, [orders])
 
   useEffect(() => {
     // Find the first open modal
@@ -961,7 +974,7 @@ export default function Orders() {
         <Modal open={true}>
           <CircularProgressCustom></CircularProgressCustom>
         </Modal>
-      ) : handleDeleteOrder ? (
+      ) : isLoadingDelete ? (
         <Modal open={true}>
           <CircularProgressCustom></CircularProgressCustom>
         </Modal>
@@ -1305,100 +1318,106 @@ export default function Orders() {
                             {ObjectModalOrder.payeeName}
                           </TableCellModal>
                           <TableCell sx={{ textAlign: "center" }}>
-                            <Select
-                              variant="standard"
-                              sx={{
-                                fontFamily: "Montserrat",
-                                fontSize: "16px",
-
-                                textAlign: "center",
-                                cursor: "pointer",
-                                width: "150px",
-                              }}
-                              value={
-                                selectStatus[ObjectModalOrder.id] ||
-                                ObjectModalOrder.status
-                              }
-                              onChange={(event) =>
-                                handleChangeSelectStatus(
-                                  event,
-                                  ObjectModalOrder.id
-                                )
-                              }
-                            >
-                              <MenuItem
-                                value="Активный"
+                            {element.status === "Оплачен" ? (
+                              <Select
+                                variant="standard"
                                 sx={{
                                   fontFamily: "Montserrat",
                                   fontSize: "16px",
-
                                   textAlign: "center",
                                   cursor: "pointer",
+                                  width: "150px",
                                 }}
+                                value={
+                                  selectStatus[ObjectModalOrder.id] ||
+                                  ObjectModalOrder.status
+                                }
+                                onChange={(event) =>
+                                  handleChangeSelectStatus(
+                                    event,
+                                    ObjectModalOrder.id
+                                  )
+                                }
                               >
-                                Активный
-                              </MenuItem>
-                              <MenuItem
-                                value="Выставлен счёт"
+                                <MenuItem
+                                  value="Оплачен"
+                                  sx={{
+                                    fontFamily: "Montserrat",
+                                    fontSize: "16px",
+                                    textAlign: "center",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Оплачен
+                                </MenuItem>
+                                <MenuItem
+                                  value="Отправлен"
+                                  sx={{
+                                    fontFamily: "Montserrat",
+                                    fontSize: "16px",
+                                    textAlign: "center",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Отправлен
+                                </MenuItem>
+                                <MenuItem
+                                  value="Получен"
+                                  sx={{
+                                    fontFamily: "Montserrat",
+                                    fontSize: "16px",
+                                    textAlign: "center",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Получен
+                                </MenuItem>
+                              </Select>
+                            ) : (
+                              <Select
+                                variant="standard"
                                 sx={{
                                   fontFamily: "Montserrat",
                                   fontSize: "16px",
-
                                   textAlign: "center",
                                   cursor: "pointer",
+                                  width: "150px",
                                 }}
+                                value={
+                                  selectStatus[ObjectModalOrder.id] ||
+                                  ObjectModalOrder.status
+                                }
+                                onChange={(event) =>
+                                  handleChangeSelectStatus(
+                                    event,
+                                    ObjectModalOrder.id
+                                  )
+                                }
                               >
-                                Выставлен счёт
-                              </MenuItem>
-                              <MenuItem
-                                value="Оплачен"
-                                sx={{
-                                  fontFamily: "Montserrat",
-                                  fontSize: "16px",
-
-                                  textAlign: "center",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Оплачен
-                              </MenuItem>
-                              <MenuItem
-                                value="Отправлен"
-                                sx={{
-                                  fontFamily: "Montserrat",
-                                  fontSize: "16px",
-
-                                  textAlign: "center",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Отправлен
-                              </MenuItem>
-                              <MenuItem
-                                value="Получен"
-                                sx={{
-                                  fontFamily: "Montserrat",
-                                  fontSize: "16px",
-
-                                  textAlign: "center",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Получен
-                              </MenuItem>
-                              <MenuItem
-                                value="Отменен"
-                                sx={{
-                                  fontFamily: "Montserrat",
-                                  fontSize: "16px",
-
-                                  textAlign: "center",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Отменен
-                              </MenuItem>
-                            </Select>
+                                <MenuItem
+                                  value="Отправлен"
+                                  sx={{
+                                    fontFamily: "Montserrat",
+                                    fontSize: "16px",
+                                    textAlign: "center",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Отправлен
+                                </MenuItem>
+                                <MenuItem
+                                  value="Получен"
+                                  sx={{
+                                    fontFamily: "Montserrat",
+                                    fontSize: "16px",
+                                    textAlign: "center",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  Получен
+                                </MenuItem>
+                              </Select>
+                            )}
                           </TableCell>
                           <TableCellModal>
                             {ObjectModalOrder.billNumber}
@@ -2347,7 +2366,7 @@ export default function Orders() {
 
       <AddSelectProduct
         isOpenModalUpdate={isOpenModalUpdate}
-        allProducts={allProducts}
+        allProducts={sortAllProducts}
         setIsOpenModalUpdate={setIsOpenModalUpdate}
         selectProducts={handleChangeModalProduct}
         exitAddSelectProduct={exitAddSelectProduct}
@@ -2362,7 +2381,7 @@ export default function Orders() {
         setIsOpen={setIsOpen}
         allPayees={allPayees}
         allOrganizations={allOrganizations}
-        allProducts={allProducts}
+        allProducts={sortAllProducts}
       ></Add>
     </Box>
   );

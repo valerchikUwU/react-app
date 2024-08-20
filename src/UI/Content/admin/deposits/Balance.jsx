@@ -15,10 +15,8 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import add from "../commission/image/add.svg";
-import exit from "../commission/image/exit.svg";
+import exit from "./exit.svg";
 import { styled } from "@mui/system";
-import AddDeposit from "./AddDeposit";
 import { memo } from "react";
 import CircularProgressCustom from "../../styledComponents/CircularProgress";
 
@@ -44,30 +42,11 @@ const Balance = memo(function Balance({
     (state) => state.superAdminDeposits.organization
   );
   const orders = useSelector((state) => state.superAdminDeposits.orders);
-  const [modalAddDeposit, setModalAddDeposit] = useState(false);
 
-  const openAddDeposit = () => {
-    setModalAddDeposit(true);
-  };
-  const closeAddDeposit = useCallback(() => {
-    setModalAddDeposit(false);
-  });
-  
-  // let totalBalance = 0; // Инициализируем переменную вне цикла
-
-  // orders?.forEach((item) => {
-  //   if (item.Spisanie !== null) {
-  //     totalBalance += Number(item.Spisanie);
-  //   }
-  //   if (item.Deposit !== null) {
-  //     totalBalance += Number(item.Deposit);
-  //   }
-  // });
 
   return (
     <>
       {deposits.map((element) => {
-        let balance = 0;
         return (isLoadingModal ? (
           <Modal open={true}>
             <CircularProgressCustom></CircularProgressCustom>
@@ -201,19 +180,6 @@ const Balance = memo(function Balance({
                         >
                           Остаток
                         </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          <IconButton onClick={() => openAddDeposit()}>
-                            <img src={add} alt="плюс" />
-                          </IconButton>
-                        </TextHeader>
                       </TableRow>
                     </TableHead>
 
@@ -299,14 +265,6 @@ const Balance = memo(function Balance({
           </Modal>
         ));
       })}
-
-      <AddDeposit
-        open={modalAddDeposit}
-        close={closeAddDeposit}
-        organizationCustomerId={organization.id}
-        accountId={accountId}
-        changeDummyKey={changeDummyKey}
-      ></AddDeposit>
     </>
   );
 });

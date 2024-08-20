@@ -8,20 +8,25 @@ import {
   DialogContentText,
   DialogActions,
   TextField,
+  Modal,
 } from "@mui/material";
 import { incrementDummyKey, postCommision } from "../../../../BLL/superAdmin/comissionSlice";
+import CircularProgressCustom from "../../styledComponents/CircularProgress";
 
 export default function Add({ isOpen, close }) {
   const dispatch = useDispatch();
   const { accountId } = useParams(); // Извлекаем accountId из URL
+  const [loadingSave, setLoadingSave] = useState(false); 
   const [text, setText] = useState(); 
 
   const handleSave = () => {
+    setLoadingSave(true);
     console.log(text);
     dispatch(postCommision({accountId, commisionRecieverName: text })).then(() => {
       setText('');
       close(false);
       dispatch(incrementDummyKey()); 
+      setLoadingSave(false);
     });
   };
 
@@ -36,7 +41,12 @@ export default function Add({ isOpen, close }) {
 
   return (
     <div>
-      <Dialog
+      {loadingSave
+        ? (
+          <Modal open={true}>
+          <CircularProgressCustom></CircularProgressCustom>
+       </Modal>
+        ) : ( <Dialog
         open={isOpen}
         onClose={() => close(false)}
         hideBackdrop // Добавлено свойство для улучшения доступности
@@ -106,7 +116,8 @@ export default function Add({ isOpen, close }) {
             Отменить
           </Button>
         </DialogActions>
-      </Dialog>
+      </Dialog>)
+      }
     </div>
   );
 }

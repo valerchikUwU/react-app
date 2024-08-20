@@ -197,7 +197,7 @@ export default function Commission() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-                      fontWeight: 600,
+                     
                       color: "black",
                       textAlign: "center",
                     }}
@@ -210,7 +210,7 @@ export default function Commission() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-                      fontWeight: 600,
+                     
                       color: "black",
                       textAlign: "center",
                       cursor: "pointer",
@@ -224,13 +224,13 @@ export default function Commission() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-                      fontWeight: 600,
+                     
                       color: "black",
                       textAlign: "center",
                       cursor: "pointer",
                     }}
                   >
-                    Остаток
+                    {element.balance}
                   </TableCell>
                 </TableRow>
               ))}

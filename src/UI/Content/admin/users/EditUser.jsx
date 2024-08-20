@@ -455,7 +455,6 @@ export default function EditUser({
                                 <TextField
                                   {...params}
                                   label="Организации"
-                                  placeholder="Favorites"
                                   onKeyDown={handleKeyDown} // Обработчик для нажатия клавиш
                                   variant="standard"
                                 />

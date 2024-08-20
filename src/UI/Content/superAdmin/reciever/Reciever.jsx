@@ -52,7 +52,6 @@ export default function Reciever() {
     <>
       {isLoading ? (
         <CircularProgressCustom value={"55%"}> </CircularProgressCustom>
-        
       ) : (
         <div>
           <TableContainer
@@ -95,21 +94,29 @@ export default function Reciever() {
               </TableHead>
 
               <TableBody>
-                {payees?.map((element) => (
-                  <TableRow>
-                    <TableCell
-                      sx={{
-                        fontFamily: "Montserrat",
-                        fontSize: "16px",
-                        fontWeight: 600,
-                        color: "black",
-                        textAlign: "center",
-                      }}
-                    >
-                      {element.name}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {[...payees]
+                  ?.sort((a, b) => {
+                    if (a.name > b.name) {
+                      return 1;
+                    } else if (a.name < b.name) {
+                      return -1;
+                    }
+                    return 0;
+                  })
+                  ?.map((element) => (
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
+                          color: "black",
+                          textAlign: "center",
+                        }}
+                      >
+                        {element.name}
+                      </TableCell>
+                    </TableRow>
+                  ))}
               </TableBody>
             </Table>
           </TableContainer>

@@ -30,7 +30,6 @@ export const getReview = createAsyncThunk(
         console.log(` priceDate ${priceDate}`);
         console.log(` selectedDate ${selectedDate}`);
         if (itemDate >= priceDate && itemDate <= selectedDate) {
-
           if (item.SUM !== null) {
             totalSum += parseFloat(item.SUM);
             console.log(` SUM`);
@@ -45,17 +44,53 @@ export const getReview = createAsyncThunk(
           }
         }
       });
-
-      // console.log(`priceDate${priceDate}`);
-      // console.log(`selectedDate${selectedDate}`);
-      // console.log(response.data.allPostyplenie);
-      // console.log(filteredData);
       return {
         reviews: filteredData,
         SUM: totalSum,
         totalQuantity: totalQuantity,
         totalMainQuantity: totalMainQuantity,
+        allOrganizations: response.data.allOrganizations,
+        allCommisionRecievers: response.data.allCommisionRecievers,
         response: response,
+      };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const getOrganizations = createAsyncThunk(
+  "review/getOrganizations",
+  async ({ accountId, organizationCustomerId }, { rejectWithValue }) => {
+    try {
+      const response = await instance.get(
+        `${accountId}/reviews/org/${organizationCustomerId}`
+      );
+
+      return {
+        allOrders: response.data.allOrders,
+        allProducts: response.data.allProducts,
+        allPayees: response.data.allPayees,
+        nameOrganization: response.data.organizationCustomer.organizationName,
+        response: response,
+      };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const getCommision = createAsyncThunk(
+  "review/getCommision",
+  async ({ accountId, commisionRecieverId }, { rejectWithValue }) => {
+    try {
+      const response = await instance.get(
+        `${accountId}/reviews/com/${commisionRecieverId}`
+      );
+
+      return {
+        commisionReceiver: response.data.commisionReceiver,
+        operations: response.data.operations,
       };
     } catch (error) {
       return rejectWithValue(error.message);
@@ -72,6 +107,15 @@ const reviewSlice = createSlice({
     SUM: 0,
     totalQuantity: 0,
     totalMainQuantity: 0,
+    allCommisionRecievers: null,
+    allOrganizations: null,
+    allOrders: null,
+    allProducts: null,
+    allPayees: null,
+    id: null,
+    nameOrganization: null,
+    commisionReceiver: null,
+    operations: null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -87,8 +131,43 @@ const reviewSlice = createSlice({
         state.SUM = action.payload.SUM;
         state.totalQuantity = action.payload.totalQuantity;
         state.totalMainQuantity = action.payload.totalMainQuantity;
+        state.allOrganizations = action.payload.allOrganizations;
+        state.allCommisionRecievers = action.payload.allCommisionRecievers;
       })
       .addCase(getReview.rejected, (state, action) => {
+        state.status = "rejected";
+        state.error = action.payload;
+      })
+
+      //getOrganizations
+      .addCase(getOrganizations.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getOrganizations.fulfilled, (state, action) => {
+        state.status = "resolved";
+        state.allOrders = action.payload.allOrders;
+        state.allProducts = action.payload.allProducts;
+        state.allPayees = action.payload.allPayees;
+        state.nameOrganization = action.payload.nameOrganization;
+        state.id = action.payload.allOrders[0].organizationCustomerId;
+      })
+      .addCase(getOrganizations.rejected, (state, action) => {
+        state.status = "rejected";
+        state.error = action.payload;
+      })
+
+      //getCommision
+      .addCase(getCommision.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(getCommision.fulfilled, (state, action) => {
+        state.status = "resolved";
+        state.commisionReceiver = action.payload.commisionReceiver;
+        state.operations = action.payload.operations;
+      })
+      .addCase(getCommision.rejected, (state, action) => {
         state.status = "rejected";
         state.error = action.payload;
       });

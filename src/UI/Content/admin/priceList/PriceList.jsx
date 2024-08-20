@@ -80,6 +80,7 @@ export default function PriceList() {
   const [type, setType] = useState("");
   const [date, setDate] = useState(dayjs());
   const [modalDate, setModalDate] = useState(dayjs());
+  const [isLoading, setIsLoading] = useState(false);
   const [isLoadingModalSave, setIsLoadingModalSave] = useState(false);
 
   const nameСourses = useSelector((state) => state.adminPriceList.nameСourses);
@@ -130,6 +131,30 @@ export default function PriceList() {
     setFilteredPricesMain(filterPrices(pricesMain));
     setFilteredPricesForEmployers(filterPrices(pricesForEmployers));
   }, [date]);
+
+  useEffect(() => {  
+    setIsLoading(true);
+    console.log("useEffect");
+    const selectedDate = new Date(dayjs());
+    const filterPrices = (prices) => {
+      return prices.filter((price) => {
+        const priceDate = new Date(price.activationDate);
+        return (
+          selectedDate.getFullYear() > priceDate.getFullYear() ||
+          (selectedDate.getMonth() > priceDate.getMonth() &&
+            selectedDate.getFullYear() >= priceDate.getFullYear()) ||
+          (selectedDate.getDate() >= priceDate.getDate() &&
+            selectedDate.getMonth() >= priceDate.getMonth() &&
+            selectedDate.getFullYear() >= priceDate.getFullYear())
+        );
+      });
+    };
+
+    setFilteredPricesInit(filterPrices(pricesInit));
+    setFilteredPricesMain(filterPrices(pricesMain));
+    setFilteredPricesForEmployers(filterPrices(pricesForEmployers));
+    setIsLoading(false);
+  }, [pricesInit, pricesMain, pricesForEmployers]);
 
   useEffect(() => {
     validateForm();
@@ -291,7 +316,13 @@ export default function PriceList() {
         <img src={add} alt="+" />
       </IconButton>
 
-      <TableContainer
+{
+      isLoading ? (
+    <CircularProgressCustom value={"55%"}></CircularProgressCustom>
+  
+          
+      ) : (
+            <TableContainer
         component={Paper}
         sx={{
           height: "calc(100vh - 150px)",
@@ -406,6 +437,9 @@ export default function PriceList() {
           </TableBody>
         </Table>
       </TableContainer>
+      )
+}
+  
 
 
       {isLoadingModalSave ? (

@@ -45,12 +45,12 @@ export default function ModalRemains({
   const commisionReceiver = useSelector(
     (state) => state.superAdminCommision.commisionReceiver || {}
   );
-  const allPostyplenie = useSelector(
-    (state) => state.superAdminCommision?.allPostyplenie
-  );
+ 
   const operations = useSelector(
     (state) => state.superAdminCommision?.operations
   );
+
+
   const resetStates = () => {};
 
   const handleSave = () => {
@@ -60,7 +60,6 @@ export default function ModalRemains({
   const addReciever = () => {
     setAddModal(true);
   };
-  let ostatok = 0;
   return (
     <div>
       {isLoadingRemains ? (
@@ -136,7 +135,7 @@ export default function ModalRemains({
                   <TableContainer
                     component={Paper}
                     sx={{
-                      maxHeight: "calc(100vh - 450px)",
+                      maxHeight: "calc(100vh - 300px)",
                       minHeight: "300px",
                       overflow: "auto",
                       scrollbarWidth: "thin",
@@ -219,15 +218,15 @@ export default function ModalRemains({
                       </TableHead>
 
                       <TableBody>
-                        {allPostyplenie?.map((item, index) => (
+                        {operations?.map((item, index) => (
                           <TableRow>
                             <TableCell
                               sx={{
                                 fontFamily: "Montserrat",
                                 fontSize: "16px",
-                                fontWeight: 600,
-                                color: "#333333",
+                               
                                 textAlign: "center",
+                                color: index === 0 ? "#005475" : "#333333",
                               }}
                             >
                               {item.formattedDate}
@@ -236,9 +235,9 @@ export default function ModalRemains({
                               sx={{
                                 fontFamily: "Montserrat",
                                 fontSize: "16px",
-                                fontWeight: 600,
-                                color: "#333333",
+                             
                                 textAlign: "center",
+                                color: index === 0 ? "#005475" : "#333333",
                               }}
                             >
                               {item.billNumber}
@@ -247,9 +246,9 @@ export default function ModalRemains({
                               sx={{
                                 fontFamily: "Montserrat",
                                 fontSize: "16px",
-                                fontWeight: 600,
-                                color: "#333333",
+                             
                                 textAlign: "center",
+                                color: index === 0 ? "#005475" : "#333333",
                               }}
                             >
                               {item.Postyplenie}
@@ -258,61 +257,23 @@ export default function ModalRemains({
                               sx={{
                                 fontFamily: "Montserrat",
                                 fontSize: "16px",
-                                fontWeight: 600,
-                                color: "#333333",
+                                
                                 textAlign: "center",
+                                color: index === 0 ? "#005475" : "#333333",
                               }}
-                            >
-                             
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-
-                      <TableBody>
-                        {operations?.map((item, index) => (
-                          <TableRow>
-                            <TableCell
-                              sx={{
-                                fontFamily: "Montserrat",
-                                fontSize: "16px",
-                                fontWeight: 600,
-                                color: "#333333",
-                                textAlign: "center",
-                              }}
-                            >
-                              {item.formattedDateOfOperation}
+                            >  
+                              {item.Spisanie ? - item.Spisanie : item.Spisanie} 
                             </TableCell>
                             <TableCell
                               sx={{
                                 fontFamily: "Montserrat",
                                 fontSize: "16px",
-                                fontWeight: 600,
-                                color: "#333333",
+                               
                                 textAlign: "center",
+                                color: index === 0 ? "#005475" : "#333333",
                               }}
-                            >
-                              {item.billNumber}
-                            </TableCell>
-                            <TableCell
-                              sx={{
-                                fontFamily: "Montserrat",
-                                fontSize: "16px",
-                                fontWeight: 600,
-                                color: "#333333",
-                                textAlign: "center",
-                              }}
-                            ></TableCell>
-                            <TableCell
-                              sx={{
-                                fontFamily: "Montserrat",
-                                fontSize: "16px",
-                                fontWeight: 600,
-                                color: "#333333",
-                                textAlign: "center",
-                              }}
-                            >
-                              {item.Spisanie}
+                            >  
+                              {item.balance}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -320,7 +281,7 @@ export default function ModalRemains({
                     </Table>
                   </TableContainer>
 
-                  <Box
+                  {/* <Box
                     sx={{
                       display: "flex",
                       justifyContent: "flex-end", // Плавное выравнивание кнопок справа
@@ -367,7 +328,7 @@ export default function ModalRemains({
                     >
                       Отменить
                     </Button>
-                  </Box>
+                  </Box> */}
                 </Box>
               </div>
             </Modal>

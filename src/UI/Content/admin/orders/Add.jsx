@@ -184,10 +184,6 @@ export default function Add({
       products.forEach((item) => {
         titlesToCreate.push({
           productId: item.id,
-          // generation: checkProductBooklet[item.id]
-          //   ? null
-          //   : selectProductGeneration[item.id] || "Второе поколение",
-          // accessType: selectProductAccessType[item.id] || "Электронный",
           generation: selectProductGeneration[item.id] || "Второе поколение",
           accessType: checkProductBooklet[item.id]
             ? null
@@ -448,7 +444,6 @@ export default function Add({
                             sx={{
                               fontFamily: "Montserrat",
                               fontSize: "16px",
-
                               color: "#999999",
                               textAlign: "center",
                               cursor: "pointer",
@@ -473,7 +468,6 @@ export default function Add({
                             sx={{
                               fontFamily: "Montserrat",
                               fontSize: "16px",
-
                               color: "#999999",
                               textAlign: "center",
                               cursor: "pointer",
@@ -481,38 +475,35 @@ export default function Add({
                           >
                             Оплачен
                           </MenuItem>
-                          <MenuItem
+                          {/* <MenuItem
                             value="Отправлен"
                             sx={{
                               fontFamily: "Montserrat",
                               fontSize: "16px",
-
                               color: "#999999",
                               textAlign: "center",
                               cursor: "pointer",
                             }}
                           >
                             Отправлен
-                          </MenuItem>
-                          <MenuItem
+                          </MenuItem> */}
+                          {/* <MenuItem
                             value="Получен"
                             sx={{
                               fontFamily: "Montserrat",
                               fontSize: "16px",
-
                               color: "#999999",
                               textAlign: "center",
                               cursor: "pointer",
                             }}
                           >
                             Получен
-                          </MenuItem>
+                          </MenuItem> */}
                           <MenuItem
                             value="Отменен"
                             sx={{
                               fontFamily: "Montserrat",
                               fontSize: "16px",
-
                               color: "#999999",
                               textAlign: "center",
                               cursor: "pointer",

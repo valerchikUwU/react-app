@@ -27,18 +27,19 @@ export default function Statistics() {
   );
   const [date, setDate] = useState(dayjs());
   const [maxSum, setMaxSum] = useState(0); // Добавляем состояние для хранения максимального значения SUM
+  
   useEffect(() => {
-    dispatch(getStatistics({ accountId, date: date }));
-  }, [accountId, date]); // Убрано statistics из списка зависимостей
+    dispatch(getStatistics({ accountId: accountId, date: date }));
+  }, [accountId, date]); 
 
   useEffect(() => {
     const max = Math.max(...transformedData.map((data) => data.SUM));
     setMaxSum(max);
-  }, [accountId, statistics]); // Убрано statistics из списка зависимостей
+  }, [accountId, statistics]); 
 
   const transformedData = useMemo(() => {
     return statistics.map((stat, index) => ({
-      date: `${dayjs(stat.dispatchDate).format("DD-MM-YYYY")}`,
+      date: `${dayjs(stat.timestamp).format("DD-MM-YYYY")}`,
       SUM: stat.SUM,
     }));
   }, [statistics]);
@@ -65,6 +66,7 @@ export default function Statistics() {
       >
         Все продажи
       </Typography>
+
       <LineChart
         width={1000} // Увеличьте ширину
         height={450} // Увеличьте высоту

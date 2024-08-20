@@ -50,6 +50,14 @@ const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
   top: 0,
   zIndex: 100,
   background: "#fff",
+
+  // Добавляем класс hoverEffect для применения стилей при наведении
+  "&.hoverEffect": {
+    transition: "background-color 0.3s ease",
+  },
+  "&.hoverEffect:hover": {
+    backgroundColor: "#47bcd6", // Более темный оттенок #005475
+  },
 }));
 
 const StyledTableCellBody = styled(TableCell)(({ theme }) => ({
@@ -81,6 +89,13 @@ export default function UsersSuperAdmin() {
   const [isLoadingModal, setIsLoadingModal] = useState(false);
   const [openStates, setOpenStates] = useState({});
   const [dummyKey, setDummyKey] = useState(0);
+
+
+  const [sortedUsers, setSortedUsers] = useState([...users]);
+  useEffect(() => {
+    setSortedUsers([...users]);
+  }, [users])
+
 
 const changeDummyKey = () => {
   setDummyKey((prevState) => prevState + 1);
@@ -241,6 +256,47 @@ const changeDummyKey = () => {
     }
   };
 
+  const sortNumber = (name) => {
+    const sortedData = [...sortedUsers];
+    switch (name) {
+      case "Number":
+        sortedData.sort((a, b) => {
+          if (a.accountNumber > b.accountNumber) {
+            return 1;
+          } else if (a.accountNumber < b.accountNumber) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedUsers(sortedData);
+        break;
+
+      case "fullName":
+        sortedData.sort((a, b) => {
+          if (a.firstName > b.firstName) {
+            return 1;
+          } else if (a.firstName < b.firstName) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedUsers(sortedData);
+        break;
+
+      case "organizationName":
+        sortedData.sort((a, b) => {
+          if (a.organizationList[0] > b.organizationList[0]) {
+            return 1;
+          } else if (a.organizationList[0] < b.organizationList[0]) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedUsers(sortedData);
+        break;
+    }
+  };
+
   return (
     <div>
       {isLoading ? (
@@ -259,34 +315,49 @@ const changeDummyKey = () => {
             <TableHead>
               <TableRow>
                 <StyledTableCellHead
+                 className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
                     top: 0,
                     zIndex: 100,
                     background: "#fff",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    sortNumber("Number");
                   }}
                 >
                   №
                 </StyledTableCellHead>
                 <StyledTableCellHead
+                 className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
                     top: 0,
                     zIndex: 100,
                     background: "#fff",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    sortNumber("fullName");
                   }}
                 >
                   Имя
                 </StyledTableCellHead>
                 <StyledTableCellHead
+                 className="hoverEffect"
                   sx={{
                     paddingY: 1,
                     position: "sticky",
                     top: 0,
                     zIndex: 100,
                     background: "#fff",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    sortNumber("organizationName");
                   }}
                 >
                   Академии
@@ -342,7 +413,7 @@ const changeDummyKey = () => {
             </TableHead>
 
             <TableBody>
-              {users.map((element) => (
+              {sortedUsers.map((element) => (
                 <TableRow key={element.id}>
                   <TableCell
                     onClick={() => OpenEdit(element.id)}

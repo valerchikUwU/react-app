@@ -51,8 +51,14 @@ export default function Archive() {
     });
   }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
 
-  const archive = useSelector((state) => state.adminArchive.archive);
+  const archive = useSelector((state) => state.adminArchive?.archive);
   const [sortedArchive, setSortedArchive] = useState([...archive]);
+
+
+useEffect(() => {
+  setSortedArchive([...archive]);
+}, [archive])
+
 
   const sortNumber = (name) => {
     const sortedData = [...sortedArchive];
@@ -119,6 +125,18 @@ export default function Archive() {
             }
             return 0;
           }
+        });
+        setSortedArchive(sortedData);
+        break;
+
+      case "status":
+        sortedData.sort((a, b) => {
+          if (a.status > b.status) {
+            return 1;
+          } else if (a.status < b.status) {
+            return -1;
+          }
+          return 0;
         });
         setSortedArchive(sortedData);
         break;
@@ -234,29 +252,50 @@ export default function Archive() {
                 >
                   Сумма
                 </StyledTableCellHead>
+                <StyledTableCellHead
+                  className="hoverEffect"
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    sortNumber("status");
+                  }}
+                >
+                  Состояние
+                </StyledTableCellHead>
               </TableRow>
             </TableHead>
             <TableBody>
-              {sortedArchive.map((element) => (
-                <TableRow key={element.id}>
-                  <StyledTableCellBody>
-                    {element.orderNumber}
-                  </StyledTableCellBody>
-                  <StyledTableCellBody>{element.fullName}</StyledTableCellBody>
-                  <StyledTableCellBody>
-                    {element.organizationName}
-                  </StyledTableCellBody>
-                  <StyledTableCellBody>
-                    {element.formattedDispatchDate}
-                  </StyledTableCellBody>
-                  <StyledTableCellBody>
-                    {element.billNumber}
-                  </StyledTableCellBody>
-                  <StyledTableCellBody>
-                    {element.SUM} &#x20bd;
-                  </StyledTableCellBody>
-                </TableRow>
-              ))}
+              { sortedArchive.map((element) => (
+                    <TableRow key={element.id}>
+                      <StyledTableCellBody>
+                        {element.orderNumber}
+                      </StyledTableCellBody>
+                      <StyledTableCellBody>
+                        {element.fullName}
+                      </StyledTableCellBody>
+                      <StyledTableCellBody>
+                        {element.organizationName}
+                      </StyledTableCellBody>
+                      <StyledTableCellBody>
+                        {element.formattedDispatchDate}
+                      </StyledTableCellBody>
+                      <StyledTableCellBody>
+                        {element.billNumber}
+                      </StyledTableCellBody>
+                      <StyledTableCellBody>
+                        {element.SUM} &#x20bd;
+                      </StyledTableCellBody>
+                      <StyledTableCellBody>
+                        {element.status}
+                      </StyledTableCellBody>
+                    </TableRow>
+                  ))}
             </TableBody>
           </Table>
         </TableContainer>
