@@ -659,9 +659,9 @@ export default function Orders() {
 
       case "formattedDispatchDate":
         sortedData.sort((a, b) => {
-          if (a.formattedDispatchDate > b.formattedDispatchDate) {
+          if (a.dispatchDate > b.dispatchDate) {
             return 1;
-          } else if (a.formattedDispatchDate < b.formattedDispatchDate) {
+          } else if (a.dispatchDate < b.dispatchDate) {
             return -1;
           }
           return 0;
@@ -676,9 +676,9 @@ export default function Orders() {
           } else if (a.billNumber < b.billNumber) {
             return -1;
           } else {
-            if (a.formattedDispatchDate > b.formattedDispatchDate) {
+            if (a.dispatchDate > b.dispatchDate) {
               return 1;
-            } else if (a.formattedDispatchDate < b.formattedDispatchDate) {
+            } else if (a.dispatchDate < b.dispatchDate) {
               return -1;
             }
             return 0;
