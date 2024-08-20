@@ -210,7 +210,7 @@ export default function Add({
         resetStates();
         setIsOpen(false);
         setIsLoadingModalSave(false);
-      });
+      }, () => { setIsLoadingModalSave(false);});
     }
   };
 

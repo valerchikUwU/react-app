@@ -177,7 +177,7 @@ export default function PriceList() {
       dispatch(getPriceList(accountId));
       handleClose();
       setIsLoadingModalSave(false);
-    });
+    }, () => {setIsLoadingModalSave(false);});
 
     resetForm();
   };

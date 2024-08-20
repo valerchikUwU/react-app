@@ -153,7 +153,7 @@ const changeDummyKey = () => {
         accountId: accountId,
         firstName: name,
         lastName: lastName,
-        telephoneNumber: telephone,
+        telephoneNumber: "+" + telephone,
         organizationList: selectedValues,
         roleId:role,
       })
@@ -177,7 +177,7 @@ const changeDummyKey = () => {
     } else if (name === "lastName") {
       newValue = value.charAt(0).toUpperCase() + value.slice(1);
     } else if (name === "telephone") {
-      newValue = value.replace(/[^\d+]/g, "");
+      newValue = value.replace(/\D/g, "");
     }
 
     if (newValue !== undefined) {
@@ -643,7 +643,7 @@ const changeDummyKey = () => {
                         value={telephone}
                         onChange={handleChange}
                         name="telephone" // Добавляем атрибут name
-                        helperText={!telephone ? "Начинаться с +7 либо 8" : ""}
+                        helperText={!telephone ? "Введите 11 цифр (+ уже учтён)" : ""}
                       />
                     </StyledTableCellBody>
 

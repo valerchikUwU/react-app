@@ -210,7 +210,7 @@ export default function Orders() {
         getOrderModal({ accountId: accountId, orderId: openModalId })
       ).then(() => {
         setIsLoadingModal(false);
-      });
+      }, () => {setIsLoadingModal(false);});
       setIsDeleteClicked(false);
     }
   }, [isDeleteClicked, openStates, dispatch]);
@@ -330,7 +330,7 @@ export default function Orders() {
       dispatch(getOrder(accountId));
       setIsDeleteClicked(true);
       setIsLoadingDelete(false);
-    });
+    }, () => {setIsLoadingDelete(false);});
   };
 
   const handleChangeSelectAbbr = (event, id) => {
@@ -478,7 +478,7 @@ export default function Orders() {
       setOpenStates({ ...openStates, [exitID]: false });
       handleCloseModal(exitID);
       setIsLoadingModalSave(false);
-    });
+    }, () => {setIsLoadingModalSave(false);} );
   };
 
   // Функция для сброса состояний

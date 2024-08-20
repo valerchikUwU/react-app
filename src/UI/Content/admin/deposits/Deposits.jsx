@@ -76,7 +76,7 @@ export default function DepositsSuperAdmin() {
         })
       ).then(() => {
         setIsLoadingModal(false);
-      });
+      }, () => {setIsLoadingModal(false);});
     }
   }, [openStates, dispatch, dummyKey]);
 

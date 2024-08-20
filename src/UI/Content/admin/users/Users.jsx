@@ -111,6 +111,8 @@ export default function Users() {
         })
       ).then(() => {
         setIsLoadingModal(false);
+      }, () => {
+        setIsLoadingModal(false);
       });
     }
   }, [openStates, dispatch]);
@@ -164,6 +166,8 @@ export default function Users() {
       handleClose();
       setIsLoadingModalSave(false);
       resetForm();
+    }, () => {
+      setIsLoadingModalSave(false);
     });  
   };
 
@@ -645,7 +649,7 @@ export default function Users() {
                           onChange={handleChange}
                           name="telephone" // Добавляем атрибут name
                           helperText={
-                            !telephone ? "Введите 11 цифр" : ""
+                            !telephone ? "Введите 11 цифр (+ уже учтён)" : ""
                           }
                         />
                       </StyledTableCellBody>
