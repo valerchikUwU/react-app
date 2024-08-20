@@ -355,7 +355,7 @@ export default function Work() {
   };
 
   const handleSave = () => {
-    setIsLoadingModalSaveAndDelete(true);
+   
     // Проверяем, есть ли хотя бы одна ошибка в массиве errors
     const hasErrors = Object.values(errors).some((error) => error !== null);
 
@@ -389,6 +389,7 @@ export default function Work() {
       // Теперь titlesToUpdate - это массив объектов, который можно использовать в вашем запросе
       // Проверяем, что titlesToUpdate не пуст, перед тем как вызывать dispatch
       if (titlesToUpdate.length > 0) {
+        setIsLoadingModalSaveAndDelete(true);
         dispatch(deletePressArray(changeProduct));
         // Предполагается, что updateTitleOrder возвращает промис
         dispatch(
@@ -420,7 +421,6 @@ export default function Work() {
   };
 
   const handleSaveDeposit = () => {
-    setIsLoadingModalSaveAndDelete(true);
     // Создаем пустой массив для titlesToUpdate
     const titlesToUpdate = [];
 
@@ -439,6 +439,7 @@ export default function Work() {
     // Теперь titlesToUpdate - это массив объектов, который можно использовать в вашем запросе
     // Проверяем, что titlesToUpdate не пуст, перед тем как вызывать dispatch
     if (titlesToUpdate.length > 0) {
+      setIsLoadingModalSaveAndDelete(true);
       // Предполагается, что updateTitleOrder возвращает промис
       dispatch(
         updateTitleOrder({
