@@ -281,7 +281,7 @@ const orderSlice = createSlice({
            .addCase(deleteTitleOrder.pending, (state) => {
             state.status = "loading";
             state.error = null;
-            state.errorPutNewOrder = null;
+            state.errorDeleteTitleOrder = null;
           })
           .addCase(deleteTitleOrder.fulfilled, (state, action) => {
             state.status = "resolved";

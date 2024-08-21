@@ -261,6 +261,7 @@ const commisionSlice = createSlice({
       .addCase(postCommision.pending, (state) => {
         state.status = "loading";
         state.error = null;
+        state.errorPostCommision = null;
       })
       .addCase(postCommision.fulfilled, (state, action) => {
         state.status = "resolved";
@@ -275,6 +276,7 @@ const commisionSlice = createSlice({
       .addCase(putAccrualRule.pending, (state) => {
         state.status = "loading";
         state.error = null;
+        state.errorPutAccrualRule = null;
       })
       .addCase(putAccrualRule.fulfilled, (state, action) => {
         state.status = "resolved";
@@ -289,6 +291,7 @@ const commisionSlice = createSlice({
       .addCase(deleteRule.pending, (state) => {
         state.status = "loading";
         state.error = null;
+        state.errorDeleteRule = null;
       })
       .addCase(deleteRule.fulfilled, (state, action) => {
         state.status = "resolved";
@@ -303,6 +306,7 @@ const commisionSlice = createSlice({
             .addCase(postReciever.pending, (state) => {
               state.status = "loading";
               state.error = null;
+              state.errorPostReciever = null;
             })
             .addCase(postReciever.fulfilled, (state, action) => {
               state.status = "resolved";

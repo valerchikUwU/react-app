@@ -75,8 +75,8 @@ export default function Work() {
   const [productId, setProductId] = useState({});
   const [isDeleteClicked, setIsDeleteClicked] = useState(false);
   const [isLoadingModal, setIsLoadingModal] = useState(false);
-  const [isLoadingModalSaveAndDelete, setIsLoadingModalSaveAndDelete] = useState(false);
-  const [isLoadingModaдDelete, setIsLoadingModalDelete] = useState(false);
+  const [isLoadingModalSaveAndDelete, setIsLoadingModalSaveAndDelete] =
+    useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const list = useSelector((state) => state.work?.work || []);
@@ -91,8 +91,12 @@ export default function Work() {
 
   const error = useSelector((state) => state.work.errorUpdateTitleOrder);
   const errorDelete = useSelector((state) => state.work.errorDelete);
+  const errorUpdateDraft = useSelector((state) => state.work.errorUpdateDraft);
+  const errorUpdateRecieved = useSelector((state) => state.work.errorUpdateRecieved);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarOpenDelete, setSnackbarOpenDelete] = useState(false);
+  const [snackbarOpenSend, setSnackbarOpenSend] = useState(false);
+  const [snackbarOpenDone, setSnackbarOpenDone] = useState(false);
 
   const allIds = listModalTitles.map((row) => row.id);
   const totalSum = allIds.reduce(
@@ -262,11 +266,12 @@ export default function Work() {
       })
     ).then(() => {
       dispatch(getWork(accountId));
+      setSnackbarOpenSend(true);
       if (status === "Черновик") {
         dispatch(deletePressSend());
         dispatch(deleteCountClick());
       }
-    });
+    }, () => { setSnackbarOpenSend(true);});
     setDummyKey((prevKey) => prevKey + 1);
     setIsIconVisibleSend((prevState) => ({
       ...prevState,
@@ -291,7 +296,8 @@ export default function Work() {
       })
     ).then(() => {
       dispatch(getWork(accountId));
-    });
+      setSnackbarOpenDone(true);
+    }, () => {setSnackbarOpenDone(true);});
     setDummyKey((prevKey) => prevKey + 1);
   };
 
@@ -355,7 +361,6 @@ export default function Work() {
   };
 
   const handleSave = () => {
-   
     // Проверяем, есть ли хотя бы одна ошибка в массиве errors
     const hasErrors = Object.values(errors).some((error) => error !== null);
 
@@ -1221,7 +1226,7 @@ export default function Work() {
               }}
             />
           </Modal>
-        ) : isLoadingModalSaveAndDelete  ? (
+        ) : isLoadingModalSaveAndDelete ? (
           <Modal open={true}>
             <CircularProgress
               sx={{
@@ -1836,18 +1841,15 @@ export default function Work() {
                                 {sumForOneTitle[row.id]} &#x20bd;
                               </TableCellModal>
 
-                            
-                                <TableCellModal>
-                                  <IconButton
-                                    onClick={
-                                      () =>
-                                        handleDeleteOrder(element.id, row.id) //уточнить
-                                    }
-                                  >
-                                    <img src={deleteGrey} alt="удалить" />
-                                  </IconButton>
-                                </TableCellModal>
-                           
+                              <TableCellModal>
+                                <IconButton
+                                  onClick={
+                                    () => handleDeleteOrder(element.id, row.id) //уточнить
+                                  }
+                                >
+                                  <img src={deleteGrey} alt="удалить" />
+                                </IconButton>
+                              </TableCellModal>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -1995,13 +1997,27 @@ export default function Work() {
       </Box>
 
       <ErrorHandler
+        error={errorUpdateDraft}
+        snackbarOpen={snackbarOpenSend}
+        close={setSnackbarOpenSend}
+        text={"Заказ создан"}
+      ></ErrorHandler>
+
+      <ErrorHandler
+        error={errorUpdateRecieved}
+        snackbarOpen={snackbarOpenDone}
+        close={setSnackbarOpenDone}
+        text={"Заказ в архиве"}
+      ></ErrorHandler>
+
+      <ErrorHandler
         error={error}
         snackbarOpen={snackbarOpen}
         close={setSnackbarOpen}
         text={"Черновик обновлен"}
       ></ErrorHandler>
 
-<ErrorHandler
+      <ErrorHandler
         error={errorDelete}
         snackbarOpen={snackbarOpenDelete}
         close={setSnackbarOpenDelete}

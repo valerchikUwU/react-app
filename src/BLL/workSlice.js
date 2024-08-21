@@ -155,6 +155,8 @@ const workSlice = createSlice({
     error: null,
     errorUpdateTitleOrder: null,
     errorDelete: null,
+    errorUpdateDraft: null,
+    errorUpdateRecieved: null,
 
   },
   reducers: {
@@ -207,31 +209,36 @@ const workSlice = createSlice({
         console.log('updateDraft pending');
         state.status = 'loading';
         state.error = null;
+        state.errorUpdateDraft = null;
       })
       .addCase(updateDraft.fulfilled, (state, action) => {
         console.log('updateDraft fulfilled', action.payload);
         state.status = 'resolved';
-        // state.drafts = action.payload;
+        state.errorUpdateDraft = 200;
       })
       .addCase(updateDraft.rejected, (state, action) => {
         console.log('updateDraft rejected', action.payload);
         state.status = 'rejected';
         state.error = action.payload;
+        state.errorUpdateDraft = 'что - то пошло не так';
       })
     //updateRecieved
      .addCase(updateRecieved.pending, (state) => {
       console.log('updateResieved pending');
       state.status = 'loading';
       state.error = null;
+      state.errorUpdateRecieved = null;
     })
    .addCase(updateRecieved.fulfilled, (state, action) => {
       console.log('updateResieved fulfilled', action.payload);
       state.status = 'resolved';
+      state.errorUpdateRecieved = 200;
     })
    .addCase(updateRecieved.rejected, (state, action) => {
       console.log('updateResieved rejected', action.payload);
       state.status = 'rejected';
       state.error = action.payload;
+      state.errorUpdateRecieved = 'что - то пошло не так';
     })
      //updateTitleOrder
      .addCase(updateTitleOrder.pending, (state) => {
@@ -250,7 +257,7 @@ const workSlice = createSlice({
       console.log('updateTitleOrder rejected', action.payload);
       state.status = 'rejected';
       state.error = action.payload;
-      state.errorUpdateTitleOrder = action.payload;
+      state.errorUpdateTitleOrder = 'что - то пошло не так';
     })
      //deleteTitleOrder
      .addCase(deleteTitleOrder.pending, (state) => {
@@ -268,7 +275,7 @@ const workSlice = createSlice({
       console.log('deleteTitleOrder rejected', action.payload);
       state.status = 'rejected';
       state.error = action.payload;
-      state.errorDelete = action.payload;
+      state.errorDelete ='что - то пошло не так';
     });
  },
 });
