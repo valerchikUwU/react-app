@@ -202,6 +202,10 @@ const commisionSlice = createSlice({
     dummyKey: 0,
     status: null,
     error: null,
+    errorPostCommision: null,
+    errorPutAccrualRule: null,
+    errorDeleteRule: null,
+    errorPostReciever: null,
   },
   reducers: {
     incrementDummyKey(state, action) {
@@ -252,7 +256,63 @@ const commisionSlice = createSlice({
       .addCase(getBalance.rejected, (state, action) => {
         state.status = "rejected";
         state.error = action.payload;
-      });
+      })
+      //postCommision
+      .addCase(postCommision.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(postCommision.fulfilled, (state, action) => {
+        state.status = "resolved";
+        state.errorPostCommision = 200;
+      })
+      .addCase(postCommision.rejected, (state, action) => {
+        state.status = "rejected";
+        state.error = action.payload;
+        state.errorPostCommision = "что-то пошло не так";
+      })
+      //putAccrualRule
+      .addCase(putAccrualRule.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(putAccrualRule.fulfilled, (state, action) => {
+        state.status = "resolved";
+        state.errorPutAccrualRule = 200;
+      })
+      .addCase(putAccrualRule.rejected, (state, action) => {
+        state.status = "rejected";
+        state.error = action.payload;
+        state.errorPutAccrualRule = "что-то пошло не так";
+      })
+      //deleteRule
+      .addCase(deleteRule.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(deleteRule.fulfilled, (state, action) => {
+        state.status = "resolved";
+        state.errorDeleteRule = 200;
+      })
+      .addCase(deleteRule.rejected, (state, action) => {
+        state.status = "rejected";
+        state.error = action.payload;
+        state.errorDeleteRule = "что-то пошло не так";
+      })
+            //postReciever
+            .addCase(postReciever.pending, (state) => {
+              state.status = "loading";
+              state.error = null;
+            })
+            .addCase(postReciever.fulfilled, (state, action) => {
+              state.status = "resolved";
+              state.errorPostReciever = 200;
+            })
+            .addCase(postReciever.rejected, (state, action) => {
+              state.status = "rejected";
+              state.error = action.payload;
+              state.errorPostReciever = "что-то пошло не так";
+            });
   },
 });
 

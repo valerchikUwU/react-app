@@ -27,7 +27,6 @@ import plus from "./image/plus.svg";
 import { useEffect, useLayoutEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { TextField } from "@mui/material";
-import { deleteTitleOrder } from "../../../../BLL/workSlice.js";
 import { useParams } from "react-router-dom";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
@@ -41,6 +40,7 @@ import {
   getOrder,
   getOrderModal,
   updateTitleOrderAdmin,
+  deleteTitleOrder,
 } from "../../../../BLL/admin/orderSlice.js";
 import FloatingScrollToTopButton from "../../styledComponents/FloatingScrollToTopButton.jsx";
 import CircularProgressCustom from "../../styledComponents/CircularProgress.jsx";
@@ -76,6 +76,8 @@ export default function Orders() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarOpenDelete, setSnackbarOpenDelete] = useState(false);
+
   // AddTitlesOrders.jsx
   const [checkProductBooklet, setcheckProductBooklet] = useState({});
   const [selectProductGeneration, setSelectProductGeneration] = useState({});
@@ -167,6 +169,7 @@ export default function Orders() {
   const listModalTitles = useSelector((state) => state.adminOrder?.modalTitles);
   const ObjectModalOrder = useSelector((state) => state.adminOrder?.modalOrder);
   const listModalPayees = useSelector((state) => state.adminOrder?.payees);
+  const errorDeleteTitleOrder = useSelector((state) => state.adminOrder?.errorDeleteTitleOrder);
   const allOrganizationsModal = useSelector(
     (state) => state.adminOrder?.allOrganizationsModal
   );
@@ -332,7 +335,8 @@ export default function Orders() {
       dispatch(getOrder(accountId));
       setIsDeleteClicked(true);
       setIsLoadingDelete(false);
-    }, () => {setIsLoadingDelete(false);});
+      setSnackbarOpenDelete(true);
+    }, () => {setIsLoadingDelete(false); setSnackbarOpenDelete(true);});
   };
 
   const handleChangeSelectAbbr = (event, id) => {
@@ -2372,6 +2376,13 @@ export default function Orders() {
         snackbarOpen={snackbarOpen}
         close={setSnackbarOpen}
         text={"Заказ обновлен"}
+      ></ErrorHandler>
+
+<ErrorHandler
+        error={errorDeleteTitleOrder}
+        snackbarOpen={snackbarOpenDelete}
+        close={setSnackbarOpenDelete}
+        text={"Наименование удалено"}
       ></ErrorHandler>
     
       <AddSelectProduct

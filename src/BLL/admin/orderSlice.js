@@ -161,6 +161,22 @@ export const updateTitleOrderAdmin = createAsyncThunk(
     }
   }
 );
+
+export const deleteTitleOrder = createAsyncThunk(
+  "work/deleteTitleOrder",
+  async ({ accountId, orderId, titleId}, { rejectWithValue }) => {
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.delete(
+        `/${accountId}/orders/${orderId}/delete/${titleId}`
+      );
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const orderSlice = createSlice({
   name: "order",
   initialState: {
@@ -177,6 +193,7 @@ const orderSlice = createSlice({
     error: null,
     errorUpdateTitleOrderAdmin: null,
     errorPutNewOrder: null,
+    errorDeleteTitleOrder: null,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -259,6 +276,22 @@ const orderSlice = createSlice({
             state.status = "rejected";
             state.error = action.payload;
             state.errorPutNewOrder = "что-то пошло не так";
+          })
+           //deleteTitleOrder
+           .addCase(deleteTitleOrder.pending, (state) => {
+            state.status = "loading";
+            state.error = null;
+            state.errorPutNewOrder = null;
+          })
+          .addCase(deleteTitleOrder.fulfilled, (state, action) => {
+            state.status = "resolved";
+            state.errorDeleteTitleOrder = 200;
+          })
+          .addCase(deleteTitleOrder.rejected, (state, action) => {
+        
+            state.status = "rejected";
+            state.error = action.payload;
+            state.errorDeleteTitleOrder = "что-то пошло не так";
           });
   },
 });

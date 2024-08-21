@@ -34,6 +34,7 @@ import {
   putAccrualRule,
 } from "../../../../BLL/superAdmin/comissionSlice";
 import CircularProgressCustom from "../../styledComponents/CircularProgress";
+import ErrorHandler from "../../../Custom/ErrorHandler";
 
 // Text Header
 const TextHeader = styled(TableCell)({
@@ -55,6 +56,7 @@ export default function ModalRules({
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
   const checkedIcon = <CheckBoxIcon fontSize="small" />;
   const [loadingSave, setLoadingSave] = useState(false);
+  const [loadingDelete, setLoadingDelete] = useState(false);
   const [groupProducts, setGroupProducts] = useState({});
   const [newProductsAutocomplete, setNewProductsAutocomplete] = useState([]);
   const [productsAutocomplete, setProductsAutocomplete] = useState({});
@@ -67,9 +69,19 @@ export default function ModalRules({
   // const [isSave, setIsSave] = useState({});
 
   const rules = useSelector((state) => state.superAdminCommision?.rules || []);
+  const errorPutAccrualRule = useSelector(
+    (state) => state.superAdminCommision?.errorPutAccrualRule
+  );
+  const errorDeleteRule = useSelector(
+    (state) => state.superAdminCommision?.errorDeleteRule
+  );
   const allProducts = useSelector(
     (state) => state.superAdminCommision?.allProducts || []
   );
+
+  const [snackbarOpenDeleteRule, setSnackbarOpenDeleteRule] = useState(false);
+  const [snackbarOpenPutAccrualRule, setSnackbarOpenPutAccrualRule] =
+    useState(false);
 
   const [newProducts, setNewProducts] = useState([]);
   const addProducts = () => {
@@ -90,15 +102,24 @@ export default function ModalRules({
     setNewProducts(newProducts.filter((product) => product.id !== id));
   };
   const deleteOld = (commisionRecieverId, ruleId) => {
+    setLoadingDelete(true);
     dispatch(
       deleteRule({
         accountId: accountId,
         commisionRecieverId: commisionRecieverId,
         ruleId: ruleId,
       })
-    ).then(() => {
-      dispatch(incrementDummyKey());
-    });
+    ).then(
+      () => {
+        dispatch(incrementDummyKey());
+        setSnackbarOpenDeleteRule(true);
+        setLoadingDelete(false);
+      },
+      () => {
+        setSnackbarOpenDeleteRule(true);
+        setLoadingDelete(false);
+      }
+    );
   };
 
   const handleChangeGroupProducts = (event, id) => {
@@ -346,7 +367,7 @@ export default function ModalRules({
         rulesToUpdate.push({
           id: null,
           productTypeId: null,
-          productId:item,
+          productId: item,
           accessType: selectedAccessType[element.id],
           generation: selectedGeneration[element.id],
           commision: accrual[element.id],
@@ -372,11 +393,19 @@ export default function ModalRules({
         commisionRecieverId: id,
         rulesToUpdate: rulesToUpdate,
       })
-    ).then(() => {
-      dispatch(incrementDummyKey());
-      setNewProducts([]);
-      setLoadingSave(false);
-    });
+    ).then(
+      () => {
+        dispatch(incrementDummyKey());
+        setNewProducts([]);
+        setLoadingSave(false);
+        setSnackbarOpenPutAccrualRule(true);
+        close(id);
+      },
+      () => {
+        setSnackbarOpenPutAccrualRule(true);
+        setLoadingSave(false);
+      }
+    );
   };
 
   const resetStates = () => {
@@ -396,6 +425,10 @@ export default function ModalRules({
       ) : (
         <>
           {loadingSave ? (
+            <Modal open={true}>
+              <CircularProgressCustom></CircularProgressCustom>
+            </Modal>
+          ) : loadingDelete ? (
             <Modal open={true}>
               <CircularProgressCustom></CircularProgressCustom>
             </Modal>
@@ -550,7 +583,7 @@ export default function ModalRules({
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    
+
                                     color: "#333333",
                                     textAlign: "center",
                                   }}
@@ -563,7 +596,7 @@ export default function ModalRules({
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    
+
                                     color: "#333333",
                                     textAlign: "center",
                                   }}
@@ -573,7 +606,7 @@ export default function ModalRules({
                                     sx={{
                                       fontFamily: "Montserrat",
                                       fontSize: "16px",
-                                      
+
                                       color: "black",
                                       textAlign: "center",
                                       cursor: "pointer",
@@ -601,7 +634,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -614,7 +647,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -627,7 +660,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -640,7 +673,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -655,7 +688,7 @@ export default function ModalRules({
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    
+
                                     color: "#333333",
                                     textAlign: "center",
                                   }}
@@ -665,7 +698,7 @@ export default function ModalRules({
                                     sx={{
                                       fontFamily: "Montserrat",
                                       fontSize: "16px",
-                                      
+
                                       color: "black",
                                       textAlign: "center",
                                       cursor: "pointer",
@@ -688,12 +721,12 @@ export default function ModalRules({
                                         : disabledProductId[item.id]
                                     }
                                   >
-                                      <MenuItem
+                                    <MenuItem
                                       value="null"
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -708,7 +741,7 @@ export default function ModalRules({
                                           sx={{
                                             fontFamily: "Montserrat",
                                             fontSize: "16px",
-                                            
+
                                             color: "#999999",
                                             textAlign: "center",
                                             cursor: "pointer",
@@ -718,7 +751,6 @@ export default function ModalRules({
                                         </MenuItem>
                                       );
                                     })}
-                                  
                                   </Select>
 
                                   {/* {console.log(`item.prodAbbreviation ${item.prodAbbreviation}`)} */}
@@ -780,7 +812,7 @@ export default function ModalRules({
                                     sx={{
                                       fontFamily: "Montserrat",
                                       fontSize: "16px",
-                                      
+
                                       color: "black",
                                       textAlign: "center",
                                       cursor: "pointer",
@@ -808,7 +840,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -822,7 +854,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -835,7 +867,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -850,7 +882,7 @@ export default function ModalRules({
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    
+
                                     color: "#333333",
                                     textAlign: "center",
                                   }}
@@ -860,7 +892,7 @@ export default function ModalRules({
                                     sx={{
                                       fontFamily: "Montserrat",
                                       fontSize: "16px",
-                                      
+
                                       color: "black",
                                       textAlign: "center",
                                       cursor: "pointer",
@@ -888,7 +920,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -901,7 +933,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -914,7 +946,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -929,7 +961,7 @@ export default function ModalRules({
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    
+
                                     color: "#333333",
                                     textAlign: "center",
                                   }}
@@ -955,7 +987,7 @@ export default function ModalRules({
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    
+
                                     textAlign: "center",
                                   }}
                                 >
@@ -981,7 +1013,7 @@ export default function ModalRules({
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    
+
                                     color: "#999999",
                                     textAlign: "center",
                                   }}
@@ -994,7 +1026,7 @@ export default function ModalRules({
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    
+
                                     color: "#999999",
                                     textAlign: "center",
                                   }}
@@ -1004,7 +1036,7 @@ export default function ModalRules({
                                     sx={{
                                       fontFamily: "Montserrat",
                                       fontSize: "16px",
-                                      
+
                                       color: "#999999",
                                       textAlign: "center",
                                       cursor: "pointer",
@@ -1021,7 +1053,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -1034,7 +1066,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -1047,7 +1079,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -1060,7 +1092,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -1075,7 +1107,7 @@ export default function ModalRules({
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    
+
                                     color: "#333333",
                                     textAlign: "center",
                                   }}
@@ -1121,7 +1153,7 @@ export default function ModalRules({
                                     sx={{
                                       fontFamily: "Montserrat",
                                       fontSize: "16px",
-                                      
+
                                       color: "#999999",
                                       textAlign: "center",
                                       cursor: "pointer",
@@ -1138,7 +1170,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -1151,7 +1183,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -1164,7 +1196,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -1179,7 +1211,7 @@ export default function ModalRules({
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    
+
                                     color: "#999999",
                                     textAlign: "center",
                                   }}
@@ -1189,7 +1221,7 @@ export default function ModalRules({
                                     sx={{
                                       fontFamily: "Montserrat",
                                       fontSize: "16px",
-                                      
+
                                       color: "#999999",
                                       textAlign: "center",
                                       cursor: "pointer",
@@ -1206,7 +1238,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -1219,7 +1251,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -1232,7 +1264,7 @@ export default function ModalRules({
                                       sx={{
                                         fontFamily: "Montserrat",
                                         fontSize: "16px",
-                                        
+
                                         color: "#999999",
                                         textAlign: "center",
                                         cursor: "pointer",
@@ -1247,7 +1279,7 @@ export default function ModalRules({
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    
+
                                     color: "#999999",
                                     textAlign: "center",
                                   }}
@@ -1273,7 +1305,7 @@ export default function ModalRules({
                                   sx={{
                                     fontFamily: "Montserrat",
                                     fontSize: "16px",
-                                    
+
                                     textAlign: "center",
                                   }}
                                 >
@@ -1308,7 +1340,7 @@ export default function ModalRules({
                             color: "#FFFFFF",
                             fontFamily: "Montserrat",
                             fontSize: "14px",
-                            
+
                             "&:hover": {
                               backgroundColor: "#00435d",
                             },
@@ -1325,7 +1357,7 @@ export default function ModalRules({
                             backgroundColor: "#CCCCCC",
                             color: "#000000",
                             fontSize: "14px",
-                            
+
                             fontFamily: "Montserrat",
                             border: 0,
                             "&:hover": {
@@ -1345,6 +1377,18 @@ export default function ModalRules({
           )}
         </>
       )}
+      <ErrorHandler
+        error={errorPutAccrualRule}
+        snackbarOpen={snackbarOpenPutAccrualRule}
+        close={setSnackbarOpenPutAccrualRule}
+        text={"Правило сохранено"}
+      ></ErrorHandler>
+      <ErrorHandler
+        error={errorDeleteRule}
+        snackbarOpen={snackbarOpenDeleteRule}
+        close={setSnackbarOpenDeleteRule}
+        text={"Правило удалено"}
+      ></ErrorHandler>
     </div>
   );
 }

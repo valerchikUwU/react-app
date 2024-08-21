@@ -21,6 +21,8 @@ import {
   incrementDummyKey,
   postReciever,
 } from "../../../../BLL/superAdmin/comissionSlice.js";
+import ErrorHandler from "../../../Custom/ErrorHandler.jsx";
+import CircularProgressCustom from "../../styledComponents/CircularProgress.jsx";
 // Text Header
 const TextHeader = styled(TableCell)({
   fontFamily: "Montserrat",
@@ -36,6 +38,11 @@ export default function AddReciever({ isOpen, close, commisionRecieverId }) {
   const { accountId } = useParams(); // Извлекаем accountId из URL
   const [billNumber, setBillNumber] = useState();
   const [spisanie, setSpisanie] = useState();
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const errorPostReciever = useSelector(
+    (state) => state.superAdminCommision?.errorPostReciever
+  );
 
   const changeBillNumber = (event) => {
     setBillNumber(event.target.value);
@@ -49,6 +56,7 @@ export default function AddReciever({ isOpen, close, commisionRecieverId }) {
   };
 
   const handleSave = () => {
+    setIsLoading(true);
     console.log(billNumber);
     console.log(spisanie);
     dispatch(
@@ -58,184 +66,208 @@ export default function AddReciever({ isOpen, close, commisionRecieverId }) {
         billNumber: billNumber,
         Spisanie: spisanie,
       })
-    ).then(() => {
-      dispatch(incrementDummyKey());
-      resetStates();
-      close(false);
-    });
+    ).then(
+      () => {
+        dispatch(incrementDummyKey());
+        resetStates();
+        close(false);
+        setSnackbarOpen(true);
+        setIsLoading(false);
+      },
+      () => {
+        setSnackbarOpen(true);
+        setIsLoading(false);
+      }
+    );
   };
 
   return (
     <div>
-      <Modal open={isOpen}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateAreas: '"icon" "box"',
-            gridGap: "10px",
-            placeItems: "center",
-            height: "auto",
-            position: "absolute",
-            top: "45%",
-            left: "55%",
-            transform: "translate(-50%, -50%)",
-            width: "100%",
-            paddingTop: "5%",
-          }}
-        >
-          <Box
-            sx={{
-              backgroundColor: "white",
-              boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
-              padding: "4px",
-              borderRadius: "10px",
-              gridArea: "box",
-              alignSelf: "center",
-              position: "relative",
-              maxHeight: "calc(100vh - 200px)",
-              scrollbarWidth: "thin",
-              scrollbarColor: "#005475 #FFFFFF",
-              overflow: "visible",
+      {isLoading ? (
+        <Modal>
+          <CircularProgressCustom></CircularProgressCustom>
+        </Modal>
+      ) : (
+        <Modal open={isOpen}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateAreas: '"icon" "box"',
+              gridGap: "10px",
+              placeItems: "center",
+              height: "auto",
+              position: "absolute",
+              top: "45%",
+              left: "55%",
+              transform: "translate(-50%, -50%)",
+              width: "100%",
+              paddingTop: "5%",
             }}
           >
-            <IconButton
-              onClick={() => {close(false); resetStates();}}
-              sx={{
-                position: "absolute",
-                float: "right",
-                top: "-38px",
-                right: "-40px",
-              }}
-            >
-              <img src={exit} alt="закрыть" />
-            </IconButton>
-
-            <TableContainer
-              component={Paper}
-              sx={{ marginTop: "40px", width: "400px" }}
-            >
-              <Table stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    <TextHeader
-                      sx={{
-                        paddingY: 1,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 100,
-                        background: "#fff",
-                      }}
-                    >
-                      Счёт №
-                    </TextHeader>
-                    <TextHeader
-                      sx={{
-                        paddingY: 1,
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 100,
-                        background: "#fff",
-                      }}
-                    >
-                      Списание
-                    </TextHeader>
-                  </TableRow>
-                </TableHead>
-
-                <TableBody>
-                  <TableRow>
-                    <TableCell
-                      sx={{
-                        fontFamily: "Montserrat",
-                        fontSize: "16px",
-                        fontWeight: 600,
-                        color: "#333333",
-                        textAlign: "center",
-                      }}
-                    >
-                      <TextField
-                        variant="standard"
-                        sx={{
-                          width: "150px",
-                        }}
-                        value={billNumber}
-                        onChange={changeBillNumber}
-                      ></TextField>
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        fontFamily: "Montserrat",
-                        fontSize: "16px",
-                        fontWeight: 600,
-                        color: "#333333",
-                        textAlign: "center",
-                      }}
-                    >
-                      <TextField
-                        variant="standard"
-                        sx={{
-                          width: "150px",
-                        }}
-                        value={spisanie}
-                        onChange={changeSpisanie}
-                      ></TextField>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-
             <Box
               sx={{
-                display: "flex",
-                justifyContent: "flex-end", // Плавное выравнивание кнопок справа
-                marginTop: "60px",
-                marginRight: "10px",
-                gap: "15px",
-                marginBottom: "20px",
+                backgroundColor: "white",
+                boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
+                padding: "4px",
+                borderRadius: "10px",
+                gridArea: "box",
+                alignSelf: "center",
+                position: "relative",
+                maxHeight: "calc(100vh - 200px)",
+                scrollbarWidth: "thin",
+                scrollbarColor: "#005475 #FFFFFF",
+                overflow: "visible",
               }}
             >
-              <Button
-                variant="contained"
-                onClick={handleSave}
+              <IconButton
+                onClick={() => {
+                  close(false);
+                  resetStates();
+                }}
                 sx={{
-                  textTransform: "none",
-                  backgroundColor: "#005475",
-                  color: "#FFFFFF",
-                  fontFamily: "Montserrat",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  "&:hover": {
-                    backgroundColor: "#00435d",
-                  },
+                  position: "absolute",
+                  float: "right",
+                  top: "-38px",
+                  right: "-40px",
                 }}
               >
-                Сохранить
-              </Button>
+                <img src={exit} alt="закрыть" />
+              </IconButton>
 
-              <Button
-                onClick={resetStates}
+              <TableContainer
+                component={Paper}
+                sx={{ marginTop: "40px", width: "400px" }}
+              >
+                <Table stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TextHeader
+                        sx={{
+                          paddingY: 1,
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 100,
+                          background: "#fff",
+                        }}
+                      >
+                        Счёт №
+                      </TextHeader>
+                      <TextHeader
+                        sx={{
+                          paddingY: 1,
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 100,
+                          background: "#fff",
+                        }}
+                      >
+                        Списание
+                      </TextHeader>
+                    </TableRow>
+                  </TableHead>
+
+                  <TableBody>
+                    <TableRow>
+                      <TableCell
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
+                          fontWeight: 600,
+                          color: "#333333",
+                          textAlign: "center",
+                        }}
+                      >
+                        <TextField
+                          variant="standard"
+                          sx={{
+                            width: "150px",
+                          }}
+                          value={billNumber}
+                          onChange={changeBillNumber}
+                        ></TextField>
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
+                          fontWeight: 600,
+                          color: "#333333",
+                          textAlign: "center",
+                        }}
+                      >
+                        <TextField
+                          variant="standard"
+                          sx={{
+                            width: "150px",
+                          }}
+                          value={spisanie}
+                          onChange={changeSpisanie}
+                        ></TextField>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+
+              <Box
                 sx={{
-                  variant: "contained",
-                  textTransform: "none",
-                  backgroundColor: "#CCCCCC",
-                  color: "#000000",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  fontFamily: "Montserrat",
-                  border: 0,
-                  "&:hover": {
-                    backgroundColor: "#8E8E8E",
-                    border: 0,
-                  },
+                  display: "flex",
+                  justifyContent: "flex-end", // Плавное выравнивание кнопок справа
+                  marginTop: "60px",
+                  marginRight: "10px",
+                  gap: "15px",
+                  marginBottom: "20px",
                 }}
               >
-                Отменить
-              </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleSave}
+                  sx={{
+                    textTransform: "none",
+                    backgroundColor: "#005475",
+                    color: "#FFFFFF",
+                    fontFamily: "Montserrat",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    "&:hover": {
+                      backgroundColor: "#00435d",
+                    },
+                  }}
+                >
+                  Сохранить
+                </Button>
+
+                <Button
+                  onClick={resetStates}
+                  sx={{
+                    variant: "contained",
+                    textTransform: "none",
+                    backgroundColor: "#CCCCCC",
+                    color: "#000000",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    fontFamily: "Montserrat",
+                    border: 0,
+                    "&:hover": {
+                      backgroundColor: "#8E8E8E",
+                      border: 0,
+                    },
+                  }}
+                >
+                  Отменить
+                </Button>
+              </Box>
             </Box>
-          </Box>
-        </div>
-      </Modal>
+          </div>
+        </Modal>
+      )}
+
+      <ErrorHandler
+        error={errorPostReciever}
+        snackbarOpen={snackbarOpen}
+        close={setSnackbarOpen}
+        text={"Счёт создан"}
+      ></ErrorHandler>
     </div>
   );
 }

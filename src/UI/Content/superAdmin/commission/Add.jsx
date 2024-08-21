@@ -12,12 +12,15 @@ import {
 } from "@mui/material";
 import { incrementDummyKey, postCommision } from "../../../../BLL/superAdmin/comissionSlice";
 import CircularProgressCustom from "../../styledComponents/CircularProgress";
+import ErrorHandler from "../../../Custom/ErrorHandler";
 
 export default function Add({ isOpen, close }) {
   const dispatch = useDispatch();
   const { accountId } = useParams(); // Извлекаем accountId из URL
   const [loadingSave, setLoadingSave] = useState(false); 
   const [text, setText] = useState(); 
+  const errorPostCommision = useSelector((state) => state.superAdminCommision?.errorPostCommision);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const handleSave = () => {
     setLoadingSave(true);
@@ -27,7 +30,8 @@ export default function Add({ isOpen, close }) {
       close(false);
       dispatch(incrementDummyKey()); 
       setLoadingSave(false);
-    });
+      setSnackbarOpen(true);
+    }, () => { setSnackbarOpen(true);  setLoadingSave(false);});
   };
 
   const resetStates = () => { 
@@ -118,6 +122,13 @@ export default function Add({ isOpen, close }) {
         </DialogActions>
       </Dialog>)
       }
+
+<ErrorHandler
+        error={errorPostCommision}
+        snackbarOpen={snackbarOpen}
+        close={setSnackbarOpen}
+        text={"ПОлучателькомисси создан"}
+      ></ErrorHandler>
     </div>
   );
 }
