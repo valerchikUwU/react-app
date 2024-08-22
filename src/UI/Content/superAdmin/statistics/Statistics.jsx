@@ -44,9 +44,9 @@ export default function Statistics() {
       const selectedDate = new Date(date); // Преобразование строки даты в объект Date
       console.log(selectedDate);
       return (
-        selectedDate.getFullYear() <= itemDate.getFullYear() &&
-        selectedDate.getMonth() <= itemDate.getMonth() && // Месяцы индексируются с 0
-        selectedDate.getDate() <= itemDate.getDate()
+        selectedDate.getFullYear() < itemDate.getFullYear() ||
+        (selectedDate.getFullYear() <= itemDate.getFullYear() && selectedDate.getMonth() < itemDate.getMonth()) ||
+        (selectedDate.getMonth() <= itemDate.getMonth() && selectedDate.getDate() <= itemDate.getDate())
       );
     });
 
