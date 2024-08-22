@@ -29,6 +29,7 @@ const TextHeader = styled(TableCell)({
 });
 
 export default function AddSelectProduct({
+  disabledAbbreviation,
   isOpenModalUpdate,
   setIsOpenModalUpdate,
   allProducts,
@@ -42,6 +43,11 @@ export default function AddSelectProduct({
   const [check, setCheck] = useState({});
   const [active, setActive] = useState(false);
   const [activeDeposit, setActiveDeposit] = useState(false);
+
+  
+
+    // console.log(` disabledAbbreviation.lenght = ${disabledAbbreviation.lenght}`);
+
 
 
   useEffect(() => {
@@ -73,12 +79,13 @@ export default function AddSelectProduct({
     }
   }, [check]);
 
-
-   // Функция для фильтрации объекта check
-   const filterCheck = () => {
+  // Функция для фильтрации объекта check
+  const filterCheck = () => {
     const filteredCheck = Object.keys(check).reduce((acc, key) => {
       // Проверяем, есть ли id текущего ключа среди id объектов в массиве updateProductDelete
-      const shouldRemove = updateProductDelete.some(item => item.id === check[key].id);
+      const shouldRemove = updateProductDelete.some(
+        (item) => item.id === check[key].id
+      );
 
       // Если id не найден в массиве updateProductDelete, добавляем его в аккумулятор
       if (!shouldRemove) {
@@ -100,12 +107,12 @@ export default function AddSelectProduct({
 
   useEffect(() => {
     if (deleteTitles === true) {
-      console.log('updateProductDelete');
+      console.log("updateProductDelete");
       console.log(updateProductDelete);
-      console.log('check');
+      console.log("check");
       console.log(check);
-      
-     setCheck(filterCheck());
+
+      setCheck(filterCheck());
       stateDeleteTitles();
     }
   }, [deleteTitles]);
@@ -136,7 +143,6 @@ export default function AddSelectProduct({
   };
 
   return (
-   
     <Modal open={isOpenModalUpdate}>
       <div
         style={{
@@ -231,7 +237,10 @@ export default function AddSelectProduct({
                               onChange={(event) =>
                                 handleChangeCheckbox(event, item.id, 1)
                               }
-                              disabled={active}
+
+                            
+                              disabled={active || disabledAbbreviation.includes(item.id)}
+
                             ></CustomStyledCheckbox>
                             {item.abbreviation}
                           </TableCell>
@@ -270,7 +279,7 @@ export default function AddSelectProduct({
                               onChange={(event) =>
                                 handleChangeCheckbox(event, item.id, 2)
                               }
-                              disabled={active}
+                              disabled={active || disabledAbbreviation.includes(item.id)}
                             ></CustomStyledCheckbox>
                             {item.abbreviation}
                           </TableCell>
@@ -309,7 +318,7 @@ export default function AddSelectProduct({
                               onChange={(event) =>
                                 handleChangeCheckbox(event, item.id, 3)
                               }
-                              disabled={active}
+                              disabled={active || disabledAbbreviation.includes(item.id)}
                             ></CustomStyledCheckbox>
                             {item.abbreviation}
                           </TableCell>
@@ -347,7 +356,9 @@ export default function AddSelectProduct({
                               onChange={(event) =>
                                 handleChangeCheckbox(event, item.id, 4)
                               }
-                              disabled={activeDeposit}
+                              disabled={
+                                activeDeposit || (disabledAbbreviation.length > 0 ? true : false)           
+                             }
                             ></CustomStyledCheckbox>
                             {item.abbreviation}
                           </TableCell>
@@ -411,7 +422,5 @@ export default function AddSelectProduct({
         </Box>
       </div>
     </Modal>
-
-    
   );
 }
