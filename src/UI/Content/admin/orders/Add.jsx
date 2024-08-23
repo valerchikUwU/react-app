@@ -85,6 +85,7 @@ export default function Add({
 
   const errorPutNewOrder = useSelector((state) => state.adminOrder.errorPutNewOrder);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarOpenEmpty, setSnackbarOpenEmpty] = useState(false);
 
   const allIds = Array.isArray(products) && products.map((row) => row.id);
   const totalSum =
@@ -216,6 +217,9 @@ export default function Add({
         setIsLoadingModalSave(false);
         setSnackbarOpen(true);
       }, () => { setIsLoadingModalSave(false);  setSnackbarOpen(true);});
+    }else{
+      setIsLoadingModalSave(false);
+      setSnackbarOpenEmpty(true);
     }
   };
 
@@ -1037,6 +1041,13 @@ export default function Add({
         snackbarOpen={snackbarOpen}
         close={setSnackbarOpen}
         text={"Заказ создан"}
+      ></ErrorHandler>
+
+<ErrorHandler
+        error={"Заказ пустой"}
+        snackbarOpen={snackbarOpenEmpty}
+        close={setSnackbarOpenEmpty}
+        text={"Заказ пустой"}
       ></ErrorHandler>
 
       <SelectProduct

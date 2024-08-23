@@ -413,6 +413,7 @@ export default function Orders() {
   const handleSave = (exitID) => {
     setIsLoadingModalSave(true);
     const titlesToUpdate = [];
+    
     listModalTitles.forEach((row) => {
       if(row.productTypeId === 4) {
         titlesToUpdate.push({

@@ -49,7 +49,6 @@ export default function AddSelectProduct({
     // console.log(` disabledAbbreviation.lenght = ${disabledAbbreviation.lenght}`);
 
 
-
   useEffect(() => {
     const hasChecked = Object.values(check).some((value) => {
       return (
