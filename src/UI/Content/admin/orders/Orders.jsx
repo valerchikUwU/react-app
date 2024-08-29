@@ -33,6 +33,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Add from "./Add.jsx";
 import CustomStyledCheckbox from "../../styledComponents/CustomStyledCheckbox.jsx";
+import dayjs from 'dayjs';
 
 import { styled } from "@mui/system";
 import {
@@ -740,6 +741,8 @@ export default function Orders() {
     }
   };
 
+  const nowDate = new Date();
+
   return (
     <Box>
       {isLoading ? (
@@ -902,7 +905,14 @@ export default function Orders() {
             </TableHead>
 
             <TableBody>
-              {sortedOrders.map((order) => (
+              {sortedOrders?.sort((a, b) => {
+          if (a.dispatchDate > b.dispatchDate) {
+            return -1;
+          } else if (a.dispatchDate < b.dispatchDate) {
+            return 1;
+          }
+          return 0;
+        }).map((order) => (
                 <TableRow
                   key={order.id}
                   onClick={() => OpenModal(order.id)}
@@ -916,7 +926,7 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-
+                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
                       textAlign: "center",
                     }}
                   >
@@ -929,6 +939,7 @@ export default function Orders() {
                       fontFamily: "Montserrat",
                       fontSize: "16px",
                       textAlign: "center",
+                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
                     }}
                   >
                     {order.fullName}
@@ -939,7 +950,7 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-
+                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
                       textAlign: "center",
                     }}
                   >
@@ -951,7 +962,7 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-
+                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
                       textAlign: "center",
                     }}
                   >
@@ -963,7 +974,7 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-
+                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
                       textAlign: "center",
                     }}
                   >
@@ -975,7 +986,7 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-
+                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
                       textAlign: "center",
                     }}
                   >
@@ -987,7 +998,7 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-
+                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
                       textAlign: "center",
                     }}
                   >
@@ -999,7 +1010,7 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-
+                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
                       textAlign: "center",
                     }}
                   >
