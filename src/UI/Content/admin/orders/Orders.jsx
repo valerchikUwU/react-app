@@ -79,7 +79,7 @@ export default function Orders() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarOpenDelete, setSnackbarOpenDelete] = useState(false);
 
-  let disabledAbbreviation = [];
+  // let disabledAbbreviation = [];
   // AddTitlesOrders.jsx
   const [checkProductBooklet, setcheckProductBooklet] = useState({});
   const [selectProductGeneration, setSelectProductGeneration] = useState({});
@@ -192,34 +192,46 @@ export default function Orders() {
     0
   );
 
-  // const [disabledAbbreviation, setDisabledAbbreviation] = useState([]);
-  // useEffect(() => {
-  //   setDisabledAbbreviation([]);
-  //   if (listModalTitles && Array.isArray(disabledAbbreviation)) {
-  //     let newDisabledAbbrevation = listModalTitles.map(
-  //       (item) => item.productId
-  //     );
-  //     if (productId) {
-  //       setDisabledAbbreviation(newDisabledAbbrevation);
-  //     } else {
-  //       let matchingProductIds = listModalTitles.reduce((acc, value) => {
-  //         Object.keys(productId).forEach(key => {
-  //           console.log(`value.id = ${value.id}, key = ${key}`);
-  //           if (key === value.id.toString()) {
-  //             acc.push(productId[key]);
-  //             console.log(`productId[${key}] = ${productId[key]}`);
-  //           } else {
-  //             acc.push(value.productId);
-  //             console.log(`Default: ${value.productId}`);
-  //           }
-  //         });
-  //         return acc; // Возвращаем acc после каждой итерации
-  //       }, []);
-  //       console.log(` matchingProductIds = ${matchingProductIds}`);
-  //       setDisabledAbbreviation([...new Set(matchingProductIds)]);
-  //     }
-  //   }
-  // }, [listModalTitles, selectedAbbr]);
+  const [disabledAbbreviation, setDisabledAbbreviation] = useState([]);
+  useEffect(() => {
+    setDisabledAbbreviation([]);
+    if (listModalTitles && Array.isArray(disabledAbbreviation)) {
+      let newDisabledAbbrevation = listModalTitles.map(
+        (item) => item.productId
+      );
+      if (Object.keys(productId).length === 0) {
+        setDisabledAbbreviation(newDisabledAbbrevation);
+      } else {
+        let matchingProductIds = listModalTitles.reduce((acc, value) => {
+          if(listModalTitles.length === Object.keys(productId).length) {
+            Object.keys(productId).forEach(key => {
+              console.log(`value.id = ${value.id}, key = ${key}`);
+              if (key === value.id.toString()) {
+                acc.push(productId[key]);
+                console.log(`productId[${key}] = ${productId[key]}`);
+              } 
+            });
+            return acc;
+          }else{
+             Object.keys(productId).forEach(key => {
+            console.log(`value.id = ${value.id}, key = ${key}`);
+            if (key === value.id.toString()) {
+              acc.push(productId[key]);
+              console.log(`productId[${key}] = ${productId[key]}`);
+            } else {
+              acc.push(value.productId);
+              console.log(`Default: ${value.productId}`);
+            }
+          });
+          return acc; // Возвращаем acc после каждой итерации
+          }
+         
+        }, []);
+        console.log(` matchingProductIds = ${matchingProductIds}`);
+        setDisabledAbbreviation([...new Set(matchingProductIds)]);
+      }
+    }
+  }, [listModalTitles, selectedAbbr]);
 
   const sortAllProducts = [...allProducts].sort((a, b) => {
     if (a.abbreviation > b.abbreviation) {
@@ -574,7 +586,8 @@ export default function Orders() {
 
   // Функция для сброса состояний
   const resetStates = () => {
-    // setDisabledAbbreviation([]);
+    setDisabledAbbreviation([]);
+    setProductId({});
 
     setExitAddSelectProduct(true);
     resetStatesNewTitles();
@@ -1878,13 +1891,13 @@ export default function Orders() {
                             <>
                               <TableBody>
                                 {listModalTitles.map((row) => {
-                                  if (
-                                    !disabledAbbreviation.includes(
-                                      row.productId
-                                    )
-                                  ) {
-                                    disabledAbbreviation.push(row.productId);
-                                  }
+                                  // if (
+                                  //   !disabledAbbreviation.includes(
+                                  //     row.productId
+                                  //   )
+                                  // ) {
+                                  //   disabledAbbreviation.push(row.productId);
+                                  // }
 
                                   return (
                                     <TableRow key={row.id}>
