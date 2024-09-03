@@ -33,7 +33,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Add from "./Add.jsx";
 import CustomStyledCheckbox from "../../styledComponents/CustomStyledCheckbox.jsx";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 
 import { styled } from "@mui/system";
 import {
@@ -192,6 +192,35 @@ export default function Orders() {
     0
   );
 
+  // const [disabledAbbreviation, setDisabledAbbreviation] = useState([]);
+  // useEffect(() => {
+  //   setDisabledAbbreviation([]);
+  //   if (listModalTitles && Array.isArray(disabledAbbreviation)) {
+  //     let newDisabledAbbrevation = listModalTitles.map(
+  //       (item) => item.productId
+  //     );
+  //     if (productId) {
+  //       setDisabledAbbreviation(newDisabledAbbrevation);
+  //     } else {
+  //       let matchingProductIds = listModalTitles.reduce((acc, value) => {
+  //         Object.keys(productId).forEach(key => {
+  //           console.log(`value.id = ${value.id}, key = ${key}`);
+  //           if (key === value.id.toString()) {
+  //             acc.push(productId[key]);
+  //             console.log(`productId[${key}] = ${productId[key]}`);
+  //           } else {
+  //             acc.push(value.productId);
+  //             console.log(`Default: ${value.productId}`);
+  //           }
+  //         });
+  //         return acc; // Возвращаем acc после каждой итерации
+  //       }, []);
+  //       console.log(` matchingProductIds = ${matchingProductIds}`);
+  //       setDisabledAbbreviation([...new Set(matchingProductIds)]);
+  //     }
+  //   }
+  // }, [listModalTitles, selectedAbbr]);
+
   const sortAllProducts = [...allProducts].sort((a, b) => {
     if (a.abbreviation > b.abbreviation) {
       return 1;
@@ -209,7 +238,16 @@ export default function Orders() {
   }, [accountId, dispatch]);
 
   useEffect(() => {
-    setSortedOrders([...orders]);
+    setSortedOrders(
+      [...orders]?.sort((a, b) => {
+        if (a.dispatchDate > b.dispatchDate) {
+          return -1;
+        } else if (a.dispatchDate < b.dispatchDate) {
+          return 1;
+        }
+        return 0;
+      })
+    );
   }, [orders]);
 
   useEffect(() => {
@@ -323,6 +361,7 @@ export default function Orders() {
     setExitAddSelectProduct(false);
   };
   const handleCloseModal = (id) => {
+    resetStates();
     setExitAddSelectProduct(true);
 
     setOpenStates({ ...openStates, [id]: false });
@@ -331,7 +370,6 @@ export default function Orders() {
     setIsInputCleared(false);
 
     resetStatesNewTitles();
-    resetStates();
   };
 
   const handleDeleteOrder = (orderId, titleId) => {
@@ -414,85 +452,86 @@ export default function Orders() {
   const handleSave = (exitID) => {
     setIsLoadingModalSave(true);
     const titlesToUpdate = [];
-    
+
     listModalTitles.forEach((row) => {
-      if(row.productTypeId === 4) {
+      if (row.productTypeId === 4) {
         titlesToUpdate.push({
           id: row.id,
           productId: productId[row.id] ? productId[row.id] : row.productId,
-  
+
           accessType: null,
-  
+
           generation: null,
-  
+
           quantity: selectedInput[row.id],
           addBooklet: false,
         });
-      }else{
+      } else {
         titlesToUpdate.push({
-        id: row.id,
-        productId: productId[row.id] ? productId[row.id] : row.productId,
+          id: row.id,
+          productId: productId[row.id] ? productId[row.id] : row.productId,
 
-        accessType: selectedCheck[row.id]
-          ? null
-          : selectedAccessType[row.id]
-          ? selectedAccessType[row.id]
-          : row.accessType,
+          accessType: selectedCheck[row.id]
+            ? selectedCheck[row.id] === 5
+              ? selectedAccessType[row.id] ? selectedAccessType[row.id] : row.accessType
+              : null
+            : selectedAccessType[row.id]
+              ? selectedAccessType[row.id]
+              : row.accessType,
 
-        generation: selectedGeneration[row.id]
-          ? selectedGeneration[row.id]
-          : row.generation,
+          generation: selectedGeneration[row.id]
+            ? selectedGeneration[row.id]
+            : row.generation,
 
-        quantity: selectedInput[row.id],
-        addBooklet:
-          selectedCheck[row.id] === 5 ? row.addBooklet : selectedCheck[row.id],
-      });
+          quantity: selectedInput[row.id],
+          addBooklet:
+            selectedCheck[row.id] === 5
+              ? row.addBooklet
+              : selectedCheck[row.id],
+        });
       }
     });
 
     const titlesToCreate = [];
     products?.forEach((item) => {
-      if(item.productTypeId === 4) {
+      if (item.productTypeId === 4) {
         titlesToCreate.push({
           productId: item.id,
-  
+
           accessType: null,
-  
+
           generation: null,
-  
+
           quantity: productInputQuantity[item.id]
             ? productInputQuantity[item.id]
             : 1,
-  
+
           addBooklet: false,
-  
         });
-      }else{
- titlesToCreate.push({
-        productId: item.id,
+      } else {
+        titlesToCreate.push({
+          productId: item.id,
 
-        accessType: checkProductBooklet[item.id]
-          ? null
-          : selectProductAccessType[item.id]
-          ? selectProductAccessType[item.id]
-          : "Электронный",
+          accessType: checkProductBooklet[item.id]
+            ? null
+            : selectProductAccessType[item.id]
+            ? selectProductAccessType[item.id]
+            : "Электронный",
 
-        generation: selectProductGeneration[item.id]
-          ? selectProductGeneration[item.id]
-          : "Второе поколение",
+          generation: selectProductGeneration[item.id]
+            ? selectProductGeneration[item.id]
+            : "Второе поколение",
 
-        quantity: productInputQuantity[item.id]
-          ? productInputQuantity[item.id]
-          : 1,
+          quantity: productInputQuantity[item.id]
+            ? productInputQuantity[item.id]
+            : 1,
 
-        addBooklet:
-          checkProductBooklet[item.id] === undefined
-            ? products.addBooklet
-            : checkProductBooklet[item.id],
-
-      });
+          addBooklet:
+            checkProductBooklet[item.id] === undefined
+              ? products.addBooklet
+              : checkProductBooklet[item.id],
+        });
       }
-     
     });
 
     dispatch(
@@ -535,6 +574,8 @@ export default function Orders() {
 
   // Функция для сброса состояний
   const resetStates = () => {
+    // setDisabledAbbreviation([]);
+
     setExitAddSelectProduct(true);
     resetStatesNewTitles();
     setProducts(null);
@@ -560,7 +601,8 @@ export default function Orders() {
       return acc;
     }, {});
 
-    setSelectedAccessType(initialSelectedAccessType);
+    // setSelectedAccessType(initialSelectedAccessType);
+    setSelectedAccessType({});
 
     // Сброс selectedGeneration
     const initialSelectedGeneration = listModalTitles.reduce((acc, row) => {
@@ -568,7 +610,8 @@ export default function Orders() {
       return acc;
     }, {});
 
-    setSelectedGeneration(initialSelectedGeneration);
+    // setSelectedGeneration(initialSelectedGeneration);
+    setSelectedGeneration({});
 
     // Сброс selectedInput
     const initialSelectedInput = listModalTitles.reduce((acc, row) => {
@@ -741,8 +784,6 @@ export default function Orders() {
     }
   };
 
-  const nowDate = new Date();
-
   return (
     <Box>
       {isLoading ? (
@@ -905,14 +946,7 @@ export default function Orders() {
             </TableHead>
 
             <TableBody>
-              {sortedOrders?.sort((a, b) => {
-          if (a.dispatchDate > b.dispatchDate) {
-            return -1;
-          } else if (a.dispatchDate < b.dispatchDate) {
-            return 1;
-          }
-          return 0;
-        }).map((order) => (
+              {sortedOrders?.map((order) => (
                 <TableRow
                   key={order.id}
                   onClick={() => OpenModal(order.id)}
@@ -926,7 +960,11 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
+                      fontWeight:
+                        dayjs(order.dispatchDate).format("DD-MM-YYYY") ==
+                        dayjs().format("DD-MM-YYYY")
+                          ? "600"
+                          : "",
                       textAlign: "center",
                     }}
                   >
@@ -939,7 +977,11 @@ export default function Orders() {
                       fontFamily: "Montserrat",
                       fontSize: "16px",
                       textAlign: "center",
-                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
+                      fontWeight:
+                        dayjs(order.dispatchDate).format("DD-MM-YYYY") ==
+                        dayjs().format("DD-MM-YYYY")
+                          ? "600"
+                          : "",
                     }}
                   >
                     {order.fullName}
@@ -950,7 +992,11 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
+                      fontWeight:
+                        dayjs(order.dispatchDate).format("DD-MM-YYYY") ==
+                        dayjs().format("DD-MM-YYYY")
+                          ? "600"
+                          : "",
                       textAlign: "center",
                     }}
                   >
@@ -962,7 +1008,11 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
+                      fontWeight:
+                        dayjs(order.dispatchDate).format("DD-MM-YYYY") ==
+                        dayjs().format("DD-MM-YYYY")
+                          ? "600"
+                          : "",
                       textAlign: "center",
                     }}
                   >
@@ -974,7 +1024,11 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
+                      fontWeight:
+                        dayjs(order.dispatchDate).format("DD-MM-YYYY") ==
+                        dayjs().format("DD-MM-YYYY")
+                          ? "600"
+                          : "",
                       textAlign: "center",
                     }}
                   >
@@ -986,7 +1040,11 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
+                      fontWeight:
+                        dayjs(order.dispatchDate).format("DD-MM-YYYY") ==
+                        dayjs().format("DD-MM-YYYY")
+                          ? "600"
+                          : "",
                       textAlign: "center",
                     }}
                   >
@@ -998,7 +1056,11 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
+                      fontWeight:
+                        dayjs(order.dispatchDate).format("DD-MM-YYYY") ==
+                        dayjs().format("DD-MM-YYYY")
+                          ? "600"
+                          : "",
                       textAlign: "center",
                     }}
                   >
@@ -1010,7 +1072,11 @@ export default function Orders() {
                     sx={{
                       fontFamily: "Montserrat",
                       fontSize: "16px",
-                      fontWeight: dayjs(order.dispatchDate).format('DD-MM-YYYY') == dayjs().format('DD-MM-YYYY') ? "600" : "",
+                      fontWeight:
+                        dayjs(order.dispatchDate).format("DD-MM-YYYY") ==
+                        dayjs().format("DD-MM-YYYY")
+                          ? "600"
+                          : "",
                       textAlign: "center",
                     }}
                   >
@@ -1828,7 +1894,6 @@ export default function Orders() {
                                           sx={{
                                             fontFamily: "Montserrat",
                                             fontSize: "16px",
-
                                             textAlign: "center",
                                             cursor: "pointer",
                                             width: "70px",
@@ -1895,14 +1960,18 @@ export default function Orders() {
                                                 cursor: "pointer",
                                                 width: "150px",
                                               }}
+                                              // value={
+                                              //   selectedCheck[row.id]
+                                              //     ? selectedCheck[row.id] === 5
+                                              //       ? row.accessType
+                                              //       : null
+                                              //     : selectedAccessType[row.id]
+                                              //       ? selectedAccessType[row.id]
+                                              //       : row.accessType // не может быть
+                                              // }
                                               value={
-                                                selectedCheck[row.id]
-                                                  ? selectedCheck[row.id] === 5
-                                                    ? row.accessType
-                                                    : null
-                                                  : selectedAccessType[row.id]
-                                                  ? selectedAccessType[row.id]
-                                                  : row.accessType // не может быть
+                                                selectedAccessType[row.id] ||
+                                                row.accessType // не может быть
                                               }
                                               onChange={(e) =>
                                                 handleChangeAccessType(
@@ -1919,12 +1988,6 @@ export default function Orders() {
                                                     : true
                                                   : null // не можект быть
                                               }
-
-                                              // Добавляем условие для отключения
-                                              // displayEmpty
-                                              // renderValue={(selected) =>
-                                              //   selected === null ? null : selected
-                                              // }
                                             >
                                               <MenuItem
                                                 value="Электронный"
@@ -2142,9 +2205,7 @@ export default function Orders() {
                               <TableBody>
                                 {Array.isArray(products) &&
                                   products?.map((product) => {
-                                    if (
-                                      product.productTypeId === 4
-                                    ) {
+                                    if (product.productTypeId === 4) {
                                       return (
                                         <TableRow key={product.id}>
                                           <TableCell

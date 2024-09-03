@@ -44,11 +44,6 @@ export default function AddSelectProduct({
   const [active, setActive] = useState(false);
   const [activeDeposit, setActiveDeposit] = useState(false);
 
-  
-
-    // console.log(` disabledAbbreviation.lenght = ${disabledAbbreviation.lenght}`);
-
-
   useEffect(() => {
     const hasChecked = Object.values(check).some((value) => {
       return (
