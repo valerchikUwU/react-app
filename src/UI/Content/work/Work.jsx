@@ -1270,7 +1270,7 @@ export default function Work() {
                   className={classes.modal}
                 >
                   <IconButton
-                    onClick={() => handleCloseModal(element.id)}
+                    onClick={() => {resetStates(); handleCloseModal(element.id);}}
                     sx={{
                       position: "absolute",
                       float: "right",
