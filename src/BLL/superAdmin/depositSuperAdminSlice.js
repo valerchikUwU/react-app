@@ -8,7 +8,7 @@ export const getDeposit = createAsyncThunk(
     try {
       const response = await instance.get(`${accountId}/deposits`);
       console.log(response.data);
-      return { organizations: response.data.organizations };
+      return { organizations: response.data.organizations, response: response };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -48,6 +48,7 @@ export const getDepositBalance = createAsyncThunk(
       return {
         organization: response.data.organization,
         orders: updatedArray.reverse(),
+        response: response,
       };
     } catch (error) {
       return rejectWithValue(error.message);

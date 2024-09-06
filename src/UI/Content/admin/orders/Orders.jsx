@@ -340,9 +340,9 @@ export default function Orders() {
   useEffect(() => {
     // Инициализация sumForOneTitle
     const initialSumForOneTitle = listModalTitles.reduce((acc, row) => {
-      const price = selectedCheck[row.id]
-        ? selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet
-        : selectedProduct[row.id]?.priceAccess || row.price.priceAccess;
+      const price = selectedCheck[row.id] === true 
+      ? selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet
+      : selectedProduct[row.id]?.priceAccess || row.price.priceAccess;
       acc[row.id] = parseFloat(selectedInput[row.id] || 0) * price;
       return acc;
     }, {});
@@ -372,8 +372,10 @@ export default function Orders() {
   const resetAddSelectProduct = () => {
     setExitAddSelectProduct(false);
   };
+
   const handleCloseModal = (id) => {
     resetStates();
+
     setExitAddSelectProduct(true);
 
     setOpenStates({ ...openStates, [id]: false });
@@ -382,6 +384,20 @@ export default function Orders() {
     setIsInputCleared(false);
 
     resetStatesNewTitles();
+
+  };
+
+  const handleCloseModalSave = (id) => {
+
+    setExitAddSelectProduct(true);
+
+    setOpenStates({ ...openStates, [id]: false });
+
+    setProducts(null);
+    setIsInputCleared(false);
+
+    resetStatesNewTitles();
+
   };
 
   const handleDeleteOrder = (orderId, titleId) => {
@@ -573,7 +589,7 @@ export default function Orders() {
       () => {
         dispatch(getOrder(accountId));
         setOpenStates({ ...openStates, [exitID]: false });
-        handleCloseModal(exitID);
+        handleCloseModalSave(exitID);
         setIsLoadingModalSave(false);
         setSnackbarOpen(true);
       },
@@ -587,8 +603,8 @@ export default function Orders() {
   // Функция для сброса состояний
   const resetStates = () => {
     setDisabledAbbreviation([]);
+    setSelectedProduct({});
     setProductId({});
-
     setExitAddSelectProduct(true);
     resetStatesNewTitles();
     setProducts(null);
@@ -602,11 +618,11 @@ export default function Orders() {
 
     // Сброс selectedCheck
     const initialSelectedCheck = listModalTitles.reduce((acc, row) => {
-      acc[row.id] = 5;
+      acc[row.id] = null;
       return acc;
     }, {});
 
-    setSelectedCheck(initialSelectedCheck);
+     setSelectedCheck(initialSelectedCheck);
 
     // Сброс selectedAccessType
     const initialSelectedAccessType = listModalTitles.reduce((acc, row) => {
@@ -797,6 +813,7 @@ export default function Orders() {
     }
   };
 
+ 
   return (
     <Box>
       {isLoading ? (
@@ -1121,6 +1138,9 @@ export default function Orders() {
         </Modal>
       ) : (
         orders.map((element) => {
+          for (let [id, boolean] of Object.entries(selectedCheck)) {
+            console.log(`id = ${id}, boolean = ${boolean}`);
+             }
           return (
             <Modal open={openStates[element.id] || false}>
               <div
@@ -1722,13 +1742,18 @@ export default function Orders() {
                                   />
                                 </TableCell>
 
-                                <TableCellModal>
-                                  {selectedCheck[row.id]
+                                {/* {selectedCheck[row.id]
                                     ? selectedProduct[row.id]?.priceBooklet ||
                                       row.price.priceBooklet
                                     : selectedProduct[row.id]?.priceAccess ||
                                       row.price.priceAccess}
-                                  &#x20bd;
+                                  &#x20bd; */}
+                                <TableCellModal>
+                                  {selectedCheck[row.id] 
+                                        ? selectedCheck[row.id] === 5 ? selectedProduct[row.id]?.priceAccess || row.price.priceAccess :  selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet
+                                        : selectedProduct[row.id]?.priceAccess || row.price.priceAccess}
+                                        &#x20bd;
+                                  
                                 </TableCellModal>
 
                                 <TableCellModal>
@@ -1891,14 +1916,6 @@ export default function Orders() {
                             <>
                               <TableBody>
                                 {listModalTitles.map((row) => {
-                                  // if (
-                                  //   !disabledAbbreviation.includes(
-                                  //     row.productId
-                                  //   )
-                                  // ) {
-                                  //   disabledAbbreviation.push(row.productId);
-                                  // }
-
                                   return (
                                     <TableRow key={row.id}>
                                       <TableCell>
@@ -2153,6 +2170,7 @@ export default function Orders() {
                                           size={1}
                                         ></CustomStyledCheckbox>
                                       </TableCell>
+
                                       <TableCell>
                                         <TextField
                                           variant="standard"
@@ -2180,15 +2198,14 @@ export default function Orders() {
                                           }
                                         />
                                       </TableCell>
-
+                                
+                                            {/* {console.log(`selectedCheck[${row.id}] = ${selectedCheck[row.id]}`)} */}
                                       <TableCellModal>
-                                        {selectedCheck[row.id]
-                                          ? selectedProduct[row.id]
-                                              ?.priceBooklet ||
-                                            row.price.priceBooklet
-                                          : selectedProduct[row.id]
-                                              ?.priceAccess ||
-                                            row.price.priceAccess}
+
+                                        {selectedCheck[row.id] === 5
+                                        ? selectedProduct[row.id]?.priceAccess || row.price.priceAccess 
+                                        : selectedCheck[row.id] === false ? selectedProduct[row.id]?.priceAccess || row.price.priceAccess : selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet}
+                                        
                                         &#x20bd;
                                       </TableCellModal>
 
