@@ -810,6 +810,19 @@ export default function Orders() {
         });
         setSortedOrders(sortedData);
         break;
+
+        case "status":
+          sortedData.sort((a, b) => {
+            if (a.status < b.status) {
+              return 1;
+            } else if (a.status > b.status) {
+              return -1;
+            } 
+              return 0;
+            }
+          );
+          setSortedOrders(sortedData);
+          break;
     }
   };
 
@@ -949,13 +962,18 @@ export default function Orders() {
                   Кол-во
                 </TextHeader>
                 <TextHeader
-                  sx={{
-                    paddingY: 1,
-                    position: "sticky",
-                    top: 0,
-                    zIndex: 100,
-                    background: "#fff",
-                  }}
+                     className="hoverEffect"
+                     sx={{
+                       paddingY: 1,
+                       position: "sticky",
+                       top: 0,
+                       zIndex: 100,
+                       background: "#fff",
+                       cursor: "pointer",
+                     }}
+                     onClick={() => {
+                       sortNumber("status");
+                     }}
                 >
                   Состояние
                 </TextHeader>
