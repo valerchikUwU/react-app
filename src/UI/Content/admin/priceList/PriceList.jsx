@@ -395,7 +395,7 @@ export default function PriceList() {
                   {element.productAbbreviation}
                 </StyledTableCellBody>
 
-                <StyledTableCellBody>{element.productName}</StyledTableCellBody>
+                <StyledTableCellBody>{element.productName.split("&quot;").join('"')}</StyledTableCellBody>
 
                 <StyledTableCellBody>
                   {element.priceAccess} &#x20bd;
@@ -423,7 +423,7 @@ export default function PriceList() {
                   {element.productAbbreviation}
                 </StyledTableCellBody>
 
-                <StyledTableCellBody>{element.productName}</StyledTableCellBody>
+                <StyledTableCellBody>{element.productName.split("&quot;").join('"')}</StyledTableCellBody>
 
                 <StyledTableCellBody>
                   {element.priceAccess} &#x20bd;

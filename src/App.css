@@ -1,6 +1,9 @@
 * {
   box-sizing: border-box;
+  scrollbar-color: #005475 #FFFFFF;
+  scrollbar-width: thin; /* Для поддержки старых браузеров */
  }
+  
 html,body{
   margin:0;
   padding:0;
