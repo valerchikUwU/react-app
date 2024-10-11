@@ -696,17 +696,6 @@ export default function Work() {
         break;
     }
   };
-
-  const formatDispatchDate = (dateString) => {
-    // Разделяем строку даты и времени
-    const [datePart, timePart] = dateString.split("T");
-    const [year, month, day] = datePart.split("-");
-    const time = timePart.split(".")[0].slice(0, 5); // Убираем миллисекунды и оставляем только часы и минуты
-  
-    // Возвращаем формат "dd.mm.yyyy плюс время"
-    return `${day}.${month}.${year}   ${time}`;
-  };
-
   
   return (
     <>
@@ -931,7 +920,7 @@ export default function Work() {
                           transition: "color 0.5s ease",
                         }}
                       >
-                           {formatDispatchDate(element.dispatchDate)}
+                           {element.formattedDispatchDate}
                       </TableCell>
                       <TableCell
                         onClick={() => OpenModal(element.id)}
@@ -1063,7 +1052,7 @@ export default function Work() {
                         }}
                         onClick={() => OpenModal(element.id)}
                       >
-                           {formatDispatchDate(element.dispatchDate)}
+                           {element.formattedDispatchDate}
                       </TableCell>
                       <TableCell
                         sx={{
@@ -1174,7 +1163,7 @@ export default function Work() {
                           textAlign: "center",
                         }}
                       >
-                        {formatDispatchDate(element.dispatchDate)}
+                        {element.formattedDispatchDate}
                       </TableCell>
                       <TableCell
                         onClick={() => OpenModal(element.id)}
