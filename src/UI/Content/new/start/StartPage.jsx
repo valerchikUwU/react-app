@@ -259,10 +259,14 @@ export default function StartPage() {
                         ></CustomStyledCheckbox>
                         <span className={classes.booklet}>Доп. буклет</span>
                         <button
+                          // className={
+                          //   isDisabledStates[order.id]?.isDisabled
+                          //     ? classes.buttonCartDisabled
+                          //     : classes.buttonCart
+                          // }
+
                           className={
-                            isDisabledStates[order.id]?.isDisabled
-                              ? classes.buttonCartDisabled
-                              : classes.buttonCart
+                           classes.buttonCart
                           }
                           onClick={() =>
                             handleClick(
@@ -279,18 +283,23 @@ export default function StartPage() {
                               countStates[order.id]
                             )
                           }
-                          disabled={!!isDisabledStates[order.id]?.isDisabled}
+                          // disabled={!!isDisabledStates[order.id]?.isDisabled}
                         >
                           В корзину
                         </button>
 
                         <button
+                          // className={
+                          //   isDisabledStates[order.id]?.isDisabled
+                          //     ? classes.arrowCartDisabled
+                          //     : classes.arrowCart
+                          // }
+
                           className={
-                            isDisabledStates[order.id]?.isDisabled
-                              ? classes.arrowCartDisabled
-                              : classes.arrowCart
+                            classes.arrowCart
                           }
-                          disabled={!!isDisabledStates[order.id]?.isDisabled}
+
+                          // disabled={!!isDisabledStates[order.id]?.isDisabled}
                         >
                           <span className={classes.count}>
                             {countStates[order.id] || 0}
