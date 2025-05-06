@@ -13,7 +13,7 @@ export default function Main() {
     // Функция для выполнения GET запроса
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/homepage");
+        const response = await axios.get(`${process.env.REACT_APP_BASE_URL}`);
         // Обновляем состояние с полученными данными
         setData(response.data);
       } catch (error) {
@@ -44,7 +44,7 @@ export default function Main() {
     }
     // Устанавливаем WebSocket соединение после получения данных
     if (data.sessionId) {
-      const wsUrl = `ws://localhost:3002?sessionId=${data.sessionId}`;
+      const wsUrl = `${process.env.REACT_APP_BASE_URL_WS}?sessionId=${data.sessionId}`;
       // const wsUrl = `ws://localhost:8080?sessionId=${data.sessionId}`;
       const wsConnection = new WebSocket(wsUrl);
 
