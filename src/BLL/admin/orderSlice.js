@@ -131,6 +131,7 @@ export const updateTitleOrderAdmin = createAsyncThunk(
       billNumber,
       payeeId,
       isFromDeposit,
+      dispatchDate,
       titlesToUpdate,
       titlesToCreate,
     },
@@ -146,17 +147,11 @@ export const updateTitleOrderAdmin = createAsyncThunk(
           billNumber,
           payeeId,
           isFromDeposit,
+          dispatchDate,
           titlesToUpdate,
           titlesToCreate,
         }
       );
-      console.log(response.data.organizationName);
-      console.log(response.data.status);
-      console.log(response.data.billNumber);
-      console.log(response.data.payeeId);
-      console.log(response.data.isFromDeposit);
-      console.log(response.data.dispatchDate);
-      console.log(response.data.titlesToUpdate);
       return response.data.titlesToUpdate;
     } catch (error) {
       return rejectWithValue(error.message);

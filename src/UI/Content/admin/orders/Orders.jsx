@@ -33,7 +33,6 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Add from "./Add.jsx";
 import CustomStyledCheckbox from "../../styledComponents/CustomStyledCheckbox.jsx";
-import dayjs from "dayjs";
 
 import { styled } from "@mui/system";
 import {
@@ -48,6 +47,17 @@ import CircularProgressCustom from "../../styledComponents/CircularProgress.jsx"
 import AddSelectProduct from "./AddSelectProduct.jsx";
 import AddTitlesOrders from "./AddTitlesOrders.jsx";
 import ErrorHandler from "../../../Custom/ErrorHandler.jsx";
+
+// Для даты
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
+import "dayjs/locale/ru"; // импортируем русскую локаль
+import { ruRU } from "@mui/x-date-pickers/locales";
+
+// Устанавливаем русскую локаль для dayjs
+dayjs.locale("ru");
 
 export default function Orders() {
   const dispatch = useDispatch();
@@ -79,7 +89,8 @@ export default function Orders() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarOpenDelete, setSnackbarOpenDelete] = useState(false);
 
-  // let disabledAbbreviation = [];
+  const [selectDispatchDate, setSelectDispatchDate] = useState(null);
+
   // AddTitlesOrders.jsx
   const [checkProductBooklet, setcheckProductBooklet] = useState({});
   const [selectProductGeneration, setSelectProductGeneration] = useState({});
@@ -161,6 +172,7 @@ export default function Orders() {
     setProducts(products.filter((product) => product.id !== idToDelete));
     setDeleteTitles(true);
   };
+
   const stateDeleteTitles = () => {
     setDeleteTitles(false);
   };
@@ -203,29 +215,28 @@ export default function Orders() {
         setDisabledAbbreviation(newDisabledAbbrevation);
       } else {
         let matchingProductIds = listModalTitles.reduce((acc, value) => {
-          if(listModalTitles.length === Object.keys(productId).length) {
-            Object.keys(productId).forEach(key => {
+          if (listModalTitles.length === Object.keys(productId).length) {
+            Object.keys(productId).forEach((key) => {
               console.log(`value.id = ${value.id}, key = ${key}`);
               if (key === value.id.toString()) {
                 acc.push(productId[key]);
                 console.log(`productId[${key}] = ${productId[key]}`);
-              } 
+              }
             });
             return acc;
-          }else{
-             Object.keys(productId).forEach(key => {
-            console.log(`value.id = ${value.id}, key = ${key}`);
-            if (key === value.id.toString()) {
-              acc.push(productId[key]);
-              console.log(`productId[${key}] = ${productId[key]}`);
-            } else {
-              acc.push(value.productId);
-              console.log(`Default: ${value.productId}`);
-            }
-          });
-          return acc; // Возвращаем acc после каждой итерации
+          } else {
+            Object.keys(productId).forEach((key) => {
+              console.log(`value.id = ${value.id}, key = ${key}`);
+              if (key === value.id.toString()) {
+                acc.push(productId[key]);
+                console.log(`productId[${key}] = ${productId[key]}`);
+              } else {
+                acc.push(value.productId);
+                console.log(`Default: ${value.productId}`);
+              }
+            });
+            return acc; // Возвращаем acc после каждой итерации
           }
-         
         }, []);
         console.log(` matchingProductIds = ${matchingProductIds}`);
         setDisabledAbbreviation([...new Set(matchingProductIds)]);
@@ -340,9 +351,10 @@ export default function Orders() {
   useEffect(() => {
     // Инициализация sumForOneTitle
     const initialSumForOneTitle = listModalTitles.reduce((acc, row) => {
-      const price = selectedCheck[row.id] === true 
-      ? selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet
-      : selectedProduct[row.id]?.priceAccess || row.price.priceAccess;
+      const price =
+        selectedCheck[row.id] === true
+          ? selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet
+          : selectedProduct[row.id]?.priceAccess || row.price.priceAccess;
       acc[row.id] = parseFloat(selectedInput[row.id] || 0) * price;
       return acc;
     }, {});
@@ -384,11 +396,11 @@ export default function Orders() {
     setIsInputCleared(false);
 
     resetStatesNewTitles();
-
   };
 
   const handleCloseModalSave = (id) => {
-
+    setSelectDispatchDate(null);
+    
     setExitAddSelectProduct(true);
 
     setOpenStates({ ...openStates, [id]: false });
@@ -397,7 +409,6 @@ export default function Orders() {
     setIsInputCleared(false);
 
     resetStatesNewTitles();
-
   };
 
   const handleDeleteOrder = (orderId, titleId) => {
@@ -477,6 +488,7 @@ export default function Orders() {
     }));
   };
 
+  
   const handleSave = (exitID) => {
     setIsLoadingModalSave(true);
     const titlesToUpdate = [];
@@ -501,11 +513,13 @@ export default function Orders() {
 
           accessType: selectedCheck[row.id]
             ? selectedCheck[row.id] === 5
-              ? selectedAccessType[row.id] ? selectedAccessType[row.id] : row.accessType
+              ? selectedAccessType[row.id]
+                ? selectedAccessType[row.id]
+                : row.accessType
               : null
             : selectedAccessType[row.id]
-              ? selectedAccessType[row.id]
-              : row.accessType,
+            ? selectedAccessType[row.id]
+            : row.accessType,
 
           generation: selectedGeneration[row.id]
             ? selectedGeneration[row.id]
@@ -582,6 +596,11 @@ export default function Orders() {
           selectedCheckDeposit === undefined
             ? ObjectModalOrder.isFromDeposit
             : selectedCheckDeposit,
+
+        dispatchDate: selectDispatchDate
+          ? selectDispatchDate
+          : ObjectModalOrder.dispatchDate,
+
         titlesToUpdate: titlesToUpdate,
         titlesToCreate: titlesToCreate,
       })
@@ -622,7 +641,7 @@ export default function Orders() {
       return acc;
     }, {});
 
-     setSelectedCheck(initialSelectedCheck);
+    setSelectedCheck(initialSelectedCheck);
 
     // Сброс selectedAccessType
     const initialSelectedAccessType = listModalTitles.reduce((acc, row) => {
@@ -666,6 +685,7 @@ export default function Orders() {
       }),
       {}
     );
+    setSelectDispatchDate(null);
   };
 
   const handleChangeSelectOrganization = (event, id) => {
@@ -811,22 +831,20 @@ export default function Orders() {
         setSortedOrders(sortedData);
         break;
 
-        case "status":
-          sortedData.sort((a, b) => {
-            if (a.status < b.status) {
-              return 1;
-            } else if (a.status > b.status) {
-              return -1;
-            } 
-              return 0;
-            }
-          );
-          setSortedOrders(sortedData);
-          break;
+      case "status":
+        sortedData.sort((a, b) => {
+          if (a.status < b.status) {
+            return 1;
+          } else if (a.status > b.status) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedOrders(sortedData);
+        break;
     }
   };
 
- 
   return (
     <Box>
       {isLoading ? (
@@ -962,18 +980,18 @@ export default function Orders() {
                   Кол-во
                 </TextHeader>
                 <TextHeader
-                     className="hoverEffect"
-                     sx={{
-                       paddingY: 1,
-                       position: "sticky",
-                       top: 0,
-                       zIndex: 100,
-                       background: "#fff",
-                       cursor: "pointer",
-                     }}
-                     onClick={() => {
-                       sortNumber("status");
-                     }}
+                  className="hoverEffect"
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    sortNumber("status");
+                  }}
                 >
                   Состояние
                 </TextHeader>
@@ -1158,7 +1176,7 @@ export default function Orders() {
         orders.map((element) => {
           for (let [id, boolean] of Object.entries(selectedCheck)) {
             console.log(`id = ${id}, boolean = ${boolean}`);
-             }
+          }
           return (
             <Modal open={openStates[element.id] || false}>
               <div
@@ -1263,6 +1281,17 @@ export default function Orders() {
                             }}
                           >
                             С депозита
+                          </TextHeader>
+                          <TextHeader
+                            sx={{
+                              paddingY: 1,
+                              position: "sticky",
+                              top: 0,
+                              zIndex: 100,
+                              background: "#fff",
+                            }}
+                          >
+                            Дата
                           </TextHeader>
                         </TableRow>
                       </TableHead>
@@ -1489,6 +1518,30 @@ export default function Orders() {
                                 size={1}
                               ></CustomStyledCheckbox>
                             </TableCell>
+
+                            <TableCell sx={{ textAlign: "center" }}>
+                              <LocalizationProvider
+                                dateAdapter={AdapterDayjs}
+                                adapterLocale="ru" // русский для адаптера
+                              >
+                                <DatePicker
+                                  size="small"
+                                  label="Выберите дату"
+                                  value={selectDispatchDate === null
+                                    ? dayjs(ObjectModalOrder?.dispatchDate)
+                                    : selectDispatchDate
+                                  }
+
+                                  onChange={(newValue) => setSelectDispatchDate(newValue)}
+                                  
+                                  format="DD.MM.YYYY"
+                                  maxDate={dayjs()} // Запрещаем выбор дат после сегодняшнего дня
+                                  renderInput={(params) => (
+                                    <TextField {...params} />
+                                  )}
+                                />
+                              </LocalizationProvider>
+                            </TableCell>
                           </TableRow>
                         </TableBody>
                       ) : element.status === "Отправлен" ||
@@ -1617,6 +1670,20 @@ export default function Orders() {
                                 />
                               )}
                             </TableCellModal>
+                            <TableCellModal>
+                              <LocalizationProvider
+                                dateAdapter={AdapterDayjs}
+                                adapterLocale="ru" // русский для адаптера
+                              >
+                                <DatePicker
+                                  disabled
+                                  size="small"
+                                  value={dayjs(ObjectModalOrder?.dispatchDate)}
+                                  format="DD.MM.YYYY"
+                            
+                                />
+                              </LocalizationProvider>
+                            </TableCellModal>
                           </TableRow>
                         </TableBody>
                       ) : (
@@ -1644,6 +1711,19 @@ export default function Orders() {
                                   style={{ opacity: "0.6" }}
                                 />
                               )}
+                            </TableCellModal>
+                            <TableCellModal>
+                              <LocalizationProvider
+                                dateAdapter={AdapterDayjs}
+                                adapterLocale="ru" // русский для адаптера
+                              >
+                                <DatePicker
+                                disabled
+                                  size="small"
+                                  value={dayjs(ObjectModalOrder?.dispatchDate)}
+                                  format="DD.MM.YYYY"
+                                />
+                              </LocalizationProvider>
                             </TableCellModal>
                           </TableRow>
                         </TableBody>
@@ -1768,11 +1848,15 @@ export default function Orders() {
                                       row.price.priceAccess}
                                   &#x20bd; */}
                                 <TableCellModal>
-                                  {selectedCheck[row.id] 
-                                        ? selectedCheck[row.id] === 5 ? selectedProduct[row.id]?.priceAccess || row.price.priceAccess :  selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet
-                                        : selectedProduct[row.id]?.priceAccess || row.price.priceAccess}
-                                        &#x20bd;
-                                  
+                                  {selectedCheck[row.id]
+                                    ? selectedCheck[row.id] === 5
+                                      ? selectedProduct[row.id]?.priceAccess ||
+                                        row.price.priceAccess
+                                      : selectedProduct[row.id]?.priceBooklet ||
+                                        row.price.priceBooklet
+                                    : selectedProduct[row.id]?.priceAccess ||
+                                      row.price.priceAccess}
+                                  &#x20bd;
                                 </TableCellModal>
 
                                 <TableCellModal>
@@ -2217,14 +2301,20 @@ export default function Orders() {
                                           }
                                         />
                                       </TableCell>
-                                
-                                            {/* {console.log(`selectedCheck[${row.id}] = ${selectedCheck[row.id]}`)} */}
-                                      <TableCellModal>
 
+                                      {/* {console.log(`selectedCheck[${row.id}] = ${selectedCheck[row.id]}`)} */}
+                                      <TableCellModal>
                                         {selectedCheck[row.id] === 5
-                                        ? selectedProduct[row.id]?.priceAccess || row.price.priceAccess 
-                                        : selectedCheck[row.id] === false ? selectedProduct[row.id]?.priceAccess || row.price.priceAccess : selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet}
-                                        
+                                          ? selectedProduct[row.id]
+                                              ?.priceAccess ||
+                                            row.price.priceAccess
+                                          : selectedCheck[row.id] === false
+                                          ? selectedProduct[row.id]
+                                              ?.priceAccess ||
+                                            row.price.priceAccess
+                                          : selectedProduct[row.id]
+                                              ?.priceBooklet ||
+                                            row.price.priceBooklet}
                                         &#x20bd;
                                       </TableCellModal>
 
