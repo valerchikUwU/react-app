@@ -95,6 +95,7 @@ export const putNewOrder = createAsyncThunk(
       billNumber,
       payeeId,
       isFromDeposit,
+      dispatchDate,
       titlesToCreate,
     },
     { rejectWithValue }
@@ -108,6 +109,7 @@ export const putNewOrder = createAsyncThunk(
           billNumber,
           payeeId,
           isFromDeposit,
+          dispatchDate,
           titlesToCreate,
         }
       );
@@ -153,6 +155,7 @@ export const updateTitleOrderAdmin = createAsyncThunk(
       console.log(response.data.billNumber);
       console.log(response.data.payeeId);
       console.log(response.data.isFromDeposit);
+      console.log(response.data.dispatchDate);
       console.log(response.data.titlesToUpdate);
       return response.data.titlesToUpdate;
     } catch (error) {

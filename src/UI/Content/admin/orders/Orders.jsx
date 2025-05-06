@@ -1241,6 +1241,7 @@ export default function Orders() {
                           >
                             Состояние
                           </TextHeader>
+
                           <TextHeader
                             sx={{
                               paddingY: 1,

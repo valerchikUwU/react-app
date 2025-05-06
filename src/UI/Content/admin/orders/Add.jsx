@@ -30,6 +30,17 @@ import FormHelperText from "@mui/material/FormHelperText";
 import CircularProgressCustom from "../../styledComponents/CircularProgress";
 import ErrorHandler from "../../../Custom/ErrorHandler";
 
+// Для даты
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import dayjs from "dayjs";
+import "dayjs/locale/ru"; // импортируем русскую локаль
+import { ruRU } from "@mui/x-date-pickers/locales";
+
+// Устанавливаем русскую локаль для dayjs
+dayjs.locale("ru");
+
 // Text Header
 const TextHeader = styled(TableCell)({
   fontFamily: "Montserrat",
@@ -72,6 +83,8 @@ export default function Add({
   const [products, setProducts] = useState([]);
   const [checkBox, setCheckBox] = useState(false);
 
+  const [dateCreateTitle, setDateCreateTitle] = useState(dayjs());
+
   const [isFieldCleared, setIsFieldCleared] = useState({});
   // Таблиц с добавлением продуктов
   const [productInputQuantity, setProductInputQuantity] = useState({});
@@ -83,7 +96,9 @@ export default function Add({
   const [exitAddSelectProduct, setExitAddSelectProduct] = useState(false);
   const [isLoadingModalSave, setIsLoadingModalSave] = useState(false);
 
-  const errorPutNewOrder = useSelector((state) => state.adminOrder.errorPutNewOrder);
+  const errorPutNewOrder = useSelector(
+    (state) => state.adminOrder.errorPutNewOrder
+  );
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarOpenEmpty, setSnackbarOpenEmpty] = useState(false);
 
@@ -208,16 +223,23 @@ export default function Add({
           billNumber: inputAccountNumber,
           payeeId: selectPayee,
           isFromDeposit: checkDeposit,
+          dispatchDate: dateCreateTitle,
           titlesToCreate: titlesToCreate,
         })
-      ).then(() => {
-        dispatch(getOrder(accountId));
-        resetStates();
-        setIsOpen(false);
-        setIsLoadingModalSave(false);
-        setSnackbarOpen(true);
-      }, () => { setIsLoadingModalSave(false);  setSnackbarOpen(true);});
-    }else{
+      ).then(
+        () => {
+          dispatch(getOrder(accountId));
+          resetStates();
+          setIsOpen(false);
+          setIsLoadingModalSave(false);
+          setSnackbarOpen(true);
+        },
+        () => {
+          setIsLoadingModalSave(false);
+          setSnackbarOpen(true);
+        }
+      );
+    } else {
       setIsLoadingModalSave(false);
       setSnackbarOpenEmpty(true);
     }
@@ -242,6 +264,7 @@ export default function Add({
     setInputAccountNumber();
     setSelectOrganizationName();
     setSelectPayee();
+    setDateCreateTitle(dayjs());
     setExitAddSelectProduct(true);
   };
 
@@ -359,6 +382,17 @@ export default function Add({
                         }}
                       >
                         С депозита
+                      </TextHeader>
+                      <TextHeader
+                        sx={{
+                          paddingY: 1,
+                          position: "sticky",
+                          top: 0,
+                          zIndex: 100,
+                          background: "#fff",
+                        }}
+                      >
+                        Дата
                       </TextHeader>
                     </TableRow>
                   </TableHead>
@@ -551,6 +585,24 @@ export default function Add({
                             handleChangeCheckboxDeposit(event)
                           }
                         ></CustomStyledCheckbox>
+                      </TableCell>
+
+                      <TableCell>
+                        <LocalizationProvider
+                          dateAdapter={AdapterDayjs}
+                          adapterLocale="ru" // русский для адаптера
+            
+                        >
+                          <DatePicker
+                            size="small"
+                            label="Выберите дату"
+                            value={dateCreateTitle}
+                            onChange={(newValue) => setDateCreateTitle(newValue)}
+                            format="DD.MM.YYYY" 
+                            maxDate={dayjs()} // Запрещаем выбор дат после сегодняшнего дня
+                            renderInput={(params) => <TextField {...params} />}
+                          />
+                        </LocalizationProvider>
                       </TableCell>
                     </TableRow>
                   </TableBody>
@@ -1036,14 +1088,14 @@ export default function Add({
           </div>
         </Modal>
       )}
-  <ErrorHandler
+      <ErrorHandler
         error={errorPutNewOrder}
         snackbarOpen={snackbarOpen}
         close={setSnackbarOpen}
         text={"Заказ создан"}
       ></ErrorHandler>
 
-<ErrorHandler
+      <ErrorHandler
         error={"Заказ пустой"}
         snackbarOpen={snackbarOpenEmpty}
         close={setSnackbarOpenEmpty}
