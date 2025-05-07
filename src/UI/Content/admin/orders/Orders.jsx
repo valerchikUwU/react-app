@@ -13,6 +13,7 @@ import {
   Button,
   Divider,
   Chip,
+  InputAdornment,
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import Modal from "@mui/material/Modal";
@@ -55,6 +56,9 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import "dayjs/locale/ru"; // импортируем русскую локаль
 import { ruRU } from "@mui/x-date-pickers/locales";
+
+import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
 
 // Устанавливаем русскую локаль для dayjs
 dayjs.locale("ru");
@@ -400,7 +404,7 @@ export default function Orders() {
 
   const handleCloseModalSave = (id) => {
     setSelectDispatchDate(null);
-    
+
     setExitAddSelectProduct(true);
 
     setOpenStates({ ...openStates, [id]: false });
@@ -488,7 +492,6 @@ export default function Orders() {
     }));
   };
 
-  
   const handleSave = (exitID) => {
     setIsLoadingModalSave(true);
     const titlesToUpdate = [];
@@ -762,87 +765,95 @@ export default function Orders() {
     marginBottom: "15px",
   });
 
-  const sortNumber = (name) => {
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "asc", // 'asc' или 'desc'
+  });
+  const sortNumber = (key) => {
+    let direction = "asc";
+
+    // Если уже сортируется по этому ключу, меняем направление
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+
     const sortedData = [...sortedOrders];
-    switch (name) {
-      case "Number":
-        sortedData.sort((a, b) => {
-          if (a.orderNumber > b.orderNumber) {
-            return 1;
-          } else if (a.orderNumber < b.orderNumber) {
-            return -1;
-          }
-          return 0;
-        });
-        setSortedOrders(sortedData);
-        break;
 
-      case "fullName":
-        sortedData.sort((a, b) => {
-          if (a.fullName > b.fullName) {
-            return 1;
-          } else if (a.fullName < b.fullName) {
-            return -1;
-          }
-          return 0;
-        });
-        setSortedOrders(sortedData);
-        break;
+    sortedData.sort((a, b) => {
+      // Для всех случаев кроме status используем стандартное сравнение
+      if (key !== "status") {
+        if (a[key] > b[key]) {
+          return direction === "asc" ? 1 : -1;
+        }
+        if (a[key] < b[key]) {
+          return direction === "asc" ? -1 : 1;
+        }
+        return 0;
+      } else {
+        // Особый случай для status (обратный порядок)
+        if (a[key] < b[key]) {
+          return direction === "asc" ? 1 : -1;
+        }
+        if (a[key] > b[key]) {
+          return direction === "asc" ? -1 : 1;
+        }
+        return 0;
+      }
+    });
 
-      case "organizationName":
-        sortedData.sort((a, b) => {
-          if (a.organizationName > b.organizationName) {
-            return 1;
-          } else if (a.organizationName < b.organizationName) {
-            return -1;
-          }
-          return 0;
-        });
-        setSortedOrders(sortedData);
-        break;
-
-      case "formattedDispatchDate":
-        sortedData.sort((a, b) => {
+    // Особый случай для billNumber с дополнительной сортировкой по dispatchDate
+    if (key === "billNumber") {
+      sortedData.sort((a, b) => {
+        if (a.billNumber > b.billNumber) {
+          return direction === "asc" ? 1 : -1;
+        } else if (a.billNumber < b.billNumber) {
+          return direction === "asc" ? -1 : 1;
+        } else {
           if (a.dispatchDate > b.dispatchDate) {
             return 1;
           } else if (a.dispatchDate < b.dispatchDate) {
             return -1;
           }
           return 0;
-        });
-        setSortedOrders(sortedData);
-        break;
-
-      case "billNumber":
-        sortedData.sort((a, b) => {
-          if (a.billNumber > b.billNumber) {
-            return 1;
-          } else if (a.billNumber < b.billNumber) {
-            return -1;
-          } else {
-            if (a.dispatchDate > b.dispatchDate) {
-              return 1;
-            } else if (a.dispatchDate < b.dispatchDate) {
-              return -1;
-            }
-            return 0;
-          }
-        });
-        setSortedOrders(sortedData);
-        break;
-
-      case "status":
-        sortedData.sort((a, b) => {
-          if (a.status < b.status) {
-            return 1;
-          } else if (a.status > b.status) {
-            return -1;
-          }
-          return 0;
-        });
-        setSortedOrders(sortedData);
-        break;
+        }
+      });
     }
+
+    setSortedOrders(sortedData);
+    setSortConfig({ key, direction });
+  };
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Функция поиска
+  const handleSearch = (e) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+
+    if (term === "") {
+      setSortedOrders(orders);
+      return;
+    }
+
+    const filteredData = orders.filter((item) => {
+      // Ищем в нескольких полях
+      const searchFields = [
+        item.orderNumber?.toString(),
+        item.fullName,
+        item.organizationName,
+        item.formattedDispatchDate,
+        item.billNumber?.toString(),
+        item.SUM?.toString(),
+        item.totalQuantity?.toString(),
+        item.status,
+      ];
+
+      return searchFields.some(
+        (field) => field && field.toString().toLowerCase().includes(term)
+      );
+    });
+
+    setSortedOrders(filteredData);
   };
 
   return (
@@ -888,11 +899,14 @@ export default function Orders() {
                     cursor: "pointer",
                   }}
                   onClick={() => {
-                    sortNumber("Number");
+                    sortNumber("orderNumber");
                   }}
                 >
-                  №
+                  №{" "}
+                  {sortConfig.key === "orderNumber" &&
+                    (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TextHeader>
+
                 <TextHeader
                   className="hoverEffect"
                   sx={{
@@ -907,7 +921,9 @@ export default function Orders() {
                     sortNumber("fullName");
                   }}
                 >
-                  Заказчик
+                  Заказчик{" "}
+                  {sortConfig.key === "fullName" &&
+                    (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TextHeader>
                 <TextHeader
                   className="hoverEffect"
@@ -923,7 +939,9 @@ export default function Orders() {
                     sortNumber("organizationName");
                   }}
                 >
-                  Академия
+                  Академия{" "}
+                  {sortConfig.key === "organizationName" &&
+                    (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TextHeader>
                 <TextHeader
                   className="hoverEffect"
@@ -940,6 +958,8 @@ export default function Orders() {
                   }}
                 >
                   Дата
+                  {sortConfig.key === "formattedDispatchDate" &&
+                    (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TextHeader>
                 <TextHeader
                   className="hoverEffect"
@@ -956,6 +976,8 @@ export default function Orders() {
                   }}
                 >
                   № счета
+                  {sortConfig.key === "billNumber" &&
+                    (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TextHeader>
                 <TextHeader
                   sx={{
@@ -994,6 +1016,8 @@ export default function Orders() {
                   }}
                 >
                   Состояние
+                  {sortConfig.key === "status" &&
+                    (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TextHeader>
                 <TextHeader
                   sx={{
@@ -1012,6 +1036,54 @@ export default function Orders() {
             </TableHead>
 
             <TableBody>
+              <TableCell
+                colSpan={9}
+                sx={{
+                  p: 0,
+                  borderBottom: "none",
+                  position: "sticky",
+                  top: 60, // Прилипает к верху
+                  zIndex: 101, // Выше чем у обычных заголовков
+                  backgroundColor: "#fff", // Фон чтобы текст не проступал
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.1)", // Тень для визуального разделения
+                }}
+              >
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  placeholder="Поиск по таблице..."
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                    ),
+                    endAdornment: searchTerm && (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setSearchTerm("");
+                            setSortedOrders(orders);
+                          }}
+                        >
+                          <CloseIcon fontSize="small" />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 0,
+                      backgroundColor: "#fff",
+                    },
+                  }}
+                />
+              </TableCell>
+
               {sortedOrders?.map((order) => (
                 <TableRow
                   key={order.id}
@@ -1156,7 +1228,6 @@ export default function Orders() {
               ))}
             </TableBody>
           </Table>
-          {/* <FloatingScrollToTopButton showOnPageScroll={true} /> */}
         </TableContainer>
       )}
 
@@ -1527,13 +1598,14 @@ export default function Orders() {
                                 <DatePicker
                                   size="small"
                                   label="Выберите дату"
-                                  value={selectDispatchDate === null
-                                    ? dayjs(ObjectModalOrder?.dispatchDate)
-                                    : selectDispatchDate
+                                  value={
+                                    selectDispatchDate === null
+                                      ? dayjs(ObjectModalOrder?.dispatchDate)
+                                      : selectDispatchDate
                                   }
-
-                                  onChange={(newValue) => setSelectDispatchDate(newValue)}
-                                  
+                                  onChange={(newValue) =>
+                                    setSelectDispatchDate(newValue)
+                                  }
                                   format="DD.MM.YYYY"
                                   maxDate={dayjs()} // Запрещаем выбор дат после сегодняшнего дня
                                   renderInput={(params) => (
@@ -1680,7 +1752,6 @@ export default function Orders() {
                                   size="small"
                                   value={dayjs(ObjectModalOrder?.dispatchDate)}
                                   format="DD.MM.YYYY"
-                            
                                 />
                               </LocalizationProvider>
                             </TableCellModal>
@@ -1718,7 +1789,7 @@ export default function Orders() {
                                 adapterLocale="ru" // русский для адаптера
                               >
                                 <DatePicker
-                                disabled
+                                  disabled
                                   size="small"
                                   value={dayjs(ObjectModalOrder?.dispatchDate)}
                                   format="DD.MM.YYYY"
