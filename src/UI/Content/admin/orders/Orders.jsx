@@ -954,11 +954,11 @@ export default function Orders() {
                     cursor: "pointer",
                   }}
                   onClick={() => {
-                    sortNumber("formattedDispatchDate");
+                    sortNumber("dispatchDate");
                   }}
                 >
                   Дата
-                  {sortConfig.key === "formattedDispatchDate" &&
+                  {sortConfig.key === "dispatchDate" &&
                     (sortConfig.direction === "asc" ? "↑" : "↓")}
                 </TextHeader>
                 <TextHeader
