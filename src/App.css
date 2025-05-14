@@ -11,8 +11,8 @@ html,body{
   height: 100%;
   font-family: 'Montserrat';
   overflow: hidden;
-  
 }
+
 .app-wrapper {
   width: auto;
   display: grid;

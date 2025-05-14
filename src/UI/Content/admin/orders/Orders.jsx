@@ -600,9 +600,24 @@ export default function Orders() {
             ? ObjectModalOrder.isFromDeposit
             : selectedCheckDeposit,
 
-        dispatchDate: selectDispatchDate
-          ? selectDispatchDate
-          : ObjectModalOrder.dispatchDate,
+            
+
+        dispatchDate: selectStatus[ObjectModalOrder.id] !==  ObjectModalOrder.status 
+        
+        ?  selectDispatchDate
+              ? selectDispatchDate
+              : new Date()
+        
+        :  selectDispatchDate
+                ? selectDispatchDate
+                : ObjectModalOrder.dispatchDate,
+        
+        
+        
+        
+        // selectDispatchDate
+        //   ? selectDispatchDate
+        //   : ObjectModalOrder.dispatchDate,
 
         titlesToUpdate: titlesToUpdate,
         titlesToCreate: titlesToCreate,
@@ -769,6 +784,7 @@ export default function Orders() {
     key: null,
     direction: "asc", // 'asc' или 'desc'
   });
+  
   const sortNumber = (key) => {
     let direction = "asc";
 
@@ -1742,19 +1758,32 @@ export default function Orders() {
                                 />
                               )}
                             </TableCellModal>
-                            <TableCellModal>
+
+                            <TableCell sx={{ textAlign: "center" }}>
                               <LocalizationProvider
                                 dateAdapter={AdapterDayjs}
                                 adapterLocale="ru" // русский для адаптера
                               >
                                 <DatePicker
-                                  disabled
                                   size="small"
-                                  value={dayjs(ObjectModalOrder?.dispatchDate)}
+                                  label="Выберите дату"
+                                  value={
+                                    selectDispatchDate === null
+                                      ? dayjs(ObjectModalOrder?.dispatchDate)
+                                      : selectDispatchDate
+                                  }
+                                  onChange={(newValue) =>
+                                    setSelectDispatchDate(newValue)
+                                  }
                                   format="DD.MM.YYYY"
+                                  maxDate={dayjs()} // Запрещаем выбор дат после сегодняшнего дня
+                                  renderInput={(params) => (
+                                    <TextField {...params} />
+                                  )}
                                 />
                               </LocalizationProvider>
-                            </TableCellModal>
+                            </TableCell>
+
                           </TableRow>
                         </TableBody>
                       ) : (
@@ -1783,19 +1812,32 @@ export default function Orders() {
                                 />
                               )}
                             </TableCellModal>
-                            <TableCellModal>
+                           
+                            <TableCell sx={{ textAlign: "center" }}>
                               <LocalizationProvider
                                 dateAdapter={AdapterDayjs}
                                 adapterLocale="ru" // русский для адаптера
                               >
                                 <DatePicker
-                                  disabled
                                   size="small"
-                                  value={dayjs(ObjectModalOrder?.dispatchDate)}
+                                  label="Выберите дату"
+                                  value={
+                                    selectDispatchDate === null
+                                      ? dayjs(ObjectModalOrder?.dispatchDate)
+                                      : selectDispatchDate
+                                  }
+                                  onChange={(newValue) =>
+                                    setSelectDispatchDate(newValue)
+                                  }
                                   format="DD.MM.YYYY"
+                                  maxDate={dayjs()} // Запрещаем выбор дат после сегодняшнего дня
+                                  renderInput={(params) => (
+                                    <TextField {...params} />
+                                  )}
                                 />
                               </LocalizationProvider>
-                            </TableCellModal>
+                            </TableCell>
+                            
                           </TableRow>
                         </TableBody>
                       )}
