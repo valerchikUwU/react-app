@@ -602,22 +602,9 @@ export default function Orders() {
 
             
 
-        dispatchDate: selectStatus[ObjectModalOrder.id] !==  ObjectModalOrder.status 
-        
-        ?  selectDispatchDate
-              ? selectDispatchDate
-              : new Date()
-        
-        :  selectDispatchDate
-                ? selectDispatchDate
-                : ObjectModalOrder.dispatchDate,
-        
-        
-        
-        
-        // selectDispatchDate
-        //   ? selectDispatchDate
-        //   : ObjectModalOrder.dispatchDate,
+        dispatchDate: selectDispatchDate
+                            ? selectDispatchDate
+                             : ObjectModalOrder.dispatchDate,
 
         titlesToUpdate: titlesToUpdate,
         titlesToCreate: titlesToCreate,
