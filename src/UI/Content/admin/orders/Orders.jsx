@@ -598,9 +598,7 @@ export default function Orders() {
         isFromDeposit:
           selectedCheckDeposit === undefined
             ? ObjectModalOrder.isFromDeposit
-            : selectedCheckDeposit,
-
-            
+            : selectedCheckDeposit,           
 
         dispatchDate: selectDispatchDate
                             ? selectDispatchDate
@@ -1395,7 +1393,7 @@ export default function Orders() {
                                   )
                                 }
                               >
-                                {[...allOrganizationsModal]
+                                {[...allOrganizationsModal.map((org) => org.organizationName)]
                                   ?.sort()
                                   ?.map((organization, index) => (
                                     <MenuItem
