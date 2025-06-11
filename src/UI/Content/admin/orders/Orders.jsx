@@ -1393,7 +1393,7 @@ export default function Orders() {
                                   )
                                 }
                               >
-                                {[...allOrganizationsModal.map((org) => org.organizationName)]
+                                {allOrganizationsModal?.map((org) => org.organizationName)
                                   ?.sort()
                                   ?.map((organization, index) => (
                                     <MenuItem
