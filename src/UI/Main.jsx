@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import classes from "./Main.module.css";
+import { useNavigate } from "react-router-dom";
 import QRCode from "qrcode.react"; // Импортируем QRCode
 
 export default function Main() {
   const [data, setData] = useState({ token: "", sessionId: "" });
   const [ws, setWs] = useState(null); // Добавляем состояние для WebSocket соединения
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Функция для выполнения GET запроса
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3000/api/homepage"
-        );
+        const response = await axios.get(`${process.env.REACT_APP_BASE_URL}`);
         // Обновляем состояние с полученными данными
         setData(response.data);
       } catch (error) {
@@ -26,9 +26,26 @@ export default function Main() {
   }, []); // Убрано зависимость от data.sessionId, так как fetchData вызывается один раз при монтировании
 
   useEffect(() => {
+    if (data.isLogged === true) {
+      switch (data.accountRoleId) {
+        case 1:
+          window.location.href = `#/${data.accountId}/superAdmin/comission`;
+          break;
+        case 2:
+          window.location.href = `#/${data.accountId}/admin/orders`;
+          break;
+        case 3:
+          window.location.href = `#/${data.accountId}/user/new/start`;
+          break;
+        default:
+          window.location.href = `#/`;
+          window.location.reload();
+      }
+    }
     // Устанавливаем WebSocket соединение после получения данных
     if (data.sessionId) {
-      const wsUrl = `ws://localhost:8080?sessionId=${data.sessionId}`;
+      const wsUrl = `${process.env.REACT_APP_BASE_URL_WS}?sessionId=${data.sessionId}`;
+      // const wsUrl = `ws://localhost:8080?sessionId=${data.sessionId}`;
       const wsConnection = new WebSocket(wsUrl);
 
       setWs(wsConnection); // Сохраняем WebSocket соединение в состоянии
@@ -42,11 +59,25 @@ export default function Main() {
         console.log("Получено сообщение:", event.data);
         // Анализируем полученное сообщение
         const message = JSON.parse(event.data);
-
-        console.log(message.message);
         if (message !== "false") {
           // Если сообщение не равно 'false', выполняем редирект
-          window.location.href = `#/${message.message}/user/new/start`;
+          switch (data.accountRoleId) {
+            case 1:
+              window.location.href = `#/${data.accountId}/superAdmin/comission`;
+              window.location.reload();
+              break;
+            case 2:
+              window.location.href = `#/${data.accountId}/admin/orders`;
+              window.location.reload();
+              break;
+            case 3:
+              window.location.href = `#/${data.accountId}/user/new/start`;
+              window.location.reload();
+              break;
+            default:
+              window.location.href = `#/`;
+              window.location.reload();
+          }
         } else {
           // Если сообщение равно 'false', выводим ошибку
           alert("Ошибка аутентификации");
@@ -62,23 +93,36 @@ export default function Main() {
         wsConnection.close();
       };
     }
-  }, [data.sessionId]); // Зависимость от sessionId, чтобы обновлять соединение при изменении sessionId
+  }, [data.sessionId, data.accountId]); // Зависимость от sessionId, чтобы обновлять соединение при изменении sessionId
 
-  const qrUrl = `https://t.me/AcademyStrategBot?start=${data.token}-${data.sessionId}`;
+  // const qrUrl = `https://t.me/AcademyStrategBot?start=${data.token}-${data.sessionId}`;
+
+  const qrUrl = `tg://resolve?domain=AcademyStrategBot&start=${encodeURIComponent(
+    data.token
+  )}-${encodeURIComponent(data.sessionId)}`;
+
   return (
     <div className={classes.main}>
       <div className={classes.qr}>Для входа отсканируйте QR-код</div>
-      {/* Используем QRCode вместо статической картинки */}
-      <QRCode value={qrUrl}  style={{marginTop:'25px'}}/>
+
+      <QRCode
+        value={qrUrl}
+        ecLevel="Q"
+        size={128}
+        logoOpacity={1}
+        bgColor="#F1F5F9"
+        fgColor="#005475"
+        style={{ marginTop: "20px" }}
+      />
+
       <div className={classes.link}>
         <a href={qrUrl} target="_blank">
           Или перейдите по ссылке
         </a>
       </div>
-
       {/* Отображаем полученные данные */}
-      <div>Token: {data.token}</div>
-      <div>Session ID: {data.sessionId}</div>
+      {/* <div>Token: {data.token}</div>
+      <div>Session ID: {data.sessionId}</div> */}
     </div>
   );
 }

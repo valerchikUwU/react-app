@@ -15,24 +15,45 @@
 
 .block {
     width: 440px;
-    height: 205px;
+    min-height: 205px;
+    height: auto;
     box-shadow: 0px 0px 4px 0px #00000040;
     border-radius: 5px;
     margin-left: 15px;
     border-top-left-radius: 10px;
     grid-area: cart;
+    display: grid;
+    justify-items:center;
+    align-items:center;
+    justify-content:center;
+    align-content:center;
+
 }
 
 .cartGrid {
     width: 430px;
-    height: 200px;
+    min-height: 200px;
+    height: auto;
     background-color: #FFFFFF;
     padding: 5px;
+    display:grid;
+    grid-template-areas: "one two";
+    
+}
+.one{
+
+    grid-area: one;
+}
+.two{
+
+    grid-area: two;
 }
 
 .book {
     float: left;
     margin-right: 9px;
+    /* width:119px;
+    height:180px; */
 }
 
 .nameText {

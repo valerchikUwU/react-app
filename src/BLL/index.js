@@ -8,6 +8,13 @@ import archiveReducer from './admin/archiveSlice';
 import depositAdminReducer from './admin/depositAdminSlice';
 import userReducer from './admin/userSlice';
 import priceListReducer from './admin/priceListSlice';
+import statisticsReducer from './superAdmin/statisticsSlice';
+import commissionReducer from './superAdmin/comissionSlice';
+import payeeReducer from './superAdmin/payeeSlice';
+import reviewReducer from './superAdmin/reviewSlice';
+import depositSuperAdminReducer from './superAdmin/depositSuperAdminSlice';
+import usersSuperAdminReducer from './superAdmin/usersSuperAdminSlice';
+
 
 export default configureStore({
   reducer: {
@@ -20,5 +27,11 @@ export default configureStore({
     adminDeposit: depositAdminReducer,
     adminUser: userReducer,
     adminPriceList: priceListReducer,
+    superAdminStatistics: statisticsReducer,
+    superAdminCommision: commissionReducer,
+    superAdminPayee: payeeReducer,
+    superAdminReview: reviewReducer,
+    superAdminDeposits: depositSuperAdminReducer,
+    superAdminUsers: usersSuperAdminReducer,
   },
 });

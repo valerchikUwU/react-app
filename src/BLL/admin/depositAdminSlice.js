@@ -17,6 +17,19 @@ export const getDeposit = createAsyncThunk(
   }
 );
 
+export const postDeposit = createAsyncThunk(
+  "deposit/postDeposit",
+  async ({accountId, organizationCustomerId, deposit, withdraw, billNumber}, { rejectWithValue }) => {
+    try {
+      // Используем шаблонные строки для динамического формирования URL
+      const response = await instance.post(`${accountId}/deposits/${organizationCustomerId}/newDeposit`, {deposit, withdraw, billNumber});
+      console.log(response.data);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const depositAdminSlice = createSlice({
   name: "deposit",
   initialState: {

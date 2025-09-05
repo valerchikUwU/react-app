@@ -40,8 +40,8 @@ import { useParams } from "react-router-dom";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import CustomStyledCheckbox from "./CustomStyledCheckbox";
-import { updateSaveButtonState } from "../../../BLL/productSlice";
+import CustomStyledCheckbox from "../styledComponents/CustomStyledCheckbox";
+
 import { styled} from "@mui/system";
 
 export default function Work() {
@@ -68,13 +68,12 @@ export default function Work() {
       );
       console.log(product);
       setSelectedProduct(product);
-      dispatch(updateSaveButtonState({ productId: product.id, active: false }));
-      localStorage.removeItem(`saveButtonActive-${product.id}`);
+  
+  
     }
     if (productId) {
       console.log(productId);
-      dispatch(updateSaveButtonState({ productId, active: false }));
-      localStorage.removeItem(`saveButtonActive-${productId}`);
+ 
     }
     dispatch(
       deleteTitleOrder({

@@ -1,90 +1,197 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback} from "react";
+import { useMemo } from 'react';
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from 'react-router-dom';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from "@mui/material";
-import { styled } from '@mui/system';
-import { getDeposit } from "../../../../BLL/admin/depositAdminSlice";
+import { useParams } from "react-router-dom";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+} from "@mui/material";
+import { styled } from "@mui/system";
+import {
+  getDeposit,
+  getDepositBalance,
+} from "../../../../BLL/superAdmin/depositSuperAdminSlice";
+import CircularProgressCustom from "../../styledComponents/CircularProgress";
+import Balance from "./Balance.jsx";
+import cursor from "./cursor-click.svg";
 
 // Создаем стилизованные компоненты с помощью styled
 const StyledTableCellHead = styled(TableCell)(({ theme }) => ({
   fontFamily: '"Montserrat"',
-  fontSize: '16px',
+  fontSize: "16px",
   fontWeight: 600,
-  color: '#005475',
-  borderBottom: '3px solid #005475BF',
-  textAlign: 'center',
+  color: "#005475",
+  borderBottom: "3px solid #005475BF",
+  textAlign: "center",
 }));
 
-const StyledTableCellBody = styled(TableCell)(({ theme }) => ({
-  fontFamily: '"Montserrat"',
-  fontSize: '16px',
-  fontWeight: 600,
-  color: '#333333BF',
-  textAlign: 'center',
-}));
-
-export default function Deposits() {
+export default function DepositsSuperAdmin() {
   const dispatch = useDispatch();
   const { accountId } = useParams(); // Извлекаем accountId из URL
+  const [isLoading, setIsLoading] = useState(false);
+  const [openStates, setOpenStates] = useState({});
+  const [dummyKey, setDummyKey] = useState(0);
+  const [isLoadingModal, setIsLoadingModal] = useState(false);
+  const changeDummyKey = useCallback(() => {
+    setDummyKey((prevState) => prevState + 1);
+  });
+  const depositsData = useSelector((state) => state.superAdminDeposits.deposits);
+  
+  const deposits = useMemo(() => {
+    return depositsData; 
+  }, [depositsData]);
+
+  const sortDeposit = [...deposits].sort((a, b) => {
+    if (a.organizationName > b.organizationName) {
+      return 1;
+    } else if (a.organizationName < b.organizationName) {
+      return -1;
+    }
+    return 0;
+  });
 
   useEffect(() => {
-     dispatch(getDeposit(accountId)); 
+    setIsLoading(true);
+    dispatch(getDeposit(accountId)).then(() => {
+      setIsLoading(false);
+    });
   }, [dispatch, accountId]); // Добавляем accountId в список зависимостей
 
-  const deposits = useSelector((state) => state.adminDeposit.deposits);
+  useEffect(() => {
+    // Find the first open modal
+    let openModalId = Object.keys(openStates).find((id) => openStates[id]);
+    if (openModalId) {
+      setIsLoadingModal(true);
+      console.log(openModalId);
+      // Assuming you have the accountId available, replace "1" with the actual accountId
+      dispatch(
+        getDepositBalance({
+          accountId: accountId,
+          organizationCustomerId: openModalId,
+        })
+      ).then(() => {
+        setIsLoadingModal(false);
+      }, () => {setIsLoadingModal(false);});
+    }
+  }, [openStates, dispatch, dummyKey]);
+
+  const OpenModal = (id) => {
+    return setOpenStates({ ...openStates, [id]: true });
+  };
+
+  const handleCloseModal = useCallback(
+    (id) => {
+      setOpenStates({ ...openStates, [id]: false });
+    },
+    []
+  );
 
   return (
     <div>
-      <TableContainer
-        component={Paper}
-        sx={{
-          height: "calc(100vh - 90px)",
-          overflow: "auto",
-          scrollbarWidth: "thin",
-          scrollbarColor: "#005475BF #FFFFFF",
-        }}
-      >
-        <Table stickyHeader sx={{  width:'50%'}} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-              Академии
-              </StyledTableCellHead>
-              <StyledTableCellHead
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Остаток
-              </StyledTableCellHead>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {deposits.map((element) => (
-              <TableRow key={element.id}>
-                <StyledTableCellBody>
-                  {element.organizationName}
-                </StyledTableCellBody>
-                <StyledTableCellBody>
-                  {element.allDeposits - element.SUM}
-                </StyledTableCellBody>
+      {isLoading ? (
+        <CircularProgressCustom value={"55%"}></CircularProgressCustom>
+      ) : (
+        <TableContainer
+          component={Paper}
+          sx={{
+            height: "calc(100vh - 90px)",
+            overflow: "auto",
+            scrollbarWidth: "thin",
+            scrollbarColor: "#005475BF #FFFFFF",
+          }}
+        >
+          <Table stickyHeader sx={{ width: "50%" }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  Академии
+                </StyledTableCellHead>
+                <StyledTableCellHead
+                  sx={{
+                    paddingY: 1,
+                    position: "sticky",
+                    top: 0,
+                    zIndex: 100,
+                    background: "#fff",
+                  }}
+                >
+                  Остаток
+                </StyledTableCellHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+
+            <TableBody>
+              {sortDeposit.map((element) => {
+                return (
+                  <TableRow key={element.id}>
+                    <TableCell
+                      sx={{
+                        fontFamily: '"Montserrat"',
+                        fontSize: "16px",
+                        color: "#005475",
+                        textAlign: "center",
+                        cursor:"pointer",
+                        backgroundColor: openStates[element.id]
+                          ? "#0031B01A"
+                          : "",
+                        transition: "color 0.5s ease",
+                      }}
+                      onClick={() => OpenModal(element.id)}
+                    >
+                      {openStates[element.id] ? (
+                        <img
+                          src={cursor}
+                          alt="курсор"
+                          style={{ float: "left" }}
+                        ></img>
+                      ) : null}
+                      {element.organizationName}
+                    </TableCell>
+
+                    <TableCell
+                      sx={{
+                        fontFamily: '"Montserrat"',
+                        fontSize: "16px",
+                        color: "#005475",
+                        textAlign: "center",
+                        cursor:"pointer",
+                        backgroundColor: openStates[element.id]
+                          ? "#0031B01A"
+                          : "",
+                        transition: "color 0.5s ease",
+                      }}
+                      onClick={() => OpenModal(element.id)}
+                    >
+                      {element.allDeposits - element.SUM}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+      <Balance
+        openStates={openStates}
+        close={handleCloseModal}
+        deposits={deposits}
+        accountId={accountId}
+        changeDummyKey={changeDummyKey}
+        isLoadingModal={isLoadingModal}
+      ></Balance>
     </div>
   );
 }

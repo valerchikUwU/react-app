@@ -12,6 +12,7 @@ import {
   Fade,
   Typography,
   Button,
+  CircularProgress,
 } from "@mui/material";
 import send from "./image/send.svg";
 import done from "./image/done.svg";
@@ -25,7 +26,7 @@ import deleteBlue from "./image/deleteBlue.svg";
 import deleteGrey from "./image/deleteGrey.svg";
 import check from "./image/check.svg";
 import checkbox from "./image/checkbox.svg";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { TextField } from "@mui/material";
 import {
@@ -41,10 +42,17 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import CustomStyledCheckbox from "../styledComponents/CustomStyledCheckbox.jsx";
-import { updateSaveButtonState } from "../../../BLL/productSlice";
 import { styled } from "@mui/system";
-import classes from './Work.module.css'
-
+import classes from "./Work.module.css";
+import {
+  deletePress,
+  deletePressArray,
+  deletePressSend,
+  deleteCountClick,
+  decrementCountClick,
+} from "../../../BLL/productSlice.js";
+import CircularProgressCustom from "../styledComponents/CircularProgress.jsx";
+import ErrorHandler from "../../Custom/ErrorHandler.jsx";
 
 export default function Work() {
   const dispatch = useDispatch();
@@ -66,6 +74,10 @@ export default function Work() {
   const [selectedProduct, setSelectedProduct] = useState({});
   const [productId, setProductId] = useState({});
   const [isDeleteClicked, setIsDeleteClicked] = useState(false);
+  const [isLoadingModal, setIsLoadingModal] = useState(false);
+  const [isLoadingModalSaveAndDelete, setIsLoadingModalSaveAndDelete] =
+    useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const list = useSelector((state) => state.work?.work || []);
   const organizationList = useSelector((state) => state.work.organizationList);
@@ -76,6 +88,15 @@ export default function Work() {
   const ObjectModalOrder = useSelector(
     (state) => state.work?.workModalOrder || {}
   );
+
+  const error = useSelector((state) => state.work.errorUpdateTitleOrder);
+  const errorDelete = useSelector((state) => state.work.errorDelete);
+  const errorUpdateDraft = useSelector((state) => state.work.errorUpdateDraft);
+  const errorUpdateRecieved = useSelector((state) => state.work.errorUpdateRecieved);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarOpenDelete, setSnackbarOpenDelete] = useState(false);
+  const [snackbarOpenSend, setSnackbarOpenSend] = useState(false);
+  const [snackbarOpenDone, setSnackbarOpenDone] = useState(false);
 
   const allIds = listModalTitles.map((row) => row.id);
   const totalSum = allIds.reduce(
@@ -105,7 +126,10 @@ export default function Work() {
   const sortedList = [...list].sort(sortElementsByStatus);
 
   useEffect(() => {
-    dispatch(getWork(accountId));
+    setIsLoading(true);
+    dispatch(getWork(accountId)).then(() => {
+      setIsLoading(false);
+    });
   }, [accountId, dummyKey]);
 
   useEffect(() => {
@@ -113,7 +137,11 @@ export default function Work() {
     const openModalId = Object.keys(openStates).find((id) => openStates[id]);
     if (openModalId) {
       // Assuming you have the accountId available, replace "1" with the actual accountId
-      dispatch(getWorkModal({ accountId: accountId, orderId: openModalId }));
+      dispatch(
+        getWorkModal({ accountId: accountId, orderId: openModalId })
+      ).then(() => {
+        setIsLoadingModal(false);
+      });
       setIsDeleteClicked(false);
     }
   }, [isDeleteClicked, openStates, dispatch]);
@@ -171,62 +199,79 @@ export default function Work() {
       }
     });
     setErrors(newErrors);
-  }, [selectedCheck, selectedAccessType, listModalTitles]);
+  }, [selectedProduct, selectedCheck, selectedAccessType, listModalTitles]);
 
   useEffect(() => {
     // Инициализация sumForOneTitle
+
     const initialSumForOneTitle = listModalTitles.reduce((acc, row) => {
       const price = selectedCheck[row.id]
-        ? selectedProduct[row.id]?.PriceDefinition?.priceBooklet ||
-          row.price.priceBooklet
-        : selectedProduct[row.id]?.PriceDefinition?.priceAccess ||
-          row.price.priceAccess;
+        ? selectedProduct[row.id]?.priceBooklet || row.price.priceBooklet
+        : selectedProduct[row.id]?.priceAccess || row.price.priceAccess;
       acc[row.id] = parseFloat(selectedInput[row.id] || 0) * price;
       return acc;
     }, {});
 
     setSumForOneTitle(initialSumForOneTitle);
-  }, [selectedCheck, selectedInput, listModalTitles, selectedProduct]);
+  }, [
+    selectedProduct,
+    productId,
+    selectedCheck,
+    selectedInput,
+    listModalTitles,
+  ]);
 
-  const OpenModal = (id) => setOpenStates({ ...openStates, [id]: true });
+  const OpenModal = (id) => {
+    setIsLoadingModal(true);
+    setOpenStates({ ...openStates, [id]: true });
+  };
 
   const handleCloseModal = (id) =>
     setOpenStates({ ...openStates, [id]: false });
 
-  const handleDeleteOrder = (orderId, titleId, productId, productId1) => {
-    if (productId1) {
-      const newSelectedAbbr = productId1;
-      const product = productsModal.find(
-        (p) => p.abbreviation === newSelectedAbbr
-      );
-      console.log(product);
-      setSelectedProduct(product);
-      dispatch(updateSaveButtonState({ productId: product.id, active: false }));
-      localStorage.removeItem(`saveButtonActive-${product.id}`);
-    }
-    if (productId) {
-      console.log(productId);
-      dispatch(updateSaveButtonState({ productId, active: false }));
-      localStorage.removeItem(`saveButtonActive-${productId}`);
-    }
+  const handleDeleteOrder = (orderId, titleId, productId, status) => {
+    setIsLoadingModalSaveAndDelete(true);
     dispatch(
       deleteTitleOrder({
         accountId: accountId,
         orderId: orderId,
         titleId: titleId,
       })
-    );
-    setIsDeleteClicked(true);
+    )
+      .then(() => {
+        if (status === "Черновик") {
+          dispatch(deletePress({ id: productId }));
+          dispatch(decrementCountClick());
+        }
+        setIsLoadingModalSaveAndDelete(false);
+        console.log("productId");
+        console.log(productId);
+        // После успешного выполнения deleteTitleOrder вызываем getWork
+        dispatch(getWork(accountId)); // для обновления полей когда еще пользователь находится в модальном окне на самой странице уже меняется
+        setIsDeleteClicked(true);
+        setSnackbarOpenDelete(true);
+      })
+      .catch(() => {
+        setIsLoadingModalSaveAndDelete(false);
+        setSnackbarOpenDelete(true);
+      });
   };
 
-  const handleIconClick = (orderId, organizationName) => {
+  const handleIconClick = (orderId, organizationName, status) => {
     dispatch(
       updateDraft({
         accountId: accountId,
         orderId: orderId,
         organizationName: organizationName,
       })
-    );
+    ).then(() => {
+      dispatch(getWork(accountId));
+      setSnackbarOpenSend(true);
+      if (status === "Черновик") {
+        dispatch(deletePressSend());
+        dispatch(deleteCountClick());
+      }
+    }, () => { setSnackbarOpenSend(true);});
     setDummyKey((prevKey) => prevKey + 1);
     setIsIconVisibleSend((prevState) => ({
       ...prevState,
@@ -241,7 +286,6 @@ export default function Work() {
       ...prevState,
       [orderId]: true,
     }));
-    dispatch(getWork(accountId));
   };
 
   const handleIconClickResieved = (orderId) => {
@@ -250,7 +294,10 @@ export default function Work() {
         accountId: accountId,
         orderId: orderId,
       })
-    );
+    ).then(() => {
+      dispatch(getWork(accountId));
+      setSnackbarOpenDone(true);
+    }, () => {setSnackbarOpenDone(true);});
     setDummyKey((prevKey) => prevKey + 1);
   };
 
@@ -296,13 +343,6 @@ export default function Work() {
         ...prevState,
         [id]: false,
       }));
-
-      // Вычисляем новую сумму и обновляем SumForOneTitle
-      const newSum = parseFloat(newValue) * price;
-      setSumForOneTitle((prevSums) => ({
-        ...prevSums,
-        [id]: newSum,
-      }));
     }
   };
 
@@ -327,17 +367,16 @@ export default function Work() {
     if (!hasErrors) {
       // Создаем пустой массив для titlesToUpdate
       const titlesToUpdate = [];
+      const changeProduct = [];
 
       // Проходим по listModalTitles и проверяем условия для каждого элемента
       listModalTitles.forEach((row) => {
-        // Проверяем, существует ли значение для данного id в selectedCheck
-        console.log("------------------------------------------");
-        console.log(row.productId);
-        console.log("------------------------------------------");
         titlesToUpdate.push({
           id: row.id,
           productId: productId[row.id] ? productId[row.id] : row.productId,
-          accessType: selectedAccessType[row.id]
+          accessType: selectedCheck[row.id]
+            ? null
+            : selectedAccessType[row.id]
             ? selectedAccessType[row.id]
             : row.accessType,
           generation: selectedGeneration[row.id]
@@ -346,11 +385,17 @@ export default function Work() {
           quantity: selectedInput[row.id],
           addBooklet: selectedCheck[row.id],
         });
+
+        changeProduct.push({
+          id: productId[row.id] ? productId[row.id] : row.productId,
+        });
       });
 
       // Теперь titlesToUpdate - это массив объектов, который можно использовать в вашем запросе
       // Проверяем, что titlesToUpdate не пуст, перед тем как вызывать dispatch
       if (titlesToUpdate.length > 0) {
+        setIsLoadingModalSaveAndDelete(true);
+        dispatch(deletePressArray(changeProduct));
         // Предполагается, что updateTitleOrder возвращает промис
         dispatch(
           updateTitleOrder({
@@ -358,10 +403,18 @@ export default function Work() {
             orderId: ObjectModalOrder.id,
             titlesToUpdate: titlesToUpdate, // titlesToUpdate теперь является массивом объектов
           })
-        ).then(() => {
-          // После успешного выполнения updateTitleOrder вызываем getWork
-          dispatch(getWork(accountId));
-        });
+        ).then(
+          () => {
+            // После успешного выполнения updateTitleOrder вызываем getWork
+            dispatch(getWork(accountId));
+            handleCloseModal(ObjectModalOrder.id);
+            setIsLoadingModalSaveAndDelete(false);
+            setSnackbarOpen(true);
+          },
+          () => {
+            setSnackbarOpen(true);
+          }
+        );
       } else {
         // Выводим сообщение или выполняем другую логику, если titlesToUpdate пуст
         console.log("Нет элементов для сохранения");
@@ -391,6 +444,7 @@ export default function Work() {
     // Теперь titlesToUpdate - это массив объектов, который можно использовать в вашем запросе
     // Проверяем, что titlesToUpdate не пуст, перед тем как вызывать dispatch
     if (titlesToUpdate.length > 0) {
+      setIsLoadingModalSaveAndDelete(true);
       // Предполагается, что updateTitleOrder возвращает промис
       dispatch(
         updateTitleOrder({
@@ -398,10 +452,18 @@ export default function Work() {
           orderId: ObjectModalOrder.id,
           titlesToUpdate: titlesToUpdate, // titlesToUpdate теперь является массивом объектов
         })
-      ).then(() => {
-        // После успешного выполнения updateTitleOrder вызываем getWork
-        dispatch(getWork(accountId));
-      });
+      ).then(
+        () => {
+          // После успешного выполнения updateTitleOrder вызываем getWork
+          dispatch(getWork(accountId));
+          handleCloseModal(ObjectModalOrder.id);
+          setIsLoadingModalSaveAndDelete(false);
+          setSnackbarOpen(true);
+        },
+        () => {
+          setSnackbarOpen(true);
+        }
+      );
     }
   };
 
@@ -452,25 +514,24 @@ export default function Work() {
   const TextHeader = styled(TableCell)({
     fontFamily: "Montserrat",
     fontSize: "16px",
-    fontWeight: 600,
+    fontWeight: "600",
     color: "#005475",
     borderBottom: "3px solid #005475",
     textAlign: "center",
-  });
 
-  // Text Body
-  // const TextBody = styled(TableCell)({
-  //   fontFamily: "Montserrat",
-  //   fontSize: "16px",
-  //   fontWeight: 600,
-  //   color: "black",
-  //   textAlign: "center",
-  // });
+    // Добавляем класс hoverEffect для применения стилей при наведении
+    "&.hoverEffect": {
+      transition: "background-color 0.3s ease",
+    },
+    "&.hoverEffect:hover": {
+      backgroundColor: "#47bcd6", // Более темный оттенок #005475
+    },
+  });
 
   const TableCellModal = styled(TableCell)({
     fontFamily: "Montserrat",
     fontSize: "16px",
-    fontWeight: 600,
+
     color: "#333333",
     textAlign: "center",
   });
@@ -487,1291 +548,1480 @@ export default function Work() {
     marginBottom: "15px",
   });
 
-  // const StyledTableCell = styled(TableCell)(({ isTextBlack, openStates }) => ({
-  //   fontFamily: "Montserrat",
-  //   fontSize: "16px",
-  //   fontWeight: 600,
-  //   color: isTextBlack ? "black" : "#999999",
-  //   textAlign: "center",
-  //   cursor: "pointer",
-  //   backgroundColor: openStates ? "#0031B01A" : "transparent",
-  //   transition: "color 0.5s ease",
-  // }));
+  const [sortedOrders, setSortedOrders] = useState([...list]);
 
-  // const StyledTableCellActive = styled(TableCell)(
-  //   ({ onClick, openStates }) => ({
-  //     fontFamily: "Montserrat",
-  //     fontSize: "16px",
-  //     fontWeight: 600,
-  //     color: "#999999",
-  //     textAlign: "center",
-  //     cursor: "pointer",
-  //     backgroundColor: openStates ? "#0031B01A" : "",
-  //   })
-  // );
+  useEffect(() => {
+    setSortedOrders([...list].sort(sortElementsByStatus));
+  }, [list]);
 
-  // const TableRowActive = styled(TableRow)(({ openStates, onClick }) => ({
-  //   fontFamily: "Montserrat",
-  //   fontSize: "16px",
-  //   fontWeight: 600,
-  //   color: "#999999",
-  //   textAlign: "center",
-  //   cursor: "pointer",
-  //   backgroundColor: openStates ? "#0031B01A" : "",
-  //   onClick,
-  // }));
+  const sortNumber = (name) => {
+    const sortedData = [...sortedOrders];
+    switch (name) {
+      case "Number":
+        sortedData.sort((a, b) => {
+          // Сначала проверяем статус
+          if (a.status === "Черновик" && b.status !== "Черновик") {
+            return -1;
+          }
+          if (a.status !== "Черновик" && b.status === "Черновик") {
+            return 1;
+          }
+          if (
+            a.status === "Черновик депозита" &&
+            b.status !== "Черновик депозита"
+          ) {
+            return -1;
+          }
+          if (
+            a.status !== "Черновик депозита" &&
+            b.status === "Черновик депозита"
+          ) {
+            return 1;
+          }
 
+          // Затем сортируем по номеру заказа
+          if (a.orderNumber > b.orderNumber) {
+            return 1;
+          } else if (a.orderNumber < b.orderNumber) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedOrders(sortedData);
+        break;
+
+      case "organizationName":
+        sortedData.sort((a, b) => {
+          // Сначала проверяем статус
+          if (a.status === "Черновик" && b.status !== "Черновик") {
+            return -1;
+          }
+          if (a.status !== "Черновик" && b.status === "Черновик") {
+            return 1;
+          }
+          if (
+            a.status === "Черновик депозита" &&
+            b.status !== "Черновик депозита"
+          ) {
+            return -1;
+          }
+          if (
+            a.status !== "Черновик депозита" &&
+            b.status === "Черновик депозита"
+          ) {
+            return 1;
+          }
+
+          // Затем сортируем по полному имени
+          if (a.organizationName > b.organizationName) {
+            return 1;
+          } else if (a.organizationName < b.organizationName) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedOrders(sortedData);
+        break;
+
+      // Аналогично добавьте проверку статуса в остальные случаи...
+
+      case "billNumber":
+        sortedData.sort((a, b) => {
+          // Сначала проверяем статус
+          if (a.status === "Черновик" && b.status !== "Черновик") {
+            return -1;
+          }
+          if (a.status !== "Черновик" && b.status === "Черновик") {
+            return 1;
+          }
+          if (
+            a.status === "Черновик депозита" &&
+            b.status !== "Черновик депозита"
+          ) {
+            return -1;
+          }
+          if (
+            a.status !== "Черновик депозита" &&
+            b.status === "Черновик депозита"
+          ) {
+            return 1;
+          }
+
+          // Затем сортируем по номеру счета
+          if (a.billNumber > b.billNumber) {
+            return 1;
+          } else if (a.billNumber < b.billNumber) {
+            return -1;
+          } else {
+            if (a.dispatchDate > b.dispatchDate) {
+              return 1;
+            } else if (a.dispatchDate < b.dispatchDate) {
+              return -1;
+            }
+            return 0;
+          }
+        });
+        setSortedOrders(sortedData);
+        break;
+
+      case "formattedDispatchDate":
+        sortedData.sort((a, b) => {
+          if (a.status === "Черновик" && b.status !== "Черновик") {
+            return -1;
+          }
+          if (a.status !== "Черновик" && b.status === "Черновик") {
+            return 1;
+          }
+          if (
+            a.status === "Черновик депозита" &&
+            b.status !== "Черновик депозита"
+          ) {
+            return -1;
+          }
+          if (
+            a.status !== "Черновик депозита" &&
+            b.status === "Черновик депозита"
+          ) {
+            return 1;
+          }
+
+          if (a.dispatchDate > b.dispatchDate) {
+            return 1;
+          } else if (a.dispatchDate < b.dispatchDate) {
+            return -1;
+          }
+          return 0;
+        });
+        setSortedOrders(sortedData);
+        break;
+    }
+  };
+  
   return (
-    <Box>
-      <TableContainer
-        component={Paper}
-        sx={{
-          height: "calc(100vh - 90px)",
-          overflow: "auto",
-          scrollbarWidth: "thin",
-          scrollbarColor: "#005475 #FFFFFF",
+    <>
+      <Box>
+        {isLoading ? (
+          <CircularProgressCustom value={"55%"}></CircularProgressCustom>
+        ) : (
+          <TableContainer
+            component={Paper}
+            sx={{
+              height: "calc(100vh - 90px)",
+              overflow: "auto",
+              scrollbarWidth: "thin",
+              scrollbarColor: "#005475 #FFFFFF",
 
-          "&::-webkit-scrollbar": {
-            width: "10px", // Ширина скроллбара
-          },
-          "&::-webkit-scrollbar-track": {
-            borderRadius: "10px", // Радиус скругления трека скроллбара
-            backgroundColor: "#f1f1f1", // Цвет трека
-          },
-          "&::-webkit-scrollbar-thumb": {
-            borderRadius: "10px", // Радиус скругления области управления
-            backgroundColor: "#888", // Цвет области управления
-            ":hover": {
-              backgroundColor: "#555", // Цвет при наведении
-            },
-          },
-        }}
-      >
-        <Table sx={{ minWidth: 650 }} stickyHeader aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <TextHeader
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                №
-              </TextHeader>
-              <TextHeader
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Академия
-              </TextHeader>
-              <TextHeader
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Дата
-              </TextHeader>
-              <TextHeader
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Сумма
-              </TextHeader>
-              <TextHeader
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Состояние
-              </TextHeader>
-              <TextHeader
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                № счета
-              </TextHeader>
-              <TextHeader
-                sx={{
-                  paddingY: 1,
-                  position: "sticky",
-                  top: 0,
-                  zIndex: 100,
-                  background: "#fff",
-                }}
-              >
-                Отметить
-              </TextHeader>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {sortedList.map((element) =>
-              element.status === "Черновик" ||
-              element.status === "Черновик депозита" ? (
-                <TableRow key={element.id}>
-                  <TableCell
-                    onClick={() => OpenModal(element.id)}
+              "&::-webkit-scrollbar": {
+                width: "10px", // Ширина скроллбара
+              },
+              "&::-webkit-scrollbar-track": {
+                borderRadius: "10px", // Радиус скругления трека скроллбара
+                backgroundColor: "#f1f1f1", // Цвет трека
+              },
+              "&::-webkit-scrollbar-thumb": {
+                borderRadius: "10px", // Радиус скругления области управления
+                backgroundColor: "#888", // Цвет области управления
+                ":hover": {
+                  backgroundColor: "#555", // Цвет при наведении
+                },
+              },
+            }}
+          >
+            <Table
+              sx={{ minWidth: 650 }}
+              stickyHeader
+              aria-label="simple table"
+            >
+              <TableHead>
+                <TableRow>
+                  <TextHeader
+                    className="hoverEffect"
                     sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: isTextBlack[element.id] ? "black" : "#999999",
-                      textAlign: "center",
+                      paddingY: 1,
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 100,
+                      background: "#fff",
                       cursor: "pointer",
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "transparent",
-                      transition: "color 0.5s ease",
+                    }}
+                    onClick={() => {
+                      sortNumber("Number");
                     }}
                   >
-                    {element.orderNumber}
-                  </TableCell>
-
-                  <TableCell
+                    №
+                  </TextHeader>
+                  <TextHeader
+                    className="hoverEffect"
                     sx={{
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "",
-                      textAlign: "center",
+                      paddingY: 1,
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 100,
+                      background: "#fff",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      sortNumber("organizationName");
                     }}
                   >
-                    <FormControl variant="standard">
-                      <Select
+                    Академия
+                  </TextHeader>
+                  <TextHeader
+                    className="hoverEffect"
+                    sx={{
+                      paddingY: 1,
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 100,
+                      background: "#fff",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      sortNumber("formattedDispatchDate");
+                    }}
+                  >
+                    Дата
+                  </TextHeader>
+                  <TextHeader
+                    sx={{
+                      paddingY: 1,
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 100,
+                      background: "#fff",
+                    }}
+                  >
+                    Сумма
+                  </TextHeader>
+                  <TextHeader
+                    sx={{
+                      paddingY: 1,
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 100,
+                      background: "#fff",
+                    }}
+                  >
+                    Состояние
+                  </TextHeader>
+                  <TextHeader
+                    className="hoverEffect"
+                    sx={{
+                      paddingY: 1,
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 100,
+                      background: "#fff",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => {
+                      sortNumber("billNumber");
+                    }}
+                  >
+                    № счета
+                  </TextHeader>
+                  <TextHeader
+                    sx={{
+                      paddingY: 1,
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 100,
+                      background: "#fff",
+                    }}
+                  >
+                    Отметить
+                  </TextHeader>
+                </TableRow>
+              </TableHead>
+
+              <TableBody>
+                {sortedOrders.map((element) =>
+                  element.status === "Черновик" ||
+                  element.status === "Черновик депозита" ? (
+                    <TableRow key={element.id}>
+                      <TableCell
+                        onClick={() => OpenModal(element.id)}
                         sx={{
                           fontFamily: "Montserrat",
                           fontSize: "16px",
-                          fontWeight: 600,
+
                           color: isTextBlack[element.id] ? "black" : "#999999",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "transparent",
+                          transition: "color 0.5s ease",
                         }}
-                        label="Организация"
-                        value={
-                          selectedValues[element.id] || element.organizationName
-                        }
-                        onChange={(e) => handleChangeSelect(e, element.id)}
-                        disabled={isSelectDisabled[element.id]}
                       >
-                        {organizationList.map((item) => (
-                          <MenuItem
-                            key={item}
-                            value={item}
+                        {element.orderNumber}
+                      </TableCell>
+
+                      <TableCell
+                        sx={{
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "",
+                          textAlign: "center",
+                        }}
+                      >
+                        <FormControl variant="standard">
+                          <Select
                             sx={{
                               fontFamily: "Montserrat",
                               fontSize: "16px",
-                              fontWeight: 600,
+
                               color: isTextBlack[element.id]
                                 ? "black"
                                 : "#999999",
-                              textAlign: "center",
-                              cursor: "pointer",
                             }}
+                            label="Организация"
+                            value={
+                              selectedValues[element.id] ||
+                              element.organizationName
+                            }
+                            onChange={(e) => handleChangeSelect(e, element.id)}
+                            disabled={isSelectDisabled[element.id]}
                           >
-                            {item}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </TableCell>
+                            {[...organizationList].sort().map((item) => (
+                              <MenuItem
+                                key={item}
+                                value={item}
+                                sx={{
+                                  fontFamily: "Montserrat",
+                                  fontSize: "16px",
 
-                  <TableCell
-                    onClick={() => OpenModal(element.id)}
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: isTextBlack[element.id] ? "black" : "#999999",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "transparent",
-                      transition: "color 0.5s ease",
-                    }}
-                  >
-                    {element.formattedDispatchDate}
-                  </TableCell>
-                  <TableCell
-                    onClick={() => OpenModal(element.id)}
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: isTextBlack[element.id] ? "black" : "#999999",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "transparent",
-                      transition: "color 0.5s ease",
-                    }}
-                  >
-                    {element.SUM} &#x20bd;
-                  </TableCell>
-                  <TableCell
-                    onClick={() => OpenModal(element.id)}
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: isTextBlack[element.id] ? "black" : "#999999",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "transparent",
-                      transition: "color 0.5s ease",
-                    }}
-                  >
-                    {isTextBlack[element.id] ? "Активный" : element.status}
-                  </TableCell>
-                  <TableCell
-                    onClick={() => OpenModal(element.id)}
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: isTextBlack[element.id] ? "black" : "#999999",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "transparent",
-                      transition: "color 0.5s ease",
-                    }}
-                  >
-                    {element.billNumber}
-                  </TableCell>
+                                  color: isTextBlack[element.id]
+                                    ? "black"
+                                    : "#999999",
+                                  textAlign: "center",
+                                  cursor: "pointer",
+                                }}
+                              >
+                                {item}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </TableCell>
 
-                  <TableCell
-                    sx={{
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "",
-                      textAlign: "center",
-                    }}
-                  >
-                    {openStates[element.id] ? (
-                      <img src={cursor} alt="курсор" />
-                    ) : (
-                      <Tooltip title="Заказать" arrow>
-                        <Fade in={!isIconVisibleSend[element.id]}>
-                          <IconButton
-                           onClick={() => 
-                            handleIconClick(
-                              element.id,
-                              selectedValues[element.id] || element.organizationName
-                            )
-                          }
-                          >
-                            <img src={send} alt="отправить" />
-                          </IconButton>
-                        </Fade>
-                      </Tooltip>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ) : element.status === "Отправлен" ? (
-                <TableRow key={element.id} style={{ cursor: "pointer" }}>
-                  <TableCell
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "black",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "",
-                    }}
-                    onClick={() => OpenModal(element.id)}
-                  >
-                    {element.orderNumber}
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "black",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "",
-                    }}
-                    onClick={() => OpenModal(element.id)}
-                  >
-                    {element.organizationName}
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "black",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "",
-                    }}
-                    onClick={() => OpenModal(element.id)}
-                  >
-                    {element.formattedDispatchDate}
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "black",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "",
-                    }}
-                    onClick={() => OpenModal(element.id)}
-                  >
-                    {element.SUM} &#x20bd;
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "black",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "",
-                    }}
-                    onClick={() => OpenModal(element.id)}
-                  >
-                    {element.status}
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "black",
-                      textAlign: "center",
-                      cursor: "pointer",
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "",
-                    }}
-                    onClick={() => OpenModal(element.id)}
-                  >
-                    {element.billNumber}
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      backgroundColor: openStates[element.id]
-                        ? "#0031B01A"
-                        : "",
-                      textAlign: "center",
-                    }}
-                  >
-                    <Tooltip title="Отметить полученным" arrow>
-                      <IconButton
-                        onClick={() => handleIconClickResieved(element.id)}
+                      <TableCell
+                        onClick={() => OpenModal(element.id)}
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
+
+                          color: isTextBlack[element.id] ? "black" : "#999999",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "transparent",
+                          transition: "color 0.5s ease",
+                        }}
                       >
-                        <img src={done} alt="done" />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                <TableRow
-                  key={element.id}
-                  onClick={() => OpenModal(element.id)}
-                  sx={{
-                    backgroundColor: openStates[element.id] ? "#0031B01A" : "",
-                    cursor: "pointer",
-                  }}
-                >
-                  <TableCell
-                    onClick={() => OpenModal(element.id)}
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "black",
-                      textAlign: "center",
-                    }}
-                  >
-                    {element.orderNumber}
-                  </TableCell>
-                  <TableCell
-                    onClick={() => OpenModal(element.id)}
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "black",
-                      textAlign: "center",
-                    }}
-                  >
-                    {element.organizationName}
-                  </TableCell>
-                  <TableCell
-                    onClick={() => OpenModal(element.id)}
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "black",
-                      textAlign: "center",
-                    }}
-                  >
-                    {element.formattedDispatchDate}
-                  </TableCell>
-                  <TableCell
-                    onClick={() => OpenModal(element.id)}
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "black",
-                      textAlign: "center",
-                    }}
-                  >
-                    {element.SUM} &#x20bd;
-                  </TableCell>
-                  <TableCell
-                    onClick={() => OpenModal(element.id)}
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "black",
-                      textAlign: "center",
-                    }}
-                  >
-                    {element.status}
-                  </TableCell>
-                  <TableCell
-                    onClick={() => OpenModal(element.id)}
-                    sx={{
-                      fontFamily: "Montserrat",
-                      fontSize: "16px",
-                      fontWeight: 600,
-                      color: "black",
-                      textAlign: "center",
-                    }}
-                  >
-                    {element.billNumber}
-                  </TableCell>
-                  <TableCell align="center">
-                    {openStates[element.id] && (
-                      <img src={cursor} alt="курсор" />
-                    )}
-                  </TableCell>
-                </TableRow>
-              )
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+                           {element.formattedDispatchDate}
+                      </TableCell>
+                      <TableCell
+                        onClick={() => OpenModal(element.id)}
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
 
-      {list.map((element) => (
-        <Modal open={openStates[element.id] || false} key={element.id}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateAreas: '"icon" "box"',
-              gridGap: "10px",
-              placeItems: "center",
-              height: "auto",
-              position: "absolute",
-              top: "45%",
-              left: "55%",
-              transform: "translate(-50%, -50%)",
-              width: "100%",
-              paddingTop: "5%",
-              
-            }}
-           
-          >
-            {element.status === "Черновик депозита" ? (
-              <IconButton
-                onClick={() => handleCloseModal(element.id)}
-                sx={{
-                  gridArea: "icon",
-                  position: "absolute", // Изменено на абсолютное позиционирование
-                  marginLeft: "410px",
-                }}
-              >
-                <img src={exit} alt="закрыть" />
-              </IconButton>
-            ) : element.status === "Черновик" ? (
-              <IconButton
-                onClick={() => handleCloseModal(element.id)}
-                sx={{
-                  gridArea: "icon",
-                  position: "absolute", // Изменено на абсолютное позиционирование
-                  marginLeft: "1100px",
-                }}
-              >
-                <img src={exit} alt="закрыть" />
-              </IconButton>
-            ) : (
-              <IconButton
-                onClick={() => handleCloseModal(element.id)}
-                sx={{
-                  gridArea: "icon",
-                  position: "absolute", // Изменено на абсолютное позиционирование
-                  marginLeft: "900px",
-                }}
-              >
-                <img src={exit} alt="закрыть" />
-              </IconButton>
-            )}
+                          color: isTextBlack[element.id] ? "black" : "#999999",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "transparent",
+                          transition: "color 0.5s ease",
+                        }}
+                      >
+                        {element.SUM} &#x20bd;
+                      </TableCell>
+                      <TableCell
+                        onClick={() => OpenModal(element.id)}
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
 
-            <Box
-              sx={{
-                backgroundColor: "white",
-                boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
-                padding: "4px",
-                borderRadius: "10px",
-                gridArea: "box",
-                alignSelf: "center",
-                position: "relative",
-              }}
-              className={classes.modal}
-            >
-              <TableContainer
-                component={Paper}
-                sx={{
-                  maxHeight: "calc(100vh - 200px)",
-                  overflow: "auto",
-                  scrollbarWidth: "thin",
-                  scrollbarColor: "#005475 #FFFFFF",
-                }}
-              >
-                <Table stickyHeader>
-                  {element.status === "Черновик" ? (
-                    <TableHead>
-                      <TableRow>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Курс
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Доступ
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Поколение
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Доп. буклет
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Количество
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Цена
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Сумма
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
+                          color: isTextBlack[element.id] ? "black" : "#999999",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "transparent",
+                          transition: "color 0.5s ease",
+                        }}
+                      >
+                        {isTextBlack[element.id] ? "Активный" : element.status}
+                      </TableCell>
+                      <TableCell
+                        onClick={() => OpenModal(element.id)}
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
 
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          <img src={deleteBlue} alt="удалить" />
-                        </TextHeader>
-                      </TableRow>
-                    </TableHead>
-                  ) : element.status === "Черновик депозита" ? (
-                    <TableHead>
-                      <TableRow>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Количество
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Цена
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Сумма
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          <img src={deleteBlue} alt="удалить" />
-                        </TextHeader>
-                      </TableRow>
-                    </TableHead>
-                  ) : (
-                    <TableHead>
-                      <TableRow>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Курс
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Доступ
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Поколение
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Доп. буклет
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Количество
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Цена
-                        </TextHeader>
-                        <TextHeader
-                          sx={{
-                            paddingY: 1,
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 100,
-                            background: "#fff",
-                          }}
-                        >
-                          Сумма
-                        </TextHeader>
-                      </TableRow>
-                    </TableHead>
-                  )}
+                          color: isTextBlack[element.id] ? "black" : "#999999",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "transparent",
+                          transition: "color 0.5s ease",
+                        }}
+                      >
+                        {element.billNumber}
+                      </TableCell>
 
-                  {element.status === "Черновик" ? (
-                    <TableBody>
-                      {listModalTitles.map((row) => (
-                        <TableRow key={row.id}>
-                          <TableCell>
-                            <Select
-                              variant="standard"
-                              sx={{
-                                fontFamily: "Montserrat",
-                                fontSize: "16px",
-                                fontWeight: 600,
-                                color: "black",
-                                textAlign: "center",
-                                cursor: "pointer",
-                                width: "70px",
-                              }}
-                              value={
-                                selectedAbbr[row.id] || row.product.abbreviation
-                              }
-                              onChange={(event) => {
-                                const newSelectedAbbr = event.target.value;
-                                const product = productsModal.find(
-                                  (p) => p.abbreviation === newSelectedAbbr
-                                );
-
-                                // setSelectedProduct(product);
-
-                                setSelectedProduct((prevState) => ({
-                                  ...prevState,
-                                  [row.id]: product,
-                                }));
-
-                                handleChangeSelectAbbr(event, row.id);
-
-                                setProductId((prevState) => ({
-                                  ...prevState,
-                                  [row.id]: product.id, // Обновляем выбранное значение для данного элемента
-                                }));
-
-                                // Если вам нужно получить product.id, вы можете сделать это здесь
-                                // setProductId(product.id);
-
-                                console.log(product.id); // Выводит ID выбранного продукта в консоль
-                              }}
-                            >
-                              {productsModal.map((product) => (
-                                <MenuItem
-                                  key={product.id}
-                                  value={product.abbreviation}
-                                  sx={{
-                                    fontFamily: "Montserrat",
-                                    fontSize: "16px",
-                                    fontWeight: 600,
-                                    color: "#999999",
-                                    textAlign: "center",
-                                    cursor: "pointer",
-                                  }}
-                                >
-                                  {product.abbreviation}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </TableCell>
-
-                          <TableCell>
-                            {selectedCheck[row.id] ? (
-                              <FormControl error={!!errors[row.id]} fullWidth>
-                                <Select
-                                  variant="standard"
-                                  sx={{
-                                    fontFamily: "Montserrat",
-                                    fontSize: "16px",
-                                    fontWeight: 600,
-                                    color: "black",
-                                    textAlign: "center",
-                                    cursor: "pointer",
-                                    width: "150px",
-                                  }}
-                                  value={
-                                    selectedAccessType[row.id] || row.accessType
-                                  }
-                                  onChange={(e) =>
-                                    handleChangeAccessType(e, row.id)
-                                  }
-                                  disabled={selectedCheck[row.id] || false} // Добавляем условие для отключения
-                                  displayEmpty
-                                  renderValue={(selected) =>
-                                    selected === null ? null : selected
-                                  }
-                                >
-                                  <MenuItem value={null} disabled></MenuItem>
-                                </Select>
-                                <FormHelperText error>
-                                  {errors[row.id]}
-                                </FormHelperText>
-                              </FormControl>
-                            ) : (
-                              <FormControl error={!!errors[row.id]} fullWidth>
-                                <Select
-                                  variant="standard"
-                                  sx={{
-                                    fontFamily: "Montserrat",
-                                    fontSize: "16px",
-                                    fontWeight: 600,
-                                    color: "black",
-                                    textAlign: "center",
-                                    cursor: "pointer",
-                                    width: "150px",
-                                  }}
-                                  value={
-                                    selectedAccessType[row.id] || row.accessType
-                                  }
-                                  onChange={(e) =>
-                                    handleChangeAccessType(e, row.id)
-                                  }
-                                  disabled={selectedCheck[row.id] || false} // Добавляем условие для отключения
-                                  displayEmpty
-                                  renderValue={(selected) =>
-                                    selected === null ? null : selected
-                                  }
-                                >
-                                  <MenuItem value={null} disabled></MenuItem>
-
-                                  <MenuItem
-                                    value="Электронный"
-                                    sx={{
-                                      fontFamily: "Montserrat",
-                                      fontSize: "16px",
-                                      fontWeight: 600,
-                                      color: "#999999",
-                                      textAlign: "center",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    Электронный
-                                  </MenuItem>
-                                  <MenuItem
-                                    value="Бумажный"
-                                    sx={{
-                                      fontFamily: "Montserrat",
-                                      fontSize: "16px",
-                                      fontWeight: 600,
-                                      color: "#999999",
-                                      textAlign: "center",
-                                      cursor: "pointer",
-                                    }}
-                                  >
-                                    Бумажный
-                                  </MenuItem>
-                                </Select>
-                                <FormHelperText error>
-                                  {errors[row.id]}
-                                </FormHelperText>
-                              </FormControl>
-                            )}
-                          </TableCell>
-
-                          <TableCell>
-                            <Select
-                              variant="standard"
-                              sx={{
-                                fontFamily: "Montserrat",
-                                fontSize: "16px",
-                                fontWeight: 600,
-                                color: "black",
-                                textAlign: "center",
-                                cursor: "pointer",
-                                width: "200px",
-                              }}
-                              value={
-                                selectedGeneration[row.id] || row.generation
-                              }
-                              onChange={(e) =>
-                                handleChangeGeneration(e, row.id)
-                              }
-                            >
-                              <MenuItem
-                                value="Первое поколение"
-                                sx={{
-                                  fontFamily: "Montserrat",
-                                  fontSize: "16px",
-                                  fontWeight: 600,
-                                  color: "#999999",
-                                  textAlign: "center",
-                                  cursor: "pointer",
-                                }}
+                      <TableCell
+                        sx={{
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "",
+                          textAlign: "center",
+                        }}
+                      >
+                        {openStates[element.id] ? (
+                          <img src={cursor} alt="курсор" />
+                        ) : (
+                          <Tooltip title="Заказать" arrow>
+                            <Fade in={!isIconVisibleSend[element.id]}>
+                              <IconButton
+                                onClick={() =>
+                                  handleIconClick(
+                                    element.id,
+                                    selectedValues[element.id] ||
+                                      element.organizationName,
+                                    element.status
+                                  )
+                                }
                               >
-                                Первое поколение
-                              </MenuItem>
-                              <MenuItem
-                                value="Второе поколение"
-                                sx={{
-                                  fontFamily: "Montserrat",
-                                  fontSize: "16px",
-                                  fontWeight: 600,
-                                  color: "#999999",
-                                  textAlign: "center",
-                                  cursor: "pointer",
-                                }}
-                              >
-                                Второе поколение
-                              </MenuItem>
-                            </Select>
-                          </TableCell>
+                                <img src={send} alt="отправить" />
+                              </IconButton>
+                            </Fade>
+                          </Tooltip>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ) : element.status === "Отправлен" ? (
+                    <TableRow key={element.id} style={{ cursor: "pointer" }}>
+                      <TableCell
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
 
-                          <TableCell sx={{ textAlign: "center" }}>
-                            <CustomStyledCheckbox
-                              sx={{ textAlign: "center" }}
-                              checked={selectedCheck[row.id] || false} // Используйте false для неотмеченных чекбоксов
-                              onChange={(event) =>
-                                handleCheckboxChange(event, row.id)
-                              }
-                              size={1}
-                            ></CustomStyledCheckbox>
-                          </TableCell>
+                          color: "black",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "",
+                        }}
+                        onClick={() => OpenModal(element.id)}
+                      >
+                        {element.orderNumber}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
 
-                          <TableCell>
-                            <TextField
-                              variant="standard"
-                              sx={{
-                                width: "80px",
-                              }}
-                              value={
-                                selectedInput[row.id] ||
-                                (isFieldCleared[row.id] ? "" : row.quantity)
-                              }
-                              onChange={(e) =>
-                                handleChangeInput(
-                                  e,
-                                  row.id,
-                                  selectedCheck[row.id]
-                                    ? selectedProduct[row.id]?.PriceDefinition
-                                        ?.priceBooklet || row.price.priceBooklet
-                                    : selectedProduct[row.id]?.PriceDefinition
-                                        ?.priceAccess || row.price.priceAccess
-                                )
-                              }
-                            />
-                          </TableCell>
+                          color: "black",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "",
+                        }}
+                        onClick={() => OpenModal(element.id)}
+                      >
+                        {element.organizationName}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
 
-                          <TableCellModal>
-                            {selectedCheck[row.id]
-                              ? selectedProduct[row.id]?.PriceDefinition
-                                  ?.priceBooklet || row.price.priceBooklet
-                              : selectedProduct[row.id]?.PriceDefinition
-                                  ?.priceAccess || row.price.priceAccess}
-                            {/* {selectedCheck[row.id]
-                              ? row.price.priceBooklet
-                              : row.price.priceAccess} */}
-                            &#x20bd;
-                          </TableCellModal>
+                          color: "black",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "",
+                        }}
+                        onClick={() => OpenModal(element.id)}
+                      >
+                           {element.formattedDispatchDate}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
 
-                          <TableCellModal>
-                            {sumForOneTitle[row.id]} &#x20bd;
-                          </TableCellModal>
+                          color: "black",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "",
+                        }}
+                        onClick={() => OpenModal(element.id)}
+                      >
+                        {element.SUM} &#x20bd;
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
 
-                          <TableCellModal>
-                            <IconButton
-                              onClick={() =>
-                                handleDeleteOrder(
-                                  element.id,
-                                  row.id,
-                                  selectedProduct[row.id]?.id,
-                                  row.product.abbreviation
-                                )
-                              }
-                            >
-                              <img src={deleteGrey} alt="удалить" />
-                            </IconButton>
-                          </TableCellModal>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  ) : element.status === "Черновик депозита" ? (
-                    <TableBody>
-                      {listModalTitles.map((row) => (
-                        <TableRow key={row.id}>
-                          <TableCell
-                            sx={{
-                              fontFamily: "Montserrat",
-                              fontSize: "16px",
-                              fontWeight: 600,
-                              color: "#333333",
-                              textAlign: "center",
-                            }}
+                          color: "black",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "",
+                        }}
+                        onClick={() => OpenModal(element.id)}
+                      >
+                        {element.status}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
+
+                          color: "black",
+                          textAlign: "center",
+                          cursor: "pointer",
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "",
+                        }}
+                        onClick={() => OpenModal(element.id)}
+                      >
+                        {element.billNumber}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          backgroundColor: openStates[element.id]
+                            ? "#0031B01A"
+                            : "",
+                          textAlign: "center",
+                        }}
+                      >
+                        <Tooltip title="Отметить полученным" arrow>
+                          <IconButton
+                            onClick={() => handleIconClickResieved(element.id)}
                           >
-                            <TextField
-                              sx={{ width: "70px" }}
-                              variant="standard"
-                              value={
-                                selectedInput[row.id] ||
-                                (isFieldCleared[row.id] ? "" : row.quantity)
-                              }
-                              onChange={(e) =>
-                                handleChangeInput(
-                                  e,
-                                  row.id,
-                                  selectedCheck[row.id]
-                                    ? row.price.priceBooklet
-                                    : row.price.priceAccess
-                                )
-                              }
-                            />
-                          </TableCell>
-
-                          <TableCellModal>
-                            {selectedCheck[row.id]
-                              ? row.price.priceBooklet
-                              : row.price.priceAccess}
-                            &#x20bd;
-                          </TableCellModal>
-
-                          <TableCellModal>
-                            {sumForOneTitle[row.id]} &#x20bd;
-                          </TableCellModal>
-
-                          <TableCellModal>
-                            <IconButton
-                              onClick={
-                                () => handleDeleteOrder(element.id, row.id) //уточнить
-                              }
-                            >
-                              <img src={deleteGrey} alt="удалить" />
-                            </IconButton>
-                          </TableCellModal>
-                        </TableRow>
-                      ))}
-                    </TableBody>
+                            <img src={done} alt="done" />
+                          </IconButton>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
                   ) : (
-                    <TableBody>
-                      {listModalTitles.map((row) => (
-                        <TableRow key={row.id}>
-                          <TableCellModal>
-                            {row.product.abbreviation}
-                          </TableCellModal>
-                          <TableCellModal>{row.accessType}</TableCellModal>
-                          <TableCellModal>{row.generation}</TableCellModal>
-                          <TableCellModal>
-                            {row.addBooklet ? (
-                              <img src={check} alt="галка" />
-                            ) : (
-                              <img
-                                src={checkbox}
-                                alt="галка"
-                                style={{ opacity: "0.6" }}
-                              />
-                            )}
-                          </TableCellModal>
-                          <TableCellModal>{row.quantity}</TableCellModal>
-                          <TableCellModal>
-                            {row.PriceForOneProduct} &#x20bd;
-                          </TableCellModal>
-                          <TableCellModal>
-                            {row.SumForOneTitle} &#x20bd;
-                          </TableCellModal>
-                        </TableRow>
-                      ))}
-                    </TableBody>
+                    <TableRow
+                      key={element.id}
+                      onClick={() => OpenModal(element.id)}
+                      sx={{
+                        backgroundColor: openStates[element.id]
+                          ? "#0031B01A"
+                          : "",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <TableCell
+                        onClick={() => OpenModal(element.id)}
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
+
+                          color: "black",
+                          textAlign: "center",
+                        }}
+                      >
+                        {element.orderNumber}
+                      </TableCell>
+                      <TableCell
+                        onClick={() => OpenModal(element.id)}
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
+
+                          color: "black",
+                          textAlign: "center",
+                        }}
+                      >
+                        {element.organizationName}
+                      </TableCell>
+                      <TableCell
+                        onClick={() => OpenModal(element.id)}
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
+                          color: "black",
+                          textAlign: "center",
+                        }}
+                      >
+                        {element.formattedDispatchDate}
+                      </TableCell>
+                      <TableCell
+                        onClick={() => OpenModal(element.id)}
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
+
+                          color: "black",
+                          textAlign: "center",
+                        }}
+                      >
+                        {element.SUM} &#x20bd;
+                      </TableCell>
+                      <TableCell
+                        onClick={() => OpenModal(element.id)}
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
+
+                          color: "black",
+                          textAlign: "center",
+                        }}
+                      >
+                        {element.status}
+                      </TableCell>
+                      <TableCell
+                        onClick={() => OpenModal(element.id)}
+                        sx={{
+                          fontFamily: "Montserrat",
+                          fontSize: "16px",
+
+                          color: "black",
+                          textAlign: "center",
+                        }}
+                      >
+                        {element.billNumber}
+                      </TableCell>
+                      <TableCell align="center">
+                        {openStates[element.id] && (
+                          <img src={cursor} alt="курсор" />
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+
+        {isLoadingModal ? (
+          <Modal open={true}>
+            <CircularProgress
+              sx={{
+                position: "absolute",
+                top: "45%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+              }}
+            />
+          </Modal>
+        ) : isLoadingModalSaveAndDelete ? (
+          <Modal open={true}>
+            <CircularProgress
+              sx={{
+                position: "absolute",
+                top: "45%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+              }}
+            />
+          </Modal>
+        ) : (
+          list.map((element) => (
+            <Modal open={openStates[element.id] || false} key={element.id}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateAreas: '"icon" "box"',
+                  gridGap: "10px",
+                  placeItems: "center",
+                  height: "auto",
+                  position: "absolute",
+                  top: "45%",
+                  left: "55%",
+                  transform: "translate(-50%, -50%)",
+                  width: "100%",
+                  paddingTop: "5%",
+                }}
+              >
+                <Box
+                  sx={{
+                    backgroundColor: "white",
+                    boxShadow: "0 0 24px rgba(0, 0, 0, 0.5)",
+                    padding: "4px",
+                    borderRadius: "10px",
+                    gridArea: "box",
+                    alignSelf: "center",
+                    position: "absolute",
+                    width: "auto",
+                    overflow: "visible",
+                  }}
+                  className={classes.modal}
+                >
+                  <IconButton
+                    onClick={() => {resetStates(); handleCloseModal(element.id);}}
+                    sx={{
+                      position: "absolute",
+                      float: "right",
+                      top: "-38px",
+                      right: "-40px",
+                    }}
+                  >
+                    <img src={exit} alt="закрыть" />
+                  </IconButton>
+
+                  <TableContainer
+                    component={Paper}
+                    sx={{
+                      maxHeight: "calc(100vh - 200px)",
+                      overflow: "auto",
+                      scrollbarWidth: "thin",
+                      scrollbarColor: "#005475 #FFFFFF",
+                    }}
+                  >
+                    <Table stickyHeader>
+                      {element.status === "Черновик" ? (
+                        <TableHead>
+                          <TableRow>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Курс
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Доступ
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Поколение
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Доп. буклет
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Количество
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Цена
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Сумма
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              <img src={deleteBlue} alt="удалить" />
+                            </TextHeader>
+                          </TableRow>
+                        </TableHead>
+                      ) : element.status === "Черновик депозита" ? (
+                        <TableHead>
+                          <TableRow>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Количество
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Цена
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Сумма
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              <img src={deleteBlue} alt="удалить" />
+                            </TextHeader>
+                          </TableRow>
+                        </TableHead>
+                      ) : (
+                        <TableHead>
+                          <TableRow>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Курс
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Доступ
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Поколение
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Доп. буклет
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Количество
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Цена
+                            </TextHeader>
+                            <TextHeader
+                              sx={{
+                                paddingY: 1,
+                                position: "sticky",
+                                top: 0,
+                                zIndex: 100,
+                                background: "#fff",
+                              }}
+                            >
+                              Сумма
+                            </TextHeader>
+                          </TableRow>
+                        </TableHead>
+                      )}
+
+                      {element.status === "Черновик" ? (
+                        <TableBody>
+                          {listModalTitles.map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCell>
+                                <Select
+                                  variant="standard"
+                                  sx={{
+                                    fontFamily: "Montserrat",
+                                    fontSize: "16px",
+
+                                    color: "black",
+                                    textAlign: "center",
+                                    cursor: "pointer",
+                                    width: "70px",
+                                  }}
+                                  value={
+                                    selectedAbbr[row.id] ||
+                                    row.product.abbreviation
+                                  }
+                                  onChange={(event) => {
+                                    const newSelectedAbbr = event.target.value;
+                                    const product = productsModal.find(
+                                      (p) => p.abbreviation == newSelectedAbbr
+                                    );
+
+                                    setSelectedProduct((prevState) => ({
+                                      ...prevState,
+                                      [row.id]: product,
+                                    }));
+
+                                    handleChangeSelectAbbr(event, row.id);
+
+                                    setProductId((prevState) => ({
+                                      ...prevState,
+                                      [row.id]: product.id, // Обновляем выбранное значение для данного элемента
+                                    }));
+                                  }}
+                                >
+                                  {productsModal.map((product) => (
+                                    <MenuItem
+                                      key={product.id}
+                                      value={product.abbreviation}
+                                      sx={{
+                                        fontFamily: "Montserrat",
+                                        fontSize: "16px",
+
+                                        color: "#999999",
+                                        textAlign: "center",
+                                        cursor: "pointer",
+                                      }}
+                                    >
+                                      {product.abbreviation}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                              </TableCell>
+
+                              <TableCell>
+                                {selectedCheck[row.id] ? (
+                                  <FormControl
+                                    error={!!errors[row.id]}
+                                    fullWidth
+                                  >
+                                    <Select
+                                      variant="standard"
+                                      sx={{
+                                        fontFamily: "Montserrat",
+                                        fontSize: "16px",
+
+                                        color: "black",
+                                        textAlign: "center",
+                                        cursor: "pointer",
+                                        width: "150px",
+                                      }}
+                                      value={
+                                        selectedCheck[row.id]
+                                          ? null
+                                          : selectedAccessType[row.id] ||
+                                            row.accessType
+                                      }
+                                      onChange={(e) =>
+                                        handleChangeAccessType(e, row.id)
+                                      }
+                                      disabled={selectedCheck[row.id] || false} // Добавляем условие для отключения
+                                      displayEmpty
+                                      renderValue={(selected) =>
+                                        selected === null ? null : selected
+                                      }
+                                    >
+                                      <MenuItem
+                                        value={null}
+                                        disabled
+                                      ></MenuItem>
+                                    </Select>
+                                    <FormHelperText error>
+                                      {errors[row.id]}
+                                    </FormHelperText>
+                                  </FormControl>
+                                ) : (
+                                  <FormControl
+                                    error={!!errors[row.id]}
+                                    fullWidth
+                                  >
+                                    <Select
+                                      variant="standard"
+                                      sx={{
+                                        fontFamily: "Montserrat",
+                                        fontSize: "16px",
+
+                                        color: "black",
+                                        textAlign: "center",
+                                        cursor: "pointer",
+                                        width: "150px",
+                                      }}
+                                      value={
+                                        selectedAccessType[row.id] ||
+                                        row.accessType
+                                      }
+                                      onChange={(e) =>
+                                        handleChangeAccessType(e, row.id)
+                                      }
+                                      disabled={selectedCheck[row.id] || false} // Добавляем условие для отключения
+                                      displayEmpty
+                                      renderValue={(selected) =>
+                                        selected === null ? null : selected
+                                      }
+                                    >
+                                      <MenuItem
+                                        value={null}
+                                        disabled
+                                      ></MenuItem>
+
+                                      <MenuItem
+                                        value="Электронный"
+                                        sx={{
+                                          fontFamily: "Montserrat",
+                                          fontSize: "16px",
+
+                                          color: "#999999",
+                                          textAlign: "center",
+                                          cursor: "pointer",
+                                        }}
+                                      >
+                                        Электронный
+                                      </MenuItem>
+                                      <MenuItem
+                                        value="Бумажный"
+                                        sx={{
+                                          fontFamily: "Montserrat",
+                                          fontSize: "16px",
+
+                                          color: "#999999",
+                                          textAlign: "center",
+                                          cursor: "pointer",
+                                        }}
+                                      >
+                                        Бумажный
+                                      </MenuItem>
+                                    </Select>
+                                    <FormHelperText error>
+                                      {errors[row.id]}
+                                    </FormHelperText>
+                                  </FormControl>
+                                )}
+                              </TableCell>
+
+                              <TableCell>
+                                <Select
+                                  variant="standard"
+                                  sx={{
+                                    fontFamily: "Montserrat",
+                                    fontSize: "16px",
+
+                                    color: "black",
+                                    textAlign: "center",
+                                    cursor: "pointer",
+                                    width: "200px",
+                                  }}
+                                  value={
+                                    selectedGeneration[row.id] || row.generation
+                                  }
+                                  onChange={(e) =>
+                                    handleChangeGeneration(e, row.id)
+                                  }
+                                >
+                                  <MenuItem
+                                    value="Первое поколение"
+                                    sx={{
+                                      fontFamily: "Montserrat",
+                                      fontSize: "16px",
+
+                                      color: "#999999",
+                                      textAlign: "center",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    Первое поколение
+                                  </MenuItem>
+                                  <MenuItem
+                                    value="Второе поколение"
+                                    sx={{
+                                      fontFamily: "Montserrat",
+                                      fontSize: "16px",
+
+                                      color: "#999999",
+                                      textAlign: "center",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    Второе поколение
+                                  </MenuItem>
+                                </Select>
+                              </TableCell>
+
+                              <TableCell sx={{ textAlign: "center" }}>
+                                <CustomStyledCheckbox
+                                  sx={{ textAlign: "center" }}
+                                  checked={selectedCheck[row.id] || false} // Используйте false для неотмеченных чекбоксов
+                                  onChange={(event) =>
+                                    handleCheckboxChange(event, row.id)
+                                  }
+                                  size={1}
+                                ></CustomStyledCheckbox>
+                              </TableCell>
+
+                              <TableCell>
+                                <TextField
+                                  variant="standard"
+                                  sx={{
+                                    width: "80px",
+                                  }}
+                                  value={
+                                    selectedInput[row.id] ||
+                                    (isFieldCleared[row.id] ? "" : row.quantity)
+                                  }
+                                  onChange={(e) =>
+                                    handleChangeInput(
+                                      e,
+                                      row.id,
+                                      selectedCheck[row.id]
+                                        ? selectedProduct[row.id]
+                                            ?.priceBooklet ||
+                                            row.price.priceBooklet
+                                        : selectedProduct[row.id]
+                                            ?.priceAccess ||
+                                            row.price.priceAccess
+                                    )
+                                  }
+                                />
+                              </TableCell>
+
+                              <TableCellModal>
+                                {selectedCheck[row.id]
+                                  ? selectedProduct[row.id]?.priceBooklet ||
+                                    row.price.priceBooklet
+                                  : selectedProduct[row.id]?.priceAccess ||
+                                    row.price.priceAccess}
+                                &#x20bd;
+                              </TableCellModal>
+
+                              <TableCellModal>
+                                {sumForOneTitle[row.id]} &#x20bd;
+                              </TableCellModal>
+
+                              <TableCellModal>
+                                <IconButton
+                                  onClick={() =>
+                                    handleDeleteOrder(
+                                      element.id,
+                                      row.id,
+                                      productId[element.id] || row.productId,
+                                      element.status
+                                    )
+                                  }
+                                >
+                                  <img src={deleteGrey} alt="удалить" />
+                                </IconButton>
+                              </TableCellModal>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      ) : element.status === "Черновик депозита" ? (
+                        <TableBody>
+                          {listModalTitles.map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCell
+                                sx={{
+                                  fontFamily: "Montserrat",
+                                  fontSize: "16px",
+
+                                  color: "#333333",
+                                  textAlign: "center",
+                                }}
+                              >
+                                <TextField
+                                  sx={{ width: "70px" }}
+                                  variant="standard"
+                                  value={
+                                    selectedInput[row.id] ||
+                                    (isFieldCleared[row.id] ? "" : row.quantity)
+                                  }
+                                  onChange={(e) =>
+                                    handleChangeInput(
+                                      e,
+                                      row.id,
+                                      selectedCheck[row.id]
+                                        ? row.price.priceBooklet
+                                        : row.price.priceAccess
+                                    )
+                                  }
+                                />
+                              </TableCell>
+
+                              <TableCellModal>
+                                {selectedCheck[row.id]
+                                  ? row.price.priceBooklet
+                                  : row.price.priceAccess}
+                                &#x20bd;
+                              </TableCellModal>
+
+                              <TableCellModal>
+                                {sumForOneTitle[row.id]} &#x20bd;
+                              </TableCellModal>
+
+                              <TableCellModal>
+                                <IconButton
+                                  onClick={
+                                    () => handleDeleteOrder(element.id, row.id) //уточнить
+                                  }
+                                >
+                                  <img src={deleteGrey} alt="удалить" />
+                                </IconButton>
+                              </TableCellModal>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      ) : (
+                        <TableBody>
+                          {listModalTitles.map((row) => (
+                            <TableRow key={row.id}>
+                              <TableCellModal>
+                                {row.product.abbreviation}
+                              </TableCellModal>
+                              <TableCellModal>{row.accessType}</TableCellModal>
+                              <TableCellModal>{row.generation}</TableCellModal>
+                              <TableCellModal>
+                                {row.addBooklet ? (
+                                  <img src={check} alt="галка" />
+                                ) : (
+                                  <img
+                                    src={checkbox}
+                                    alt="галка"
+                                    style={{ opacity: "0.6" }}
+                                  />
+                                )}
+                              </TableCellModal>
+                              <TableCellModal>{row.quantity}</TableCellModal>
+                              <TableCellModal>
+                                {row.PriceForOneProduct} &#x20bd;
+                              </TableCellModal>
+                              <TableCellModal>
+                                {row.SumForOneTitle} &#x20bd;
+                              </TableCellModal>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      )}
+                    </Table>
+                  </TableContainer>
+
+                  <TypographyStyle>Итого: {totalSum} &#x20bd;</TypographyStyle>
+
+                  {element.status === "Черновик" && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "flex-end", // Плавное выравнивание кнопок справа
+                        marginTop: "60px",
+                        marginRight: "10px",
+                        gap: "15px",
+                        marginBottom: "20px",
+                      }}
+                    >
+                      <Button
+                        variant="contained"
+                        onClick={handleSave}
+                        sx={{
+                          textTransform: "none",
+                          backgroundColor: "#005475",
+                          color: "#FFFFFF",
+                          fontFamily: "Montserrat",
+                          fontSize: "14px",
+
+                          "&:hover": {
+                            backgroundColor: "#00435d",
+                          },
+                        }}
+                      >
+                        Сохранить
+                      </Button>
+                      <Button
+                        onClick={resetStates}
+                        sx={{
+                          variant: "outlined",
+                          textTransform: "none",
+                          backgroundColor: "#CCCCCC",
+                          color: "#000000",
+                          fontSize: "14px",
+
+                          fontFamily: "Montserrat",
+                          border: 0,
+                          "&:hover": {
+                            backgroundColor: "#8E8E8E",
+                            border: 0,
+                          },
+                        }}
+                      >
+                        Отменить
+                      </Button>
+                    </Box>
                   )}
-                </Table>
-              </TableContainer>
 
-              <TypographyStyle>Итого: {totalSum} &#x20bd;</TypographyStyle>
+                  {element.status === "Черновик депозита" && (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "flex-end", // Плавное выравнивание кнопок справа
+                        marginTop: "60px",
+                        marginRight: "10px",
+                        gap: "15px",
+                        marginBottom: "20px",
+                      }}
+                    >
+                      <Button
+                        variant="contained"
+                        onClick={handleSaveDeposit}
+                        sx={{
+                          textTransform: "none",
+                          backgroundColor: "#005475",
+                          color: "#FFFFFF",
+                          fontFamily: "Montserrat",
+                          fontSize: "14px",
 
-              {element.status === "Черновик" && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "flex-end", // Плавное выравнивание кнопок справа
-                    marginTop: "60px",
-                    marginRight: "10px",
-                    gap: "15px",
-                    marginBottom:'20px'
-                  }}
-                >
-                  <Button
-                    variant="contained"
-                    onClick={handleSave}
-                    sx={{
-                      textTransform: "none",
-                      backgroundColor: "#005475",
-                      color: "#FFFFFF",
-                      fontFamily: "Montserrat",
-                      fontSize: "14px",
-                      fontWeight: 600,
-                      "&:hover": {
-                        backgroundColor: "#00435d",
-                      },
-                    }}
-                  >
-                    Сохранить
-                  </Button>
-                  <Button
-                    onClick={resetStates}
-                    sx={{
-                      variant: "outlined",
-                      textTransform: "none",
-                      backgroundColor: "#CCCCCC",
-                      color: "#000000",
-                      fontSize: "14px",
-                      fontWeight: 600,
-                      fontFamily: "Montserrat",
-                      border: 0,
-                      "&:hover": {
-                        backgroundColor: "#8E8E8E",
-                        border: 0,
-                      },
-                    }}
-                  >
-                    Отменить
-                  </Button>
+                          "&:hover": {
+                            backgroundColor: "#00435d",
+                          },
+                        }}
+                      >
+                        Сохранить
+                      </Button>
+
+                      <Button
+                        onClick={resetStates}
+                        sx={{
+                          variant: "outlined",
+                          textTransform: "none",
+                          backgroundColor: "#CCCCCC",
+                          color: "#000000",
+                          fontSize: "14px",
+
+                          fontFamily: "Montserrat",
+                          border: 0,
+                          "&:hover": {
+                            backgroundColor: "#8E8E8E",
+                            border: 0,
+                          },
+                        }}
+                      >
+                        Отменить
+                      </Button>
+                    </Box>
+                  )}
                 </Box>
-              )}
+              </div>
+            </Modal>
+          ))
+        )}
+      </Box>
 
-              {element.status === "Черновик депозита" && (
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "flex-end", // Плавное выравнивание кнопок справа
-                    marginTop: "60px",
-                    marginRight: "10px",
-                    gap: "15px",
-                    marginBottom:'20px'
-                  }}
-                >
-                  <Button
-                    variant="contained"
-                    onClick={handleSaveDeposit}
-                    sx={{
-                      textTransform: "none",
-                      backgroundColor: "#005475",
-                      color: "#FFFFFF",
-                      fontFamily: "Montserrat",
-                      fontSize: "14px",
-                      fontWeight: 600,
-                      "&:hover": {
-                        backgroundColor: "#00435d",
-                      },
-                    }}
-                  >
-                    Сохранить
-                  </Button>
+      <ErrorHandler
+        error={errorUpdateDraft}
+        snackbarOpen={snackbarOpenSend}
+        close={setSnackbarOpenSend}
+        text={"Заказ создан"}
+      ></ErrorHandler>
 
-                  <Button
-                    onClick={resetStates}
-                    sx={{
-                      variant: "outlined",
-                      textTransform: "none",
-                      backgroundColor: "#CCCCCC",
-                      color: "#000000",
-                      fontSize: "14px",
-                      fontWeight: 600,
-                      fontFamily: "Montserrat",
-                      border: 0,
-                      "&:hover": {
-                        backgroundColor: "#8E8E8E",
-                        border: 0,
-                      },
-                    }}
-                  >
-                    Отменить
-                  </Button>
-                </Box>
-              )}
-            </Box>
-          </div>
-        </Modal>
-      ))}
-    </Box>
+      <ErrorHandler
+        error={errorUpdateRecieved}
+        snackbarOpen={snackbarOpenDone}
+        close={setSnackbarOpenDone}
+        text={"Заказ в архиве"}
+      ></ErrorHandler>
+
+      <ErrorHandler
+        error={error}
+        snackbarOpen={snackbarOpen}
+        close={setSnackbarOpen}
+        text={"Черновик обновлен"}
+      ></ErrorHandler>
+
+      <ErrorHandler
+        error={errorDelete}
+        snackbarOpen={snackbarOpenDelete}
+        close={setSnackbarOpenDelete}
+        text={"Удален"}
+      ></ErrorHandler>
+    </>
   );
 }

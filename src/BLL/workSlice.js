@@ -40,48 +40,75 @@ export const getWorkModal = createAsyncThunk(
 export const putOrders = createAsyncThunk(
   "work/putOrders",
   async ({ accountId, productData }, { rejectWithValue }) => {
-    try {
-      // Используем шаблонные строки для динамического формирования URL
-      const response = await instance.post(
-        `/${accountId}/orders/newOrder`, productData
-      );
-      console.log(response.data);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
+    // Функция для отложенного выполнения запроса
+    const delayedPost = async () => {
+      if (navigator.onLine) {
+        try {
+          const response = await instance.post(`/${accountId}/orders/newOrder`, productData);
+          console.log(response.data);
+          return response.data;
+        } catch (error) {
+          return rejectWithValue(error.message);
+        }
+      } else {
+        // Если устройство офлайн, отложить выполнение
+        setTimeout(delayedPost, 10000);
+        console.log('retry post') // Проверять каждые 5 секунд
+      }
+    };
+
+    // Начинаем процесс с проверкой статуса сети
+    delayedPost();
   }
 );
 
+
 export const updateDraft = createAsyncThunk(
   "work/updateDraft",
-  async ({ accountId, orderId, organizationName}, { rejectWithValue }) => {
-    try {
-      // Используем шаблонные строки для динамического формирования URL
-      const response = await instance.put(
-        `/${accountId}/orders/${orderId}/active`, {organizationName}
-      );
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
+  async ({ accountId, orderId, organizationName }, { rejectWithValue }) => {
+    // Функция для отложенного выполнения запроса
+    const delayedUpdate = async () => {
+      if (navigator.onLine) {
+        try {
+          const response = await instance.put(`/${accountId}/orders/${orderId}/active`, { organizationName });
+          return response.data;
+        } catch (error) {
+          return rejectWithValue(error.message);
+        }
+      } else {
+        // Если устройство офлайн, отложить выполнение
+        setTimeout(delayedUpdate, 10000); // Проверять каждые 5 секунд
+      }
+    };
+
+    // Начинаем процесс с проверкой статуса сети
+    delayedUpdate();
   }
 );
 
 export const updateRecieved = createAsyncThunk(
   "work/updateRecieved",
-  async ({ accountId, orderId}, { rejectWithValue }) => {
-    try {
-      // Используем шаблонные строки для динамического формирования URL
-      const response = await instance.put(
-        `/${accountId}/orders/${orderId}/recieved`
-      );
-      return response;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
+  async ({ accountId, orderId }, { rejectWithValue }) => {
+    // Функция для отложенного выполнения запроса
+    const delayedUpdate = async () => {
+      if (navigator.onLine) {
+        try {
+          const response = await instance.put(`/${accountId}/orders/${orderId}/recieved`);
+          return response;
+        } catch (error) {
+          return rejectWithValue(error.message);
+        }
+      } else {
+        // Если устройство офлайн, отложить выполнение
+        setTimeout(delayedUpdate, 10000); // Проверять каждые 5 секунд
+      }
+    };
+
+    // Начинаем процесс с проверкой статуса сети
+    delayedUpdate();
   }
 );
+
 
 
 export const updateTitleOrder = createAsyncThunk(
@@ -94,7 +121,7 @@ export const updateTitleOrder = createAsyncThunk(
       );
       return response.data.titlesToUpdate;
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.response.status);
     }
   }
 );
@@ -126,6 +153,10 @@ const workSlice = createSlice({
     products:[],
     status: null,
     error: null,
+    errorUpdateTitleOrder: null,
+    errorDelete: null,
+    errorUpdateDraft: null,
+    errorUpdateRecieved: null,
 
   },
   reducers: {
@@ -178,40 +209,47 @@ const workSlice = createSlice({
         console.log('updateDraft pending');
         state.status = 'loading';
         state.error = null;
+        state.errorUpdateDraft = null;
       })
       .addCase(updateDraft.fulfilled, (state, action) => {
         console.log('updateDraft fulfilled', action.payload);
         state.status = 'resolved';
-        // state.drafts = action.payload;
+        state.errorUpdateDraft = 200;
       })
       .addCase(updateDraft.rejected, (state, action) => {
         console.log('updateDraft rejected', action.payload);
         state.status = 'rejected';
         state.error = action.payload;
+        state.errorUpdateDraft = 'что - то пошло не так';
       })
     //updateRecieved
      .addCase(updateRecieved.pending, (state) => {
       console.log('updateResieved pending');
       state.status = 'loading';
       state.error = null;
+      state.errorUpdateRecieved = null;
     })
    .addCase(updateRecieved.fulfilled, (state, action) => {
       console.log('updateResieved fulfilled', action.payload);
       state.status = 'resolved';
+      state.errorUpdateRecieved = 200;
     })
    .addCase(updateRecieved.rejected, (state, action) => {
       console.log('updateResieved rejected', action.payload);
       state.status = 'rejected';
       state.error = action.payload;
+      state.errorUpdateRecieved = 'что - то пошло не так';
     })
      //updateTitleOrder
      .addCase(updateTitleOrder.pending, (state) => {
       console.log('updateTitleOrder pending');
       state.status = 'loading';
       state.error = null;
+      state.errorUpdateTitleOrder = null;
     })
     .addCase(updateTitleOrder.fulfilled, (state, action) => {
       console.log('updateTitleOrder fulfilled', action.payload);
+      state.errorUpdateTitleOrder = 200;
       state.status = 'resolved';
       // state.drafts = action.payload;
     })
@@ -219,21 +257,25 @@ const workSlice = createSlice({
       console.log('updateTitleOrder rejected', action.payload);
       state.status = 'rejected';
       state.error = action.payload;
+      state.errorUpdateTitleOrder = 'что - то пошло не так';
     })
      //deleteTitleOrder
      .addCase(deleteTitleOrder.pending, (state) => {
       console.log('deleteTitleOrder pending');
       state.status = 'loading';
       state.error = null;
+      state.errorDelete = null;
     })
    .addCase(deleteTitleOrder.fulfilled, (state, action) => {
       console.log('deleteTitleOrder fulfilled', action.payload);
       state.status = 'resolved';
+      state.errorDelete = 200;
     })
    .addCase(deleteTitleOrder.rejected, (state, action) => {
       console.log('deleteTitleOrder rejected', action.payload);
       state.status = 'rejected';
       state.error = action.payload;
+      state.errorDelete ='что - то пошло не так';
     });
  },
 });
