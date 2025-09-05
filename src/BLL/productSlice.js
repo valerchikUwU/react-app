@@ -9,9 +9,15 @@ export const getProducts = createAsyncThunk(
       const response = await instance.get(
         `${accountId}/productsByType/${typeId}`
       );
+      const res = response.data.productsList.filter(
+        (item) =>
+          item.id !== "03b2e1a4-f522-4597-b77d-474211647f54" &&
+          item.id !== "ac906037-de67-4d50-b591-43ead1295e94"
+      );
+
       console.log(response.data.productsList);
       // Убедитесь, что typeId передается в полезную нагрузку
-      return { productsList: response.data.productsList, typeId: typeId };
+      return { productsList: res, typeId: typeId };
     } catch (error) {
       return rejectWithValue(error.response.status);
     }
@@ -57,14 +63,13 @@ const productSlice = createSlice({
     },
     total(state) {
       if (state.totalCheck === true) {
-        if(state.productsInDraft !== null){
-           const count = state.productsInDraft?.split(",");
-        if (count?.length > 0) {
-          state.countButton += count?.length;
+        if (state.productsInDraft !== null) {
+          const count = state.productsInDraft?.split(",");
+          if (count?.length > 0) {
+            state.countButton += count?.length;
+          }
+          state.totalCheck = false;
         }
-        state.totalCheck = false;
-        }
-       
       }
     },
     isPress(state, action) {
@@ -118,34 +123,37 @@ const productSlice = createSlice({
         // Получаем текущее состояние isProduct
         let currentIsProduct = [...state.isProduct];
         let filteredIsProductsDraft = [];
-        
-        if(currentIsProduct != null){
-           filteredIsProductsDraft = currentIsProduct.map(product => {
-          const isInCurrentIsProduct = state.isProductsDraft.some(currentProduct => currentProduct.id === product.id);
-          return {
-           ...product,
-            isBoolean: isInCurrentIsProduct,
-          };
-        });
+
+        if (currentIsProduct != null) {
+          filteredIsProductsDraft = currentIsProduct.map((product) => {
+            const isInCurrentIsProduct = state.isProductsDraft.some(
+              (currentProduct) => currentProduct.id === product.id
+            );
+            return {
+              ...product,
+              isBoolean: isInCurrentIsProduct,
+            };
+          });
         }
-        console.log('currentIsProduct');
+        console.log("currentIsProduct");
         console.log(filteredIsProductsDraft);
         // Добавляем новые продукты, убеждаясь, что они не являются дубликатами
         const newProducts = action.payload.productsList
-        .filter(
-           (product) =>
-            !currentIsProduct.some(
-               (currentProduct) => currentProduct.id === product.id
-             )
-         )
-        .map((product) => {
-           const isDraft = state.isProductsDraft.some(draft => draft.id === product.id);
-           return {
-            ...product,
-             isBoolean: isDraft,
-           };
-         });
-       
+          .filter(
+            (product) =>
+              !currentIsProduct.some(
+                (currentProduct) => currentProduct.id === product.id
+              )
+          )
+          .map((product) => {
+            const isDraft = state.isProductsDraft.some(
+              (draft) => draft.id === product.id
+            );
+            return {
+              ...product,
+              isBoolean: isDraft,
+            };
+          });
 
         // Объединяем старые и новые продукты
         state.isProduct = [...filteredIsProductsDraft, ...newProducts];
@@ -180,7 +188,7 @@ const productSlice = createSlice({
 
           console.log(`state.getDraft`);
           console.log(state.isProductsDraft);
-        }else{
+        } else {
           state.isProductsDraft = [];
         }
       })
